@@ -167,8 +167,8 @@ def wordToJson(word_doc_file_name, word_doc_path, blog_name, date_published, des
         count+=1
 
 
-    #Update new_post title, description
-    new_post.blog_title=sess.query(Postshtml).filter_by(word_row_id=1, post_id=post_id).first().row_going_into_html
+    #Update new_post title
+    new_post.title=sess.query(Postshtml).filter_by(word_row_id=1, post_id=post_id).first().row_going_into_html
     sess.commit()
 
     # return blog_dict
