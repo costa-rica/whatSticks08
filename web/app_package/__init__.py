@@ -1,0 +1,45 @@
+from flask import Flask
+from ws_config01 import ConfigDev, ConfigProd
+from ws_models01 import login_manager
+from flask_mail import Mail
+import os
+import json
+
+config_dict = {}
+if os.environ.get('COMPUTERNAME')=='CAPTAIN2020' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
+    config_object = ConfigDev()
+    print('* ---> Configured for Development')
+    config_dict['production'] = False
+
+else:
+    config_object = ConfigProd()
+    print('* ---> Configured for Production')
+    config_dict['production'] = True
+
+with open('config_dict.json', 'w') as outfile:
+    json.dump(config_dict, outfile)
+
+
+
+mail = Mail()
+def create_app():
+    app = Flask(__name__)
+    app.config.from_object(config_object)
+    # print('app.config.get("ENV") says it is ---> ', app.config.get('ENV'))
+    app.config.word_doc_database_images_dir = os.path.join(app.config.get('WORD_DOC_DIR'), 'blog_images')
+    # app.config.word_doc_static_images_dir = os.path.join(app.config.get('WORD_DOC_DIR'), 'blog_images')
+
+    login_manager.init_app(app)
+    mail.init_app(app)
+
+    from app_package.users.routes import users
+    from app_package.dashboard.routes import dash
+    from app_package.errors.routes import errors
+    from app_package.blog.routes import blog
+    
+    app.register_blueprint(users)
+    app.register_blueprint(dash)
+    app.register_blueprint(errors)
+    app.register_blueprint(blog)
+    
+    return app      

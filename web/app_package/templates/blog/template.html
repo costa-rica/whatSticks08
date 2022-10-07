@@ -1,0 +1,95 @@
+{% extends "_layout.html" %}
+
+{% block title %}File Share Post{% endblock %}
+
+{% block main %}
+
+
+<section class="blog">
+
+    {% for key, line_list in blog_dict.items() %}
+
+        {% if line_list[0]=='new lines' %}
+            <br/>
+
+        {% elif line_list[0]=='h1' %}
+            <h1><b>{{ line_list[1] }}</b></h1>
+
+        {% elif line_list[0]=='h3' %}
+            <h3>{{ line_list[1] }}</h3>
+
+        {% elif line_list[0]=='html' %}
+        <div class="standard_paragraph">
+            {{ line_list[1]|safe }}
+        </div>
+        
+        {% elif line_list[0]=='ul' %}
+        <div class="standard_paragraph">
+            <ul>
+                <li>{{ line_list[1] }}</li>
+            </ul>
+        </div>
+
+        {% elif line_list[0]=='ul and indent' %}
+        <div class="indent_paragraph">
+            <ul>
+                <li>{{ line_list[1]|safe }}</li>
+            </ul>
+        </div>
+
+
+        {% elif line_list[0]=='indent' %}
+        <div class="indent_paragraph">
+            {{ line_list[1]|safe }}
+        </div>
+
+<!-- Image Caption -->
+        {% elif line_list[0]=='image_title' %}
+        <div class="caption_custom_div">
+            <p class="caption_custom">{{ line_list[1]|safe }}</p>
+        </div>
+
+
+
+        {% elif line_list[0]=='image' %}
+        <div class=" image_custom">
+            <img src="{{ line_list[1] }}" alt="blog01.gif">
+            
+        </div>
+        
+        {% elif line_list[0] in ['codeblock', 'codeblock_type01']%}
+        <div class=" indent_code">
+            <div class = "indent_code_background">
+                <code class="code_font_color">
+                    {{ line_list[1]|safe }}
+                </code>
+            </div>
+        </div>       
+
+        <!-- Move this thing to the right -->
+        {% elif line_list[0]=='date_published' %}
+        <div class="date_div">
+            <p >Published: {{ line_list[1]|safe }}</p>
+        </div>
+
+
+        {% else %}
+        <div class="standard_paragraph">
+
+            {{ line_list[1] |safe }}
+
+            
+
+        </div>
+            
+
+        {% endif %}
+
+
+
+    {% endfor %}
+
+
+
+</section>
+{% endblock %}

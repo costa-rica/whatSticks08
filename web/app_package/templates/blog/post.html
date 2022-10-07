@@ -1,0 +1,85 @@
+{% extends "_layout.html" %}
+{% block title %} Post to Blog {% endblock %}
+{% block main %}
+
+<section class="blog_post">
+
+  <h2>Add Blog Post</h2>
+  <p>
+    Add word documents with the formatting below.
+  </p>
+
+  <form method=POST enctype=multipart/form-data>
+    
+<div class="blog_form_div">
+  <div class="blog_form_sub_top">
+
+    <div class="blog_form_label_div">
+      <!-- form.blog_description.label -->
+      <label for="blog_description">Description</label>
+    </div>
+    <div class="blog_form_input_div">
+      <textarea class="textarea_custom" name="blog_description" id="blog_description" 
+        placeholder="optional (takes word doc 2nd/3rd paragraph)"></textarea>
+
+    </div>
+
+    <div class="blog_form_label_div">
+       <!-- form.date_published.label -->
+       Date
+    </div>
+    <div class="blog_form_input_div">
+      <!-- form.date_published(class="input_custom" -->
+      <input type="date" id="birthday" name="date_published" class="form-control">
+    </div>
+
+
+
+  </div>
+
+
+
+<div class="blog_form_buttons">
+  <input type=file id="word_doc_id" name=word_doc_name accept=".docx, doc" class="form-control file_custom">
+  <div class="button_div_right">
+    <input onclick="update()" type="submit" value="Upload" class="btn btn-primary btn_custom">
+  </div>
+  
+  <br/><br/>
+
+  Upload Progress Bar
+  <div class="progress" id="Progress_Status">
+    <div class="progress-bar progress-bar-striped" id="myprogressBar" role="progressbar"></div>
+  </div>
+</div>
+</div>
+
+  </form>
+
+
+
+  <div class ="crosswalk">
+    Here is a crosswalk between the word document formatting and how it shows up in the blog page:
+    <img src="{{ url_for('static', filename='images/wordToBlogCrosswalk.png') }}" alt="crosswalk">
+  </div>
+
+
+
+<script>
+
+function update() {
+  var element = document.getElementById("myprogressBar");   
+  var width = 10;
+  var identity = setInterval(scene, 10);
+  function scene() {
+  if (width >= 100) {
+      clearInterval(identity);
+  } else {
+      width++; 
+      element.style.width = width + '%'; 
+      }
+  }
+}
+</script>
+</section>
+{% endblock %}
