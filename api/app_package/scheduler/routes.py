@@ -1,7 +1,7 @@
 from flask import Blueprint
 from flask import Flask, request, jsonify, make_response, current_app
-from wsh_config import ConfigDev, ConfigProd
-from wsh_models import sess, Users, Oura_token, Oura_sleep_descriptions,\
+from ws_config01 import ConfigDev, ConfigProd
+from ws_models01 import sess, Users, Oura_token, Oura_sleep_descriptions,\
     Locations, Weather_history, User_location_day
 from datetime import date, datetime, timedelta
 import logging
@@ -52,12 +52,12 @@ def our_we_running():
 @sched_route.route('/get_locations')
 def get_locations():
     # print('*** wsh api accessed: get_Locations ***')
-    logger_sched.info(f"--- wsh07 API get_locations endpoint")
+    logger_sched.info(f"--- wsh08 API get_locations endpoint")
 
     request_data = request.get_json()
     
     if request_data.get('password') == config.WSH_API_PASSWORD:
-        logger_sched.info(f"--- wsh07 password accepted")
+        logger_sched.info(f"--- wsh08 password accepted")
 
         locations = sess.query(Locations).all()
         locations_dict = {i.id: [i.lat, i.lon] for i in locations}
@@ -154,7 +154,7 @@ def receive_weather_data():
 def add_user_loc_day():
 
     # ADD row for each user in User_location_day
-    logger_sched.info(f"--- wsh07 API add_user_loc_day: This table assumes the user is in the same location")
+    logger_sched.info(f"--- wsh08 API add_user_loc_day: This table assumes the user is in the same location")
 
     #for each user
     users = sess.query(Users).filter(Users.id != 2).all()

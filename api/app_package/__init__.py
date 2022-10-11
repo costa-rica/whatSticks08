@@ -1,5 +1,5 @@
 from flask import Flask
-from wsh_config import ConfigDev, ConfigProd
+from ws_config01 import ConfigDev, ConfigProd
 import logging
 from logging.handlers import RotatingFileHandler
 import os
@@ -32,7 +32,7 @@ logging.getLogger('werkzeug').setLevel(logging.DEBUG)
 logging.getLogger('werkzeug').addHandler(file_handler)
 #End set up logger
 
-logger_init.info(f'--- Starting wsh07 API ---')
+logger_init.info(f'--- Starting wsh08 API ---')
 
 
 
