@@ -11171,6 +11171,15 @@ section.blog {
   padding: var(--nav-height) 0 3rem 0;
   color: var(--bs-dark);
 }
+section.blog .date_div {
+  padding-top: 1rem;
+  display: flex;
+  flex: end;
+  font-size: 1.3rem;
+}
+section.blog .blog_sub {
+  padding-top: 3rem;
+}
 section.blog ul {
   padding: 0 60px 0 40px;
   margin: 0;

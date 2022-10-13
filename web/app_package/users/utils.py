@@ -121,20 +121,22 @@ def add_weather_history(weather_api_response, location_id):
 
 def oura_sleep_call(new_token):
 
-    url_sleep='https://api.ouraring.com/v1/sleep?start=2020-03-11&end=2020-03-21?'
+    # url_sleep='https://api.ouraring.com/v1/sleep?start=2020-03-11&end=2020-03-21?'
+    url_sleep = current_app.config['OURA_API_URL_BASE']
     response_sleep = requests.get(url_sleep, headers={"Authorization": "Bearer " + new_token})
     sleep_dict = response_sleep.json()
     print('response_code: ',response_sleep.status_code)
     if response_sleep.status_code !=200:
         print('*** Error With Token ****')
-        return 'Error with Token'
+        return f'Error {str(response_sleep.status_code)}'
     else:
         return sleep_dict
 
 def oura_sleep_db_add(sleep_dict, oura_token_id):
     # Add oura dictionary response to database
     startTime_db_oura_add = time.time()
-    deleted_elements = 0 
+    deleted_elements = 0
+    sessions_added = 0
     
     for sleep_session in sleep_dict['sleep']:
         sleep_session_exists = sess.query(Oura_sleep_descriptions).filter_by(
@@ -158,13 +160,22 @@ def oura_sleep_db_add(sleep_dict, oura_token_id):
                 bedtime_end = sleep_session['bedtime_end']
             ).first()
             if not existing_sleep_bedtime_end:
-                new_sleep = Oura_sleep_descriptions(**sleep_session)
-                sess.add(new_sleep)
-                sess.commit()
+                try:
+                    new_sleep = Oura_sleep_descriptions(**sleep_session)
+                    sess.add(new_sleep)
+                    sess.commit()
+                    sessions_added +=1
+                except:
+                    print(f"Failed to add oura data row for sleepend: {sleep_session.get('bedtime_end')}")
     
     executionTime = (time.time() - startTime_db_oura_add)
     print('Add Oura Data Execution time in seconds: ' + str(executionTime))
     print(f'Number of eleements deleted {deleted_elements}')
+    
+    return sessions_added
+
+
+    
 
 
 def location_exists(user):

@@ -73,12 +73,10 @@ def wordToJson(word_doc_file_name, word_doc_path, blog_name, date_published, des
             row_tag = 'h3'
             row_going_into_html = i[4:-5] 
         elif i[:3]=='--\t':
-            if i.find('font-size:20pt')!=-1:
-                row_tag_characters = ['--\t','font-size:20pt']
-                row_tag = 'ul and indent'
-                #this means font is 10 point in word, and indent
-                row_going_into_html = i[len('--\t<span style="font-size:20pt">'):-len('</span>')]
-    #             blog_dict[count]=['ul and indent',line]
+            if i.find('<b>')!=-1 or i.find('<i>') !=-1:
+                row_tag_characters = ['--\t','<b>','<i>']
+                row_tag = 'ul and safe'
+                row_going_into_html = i[2:]
             else:
                 #no indent
                 row_tag_characters = ['--\t']

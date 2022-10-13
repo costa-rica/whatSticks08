@@ -77,8 +77,13 @@ def blog_template(blog_name):
     post_id=int(blog_name[4:])
     post=sess.query(Postshtml).filter_by(post_id=post_id).all()
     blog_dict={i.word_row_id: [i.row_tag,i.row_going_into_html] for i in post}
+    # print(blog_dict)
+    post = sess.query(Posts).get(post_id)
+    date = post.date_published.strftime("%m/%d/%Y")
+    print('date:: ', date)
+    print(type(date))
 
-    return render_template('blog/template.html', blog_dict=blog_dict)
+    return render_template('blog/template.html', blog_dict=blog_dict, date=date)
 
 
 @blog.route("/post", methods=["GET","POST"])

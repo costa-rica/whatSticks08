@@ -116,10 +116,7 @@ def account():
     existing_oura_token =sess.query(Oura_token, func.max(
         Oura_token.id)).filter_by(user_id=current_user.id).first()[0]
     
-    # other_users_email_list = [i.email for i in sess.query(Users).filter(Users.id != current_user.id).all()]
-    # print('*****  Not current user  ***')
     print('Current User: ', current_user.email)
-    # print('All other users: ', other_users_email_list)
 
     user = sess.query(Users).filter_by(id = current_user.id).first()
     
@@ -156,8 +153,6 @@ def account():
             user_loc_days_date_dict = {i.date : i.id for i in user_loc_days}
 
             #1) User adds Oura_token data
-                #a cases oura_token was blank and not it is not
-                #b case oura_token was not blank and not it is different than before
             if new_token != existing_oura_token_str:#<-- if new token is different 
                 print('------ New token detected ------')
                 #1-1a) if user has token replace it
@@ -165,10 +160,10 @@ def account():
                     existing_oura_token.token = new_token
                     sess.commit()
                     oura_token_id = existing_oura_token.id
-
+                    print('Existing token')
                 #1-1b) else add new token
                 else:
-                    
+                    print('Completely new token')
                     new_oura_token = Oura_token(user_id = current_user.id,
                         token = new_token)
                     sess.add(new_oura_token)
@@ -180,67 +175,26 @@ def account():
                 oura_yesterday = sess.query(Oura_sleep_descriptions).filter_by(
                     user_id = current_user.id,
                     summary_date = yesterday_formatted).first()
-                
-                # --> 1-1b-1a) if yes, nothing 
 
+                # --> 1-1b-1b) if no data yesterday, call API
+                if not oura_yesterday and new_token != '':
+                    sleep_dict = oura_sleep_call(new_token)
 
-                # --> 1-1b-1b) if no, call API
-                if not oura_yesterday:
-                    print('---- no data detected yesterday for this user')
-                    print('oura_yesterday::')
-                    print(oura_yesterday)
-                    url_sleep=current_app.config['OURA_API_URL_BASE']#TODO: put this address in config
-                    response_sleep = requests.get(url_sleep, headers={"Authorization": "Bearer " + new_token})
-                    if response_sleep.status_code ==200:
-                        sleep_dict = response_sleep.json()
-
-                # --> 1-1b-2)Response data add to OUra_sleep_desciprtions for each session in response
-                        user_sleep_sessions = sess.query(Oura_sleep_descriptions).filter_by(user_id = current_user.id).all()
-                        user_sleep_end_list = [i.bedtime_end for i in user_sleep_sessions]
-                # -------> 1-1b-2a) if endsleep exists, skip
-                
-                # -------> 1-1b-2b) if  endsleep NOT exists, add row
-                        sessions_added = 0
-                        for session in sleep_dict.get('sleep'):
-                            if session.get('bedtime_end') not in user_sleep_end_list:
-
-                                for element in list(session.keys()):
-                                    if element not in Oura_sleep_descriptions.__table__.columns.keys():
-                                        del session[element]
-
-                                #CHECKED check this reference of new_oura_token works????? 
-                                #CHECKED 9/16/2022 and it seems to be working fine here
-                                session['token_id'] = oura_token_id
-                                session['user_id'] = current_user.id
-
-                                # new_oura_session_date = session['summary_date']
-                                # new_oura_session_score = session['score']
-                                
-                                try:
-                                    new_oura_session = Oura_sleep_descriptions(**session)
-                                    sess.add(new_oura_session)
-                                    sess.commit()
-                                    # oura_add_successfully = True
-                                    sessions_added +=1
-                                    
-                                except:
-                                    print(f"Failed to add oura data row for sleepend: {session.get('bedtime_end')}")
-                                    # oura_add_successfully = False
-                        flash(f'Successfully added {sessions_added} sleep sesions and updated user Oura Token', 'info')
+                    if isinstance(sleep_dict,dict):
+                        sessions_added = oura_sleep_db_add(sleep_dict, oura_token_id)
+                        flash(f'Successfully added {str(sessions_added)} sleep sesions and updated user Oura Token', 'info')
                     else:
-                        print("response_sleep.status_code::", response_sleep.status_code)
-                        print('did not add oura data for user becuause token is not accpeted by OUra')
-                        flash('Unable to get data from Oura API becuase does not recognize this token', 'warning')
+                        print(f'** Unable to get data from Oura API becuase {sleep_dict}')
+                        flash(f'Unable to get data from Oura API becuase {sleep_dict}', 'warning')
+                elif not new_token:
+                    flash('User oura token successfully removed','info')
+                    print('** removed oura token from user')
                 else:
                     print('-- date detected yesterday for this user')
                     print(oura_yesterday)
-                #### NO need to add oura to User_loc_day anymore --> primarily used for tracking users location, but since weather should follow we add weather as well.
-                #1-1b-3) Update/add to User_loc_day: For each user row in sleep_descript
-         
+       
 
             #2) User adds location data
-                #a case location was blank and now it is not anymore
-                #b case location is different than it was before
             if new_location != existing_coordinates:
                 if new_location == '':                          #<--- clear old locations
                     user.lat = None

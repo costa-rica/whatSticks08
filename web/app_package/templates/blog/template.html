@@ -6,8 +6,11 @@
 
 
 <section class="blog">
-
-    {% for key, line_list in blog_dict.items() %}
+    <div class="date_div">
+        {{ date }}
+    </div>
+    <div class="blog_sub">
+        {% for key, line_list in blog_dict.items() %}
 
         {% if line_list[0]=='new lines' %}
             <br/>
@@ -30,8 +33,8 @@
             </ul>
         </div>
 
-        {% elif line_list[0]=='ul and indent' %}
-        <div class="indent_paragraph">
+        {% elif line_list[0]=='ul and safe' %}
+        <div class="standard_paragraph">
             <ul>
                 <li>{{ line_list[1]|safe }}</li>
             </ul>
@@ -88,6 +91,8 @@
 
 
     {% endfor %}
+    </div>
+
 
 
 

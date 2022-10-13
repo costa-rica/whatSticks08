@@ -72,7 +72,7 @@ def get_locations():
             yesterday = datetime.today() - timedelta(days=1)
             yesterday_formatted =  yesterday.strftime('%Y-%m-%d')
             weather_history_records = sess.query(Weather_history).filter_by(
-                datetime = yesterday_formatted,
+                date_time = yesterday_formatted,
                 location_id = loc_id
             ).first()
             if weather_history_records:
@@ -110,7 +110,7 @@ def receive_weather_data():
         #check that weather does not already exist:
             row_exists = sess.query(Weather_history).filter_by(
                 location_id= loc_id,
-                datetime = hist_weather.get('datetime')).first()
+                date_time = hist_weather.get('datetime')).first()
             
             if not row_exists:
                 upload_dict ={ key: value for key, value in hist_weather.items()}
