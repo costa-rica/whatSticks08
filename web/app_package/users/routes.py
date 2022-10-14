@@ -34,7 +34,7 @@ def home():
     blog = {}
     keys = latest_post.__table__.columns.keys()
     blog = {key: getattr(latest_post, key) for key in keys}
-    blog['blog_name']="blog0001"
+    blog['blog_name']='blog'+str(latest_post.id).zfill(4)
     blog['date_published'] = blog['date_published'].strftime("%b %d %Y")
     print(blog)
 

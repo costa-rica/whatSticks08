@@ -22,6 +22,16 @@ blog = Blueprint('blog', __name__)
 @blog.route("/blog", methods=["GET"])
 def blog_index():
     # logger_terminal.info(f'****Blog Index Accessed*****')
+    # print('**** Accessing Blog Index ***')
+    # print('os.getcwd()')
+    # print(os.getcwd())
+    # blog_word_docs_database_folder = current_app.config.get('WORD_DOC_DIR')
+    # print('blog_word_docs_database_folder which is just curret_app.congif.get(worddoc_dir)')
+    # print(blog_word_docs_database_folder)
+    # print('os.path.abspath(blog_word_docs_database_folder)')
+    # print(os.path.abspath(blog_word_docs_database_folder))
+    # os.makedirs(blog_word_docs_database_folder)
+    # os.makedirs('../../databases/word_docs')
 
     #sorted list of published dates
     date_pub_list=[i.date_published for i in sess.query(Posts).all()]
@@ -110,7 +120,8 @@ def blog_post():
         # if /static/blog_word_docs don't exist      
         try:
             print('** Tried ot make word_doc_dir in db folder')
-            os.makedirs(os.path.abspath(blog_word_docs_database_folder))
+            os.makedirs(blog_word_docs_database_folder)
+            # os.makedirs('../../databases/word_docs')
             print('** Succesffully made word_doc_dir in db folder')
         except:
             # logger_terminal.info(f'database folder exists')
