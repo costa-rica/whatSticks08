@@ -11014,7 +11014,7 @@ section.navbar_section .navbar_custom .nav_left a {
 }
 section.navbar_section .navbar_custom .nav_left .dandd_logo {
   height: 4rem;
-  margin-top: -1rem;
+  margin-top: -0.5rem;
 }
 section.navbar_section .navbar_custom .middle_nav_div {
   display: none;
@@ -11119,51 +11119,79 @@ section.navbar_section .navbar_custom nav .dropdown:hover {
 }
 /*Blog Index*/
 section.blog_index {
-  padding: var(--nav-height) 0 0 1rem;
+  padding: var(--nav-height) 0 0 0;
 }
-section.blog_index h1 {
-  margin-bottom: 1rem;
-}
-section.blog_index ul {
-  list-style-type: none;
-  padding-left: 0;
-}
-section.blog_index ul a {
-  text-decoration: none;
-}
-section.blog_index li {
-  margin: 0 0 3rem 0;
-  border-radius: 2rem;
-  padding: 2rem;
-  width: 90%;
-}
-section.blog_index li:nth-child(odd) {
-  background-color: var(--bs-secondary);
-}
-section.blog_index li:nth-child(odd) a {
-  text-decoration: none;
-  color: black;
-}
-section.blog_index li:nth-child(even) {
-  background-color: var(--bs-primary);
-}
-section.blog_index .data_tool_div {
+section.blog_index .blog_index_content {
+  padding: 2rem 0 0 0;
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
 }
-section.blog_index .title_div {
+section.blog_index .blog_index_content h1 {
+  margin-bottom: 1rem;
+  width: 97%;
+}
+section.blog_index .blog_index_content .data_tools_list {
+  width: 95%;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+section.blog_index .blog_index_content ul {
+  list-style-type: none;
+  padding-left: 0;
+  width: 100%;
+}
+section.blog_index .blog_index_content ul a {
+  text-decoration: none;
+}
+section.blog_index .blog_index_content li {
+  margin: 0 0 3rem 0;
+  border-radius: 2rem;
+  padding: 0rem 2rem 2rem 2rem;
+  width: 100%;
+}
+section.blog_index .blog_index_content li .data_tool_div {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-areas: "date" "title" "description";
+}
+section.blog_index .blog_index_content li .title_div {
+  grid-area: title;
   display: flex;
   width: 100%;
+  padding-bottom: 1rem;
 }
-section.blog_index .title_div h2 {
+section.blog_index .blog_index_content li .title_div h2 {
   margin: 0;
 }
-section.blog_index .date_div {
+section.blog_index .blog_index_content li .date_div {
+  grid-area: date;
   margin: 0.5rem 0 0 0.5rem;
+  display: flex;
+  justify-content: end;
 }
-section.blog_index .data_tools_description {
+section.blog_index .blog_index_content li .data_tools_description {
+  grid-area: description;
   width: 100%;
-  padding-left: 1rem;
+}
+section.blog_index .blog_index_content li:nth-child(odd) {
+  background-color: var(--bs-secondary);
+}
+section.blog_index .blog_index_content li:nth-child(odd) h2 {
+  color: var(--bs-gray-700);
+}
+section.blog_index .blog_index_content li:nth-child(odd) a {
+  color: var(--bs-gray-700);
+}
+section.blog_index .blog_index_content li:nth-child(even) {
+  background-color: var(--bs-primary);
+}
+section.blog_index .blog_index_content li:nth-child(even) h2 {
+  color: var(--bs-gray-100);
+}
+section.blog_index .blog_index_content li:nth-child(even) a {
+  color: var(--bs-gray-100);
 }
 
 /*Blog Template*/
@@ -11461,17 +11489,13 @@ section.blog_edit .id_button_hide {
     max-width: 700px;
     height: auto;
   }
-  section.blog_index {
-    padding-left: 3rem;
+}
+@media only screen and (min-width: 1200px) {
+  section.blog_index .blog_index_content .data_tools_list {
+    width: 80%;
   }
-  section.blog_index h1 {
-    padding-top: 3rem;
-  }
-  section.blog_index .data_tools_list {
-    padding-left: 2rem;
-  }
-  section.blog_index .data_tool_div {
-    padding-left: 2rem;
+  section.blog_index .blog_index_content h1 {
+    padding: 0 0 0 5%;
   }
 }
 :root {
@@ -11499,61 +11523,111 @@ body {
 }
 
 /* HOME */
-.not_nav {
+section.home {
   padding-top: var(--nav-height);
+  display: flex;
+  justify-content: center;
+  /* BLOG Post on front page */
 }
-
-.home_body {
-  padding-left: 5%;
+section.home .home_body {
+  padding: 1rem 2.5% 0 2.5%;
 }
-
-.home_buttons {
-  margin: 0;
-  gap: 1rem;
-  padding: 2rem 0 0 0;
+section.home .home_buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
 }
-.home_buttons .div_button {
-  margin: 1rem 0 0 0;
+section.home .home_buttons .div_button {
+  padding: 1rem 0 1rem 0;
   width: 100%;
   border-radius: 3rem;
   font-size: 2.5rem;
-  padding: 3rem 0 3rem 0;
   display: flex;
   justify-content: center;
 }
-.home_buttons .home_register {
+section.home .home_buttons .home_register {
   background-color: var(--bs-primary);
   border: solid var(--bs-primary);
   border-width: 0.5rem;
   color: var(--bs-gray-200);
+  margin-bottom: 1rem;
+  text-decoration: none;
 }
-.home_buttons .home_login {
+section.home .home_buttons .home_login {
   color: var(--bs-primary);
   border: solid var(--bs-primary);
   border-width: 0.5rem;
+  text-decoration: none;
 }
-.home_buttons .home_login:hover {
+section.home .home_buttons .home_login:hover {
   border: 0.5rem solid var(--bs-gray-100);
 }
-.home_buttons .home_register:hover {
+section.home .home_buttons .home_register:hover {
   border: 0.5rem solid var(--bs-gray-100);
 }
-
-.div_writing {
+section.home .div_writing {
   padding-top: 1rem;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
 }
-.div_writing .writing_content {
-  width: 95%;
-  padding: 5%;
-  border-radius: 3em;
+section.home .div_writing .writing_content {
+  width: 100%;
+  padding: 2rem;
+  border-radius: 3rem;
   font-size: 1.5em;
   background-color: var(--bs-primary);
   border: 1px solid var(--bs-primary);
   border-width: 0.5em;
   color: var(--bs-gray-200);
+  margin-bottom: 2rem;
 }
-.div_writing .writing_content a {
+section.home .div_writing .writing_content a {
   color: var(--bs-gray-200);
+}
+section.home .div_writing h2 {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+section.home ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+section.home ul a {
+  text-decoration: none;
+}
+section.home li {
+  margin: 0 0 3rem 0;
+  border-radius: 2rem;
+  padding: 1rem 2rem 2rem 2rem;
+  width: 100%;
+  background-color: var(--bs-primary);
+  color: var(--bs-gray-200);
+}
+section.home li a {
+  text-decoration: none;
+  color: var(--bs-gray-200);
+}
+section.home .data_tool_div {
+  display: flex;
+  flex-wrap: wrap;
+}
+section.home .title_div {
+  display: flex;
+  width: 100%;
+}
+section.home .title_div h2 {
+  margin: 0;
+  color: var(--bs-gray-100);
+}
+section.home .date_div {
+  width: 100%;
+  display: flex;
+  justify-content: end;
+}
+section.home .data_tools_description {
+  width: 100%;
+  padding-left: 1rem;
 }
 
 /* Register */
@@ -11835,33 +11909,14 @@ section.youtube .div_writing .indent {
     margin-left: 40%;
   }
 }
-/* TODO: Try to move this into 768 */
-@media screen and (min-width: 720px) {
-  .home_body {
-    padding-left: 0;
-  }
-  .home_body .home_buttons {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-    padding: 3rem 0 1rem 0;
-  }
-  .home_body .home_buttons .div_button {
-    border-radius: 3em;
-    font-size: 2.5em;
-    max-width: 40%;
-    min-width: 10rem;
-    padding-top: 5rem;
-    padding-bottom: 5rem;
-    display: flex;
-    justify-content: center;
-  }
-  .home_body .div_writing {
-    padding-left: 5%;
-  }
-}
 @media screen and (min-width: 768px) {
+  section.home .home_body {
+    width: 90%;
+    padding-top: 3rem;
+  }
+  section.home .home_buttons .div_button {
+    padding: 2rem 0 2rem 0;
+  }
   section.register {
     display: flex;
     justify-content: center;
@@ -11878,6 +11933,27 @@ section.youtube .div_writing .indent {
   }
 }
 @media only screen and (min-width: 1080px) {
+  /* Home */
+  section.home .home_body {
+    width: 80%;
+    padding-top: 5rem;
+  }
+  section.home .home_buttons {
+    justify-content: space-between;
+  }
+  section.home .home_buttons .div_button {
+    width: 49%;
+    padding: 4rem 0 4rem 0;
+  }
+  section.home .home_buttons .home_register {
+    margin-bottom: 0;
+  }
+  section.home .div_writing {
+    padding-top: 4rem;
+  }
+  section.home .div_writing .data_tools_list {
+    width: 100%;
+  }
   /* Dashboard */
   section.dashboard .bokeh_div {
     min-width: 1080px;

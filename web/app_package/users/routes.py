@@ -3,7 +3,7 @@ from flask import render_template, url_for, redirect, flash, request, \
     abort, session, Response, current_app, send_from_directory
 import bcrypt
 from ws_models01 import sess, Users, login_manager, Oura_token, Locations, \
-    Weather_history, User_location_day, Oura_sleep_descriptions
+    Weather_history, User_location_day, Oura_sleep_descriptions, Posts
 from flask_login import login_required, login_user, logout_user, current_user
 import requests
 #Oura
@@ -28,6 +28,17 @@ users = Blueprint('users', __name__)
 def home():
     if current_user.is_authenticated:
         return redirect(url_for('dash.dashboard'))
+    
+    latest_post = sess.query(Posts).all()[-1]
+    print(latest_post)
+    blog = {}
+    keys = latest_post.__table__.columns.keys()
+    blog = {key: getattr(latest_post, key) for key in keys}
+    blog['blog_name']="blog0001"
+    blog['date_published'] = blog['date_published'].strftime("%b %d %Y")
+    print(blog)
+
+
     if request.method == 'POST':
         formDict = request.form.to_dict()
         if formDict.get('login'):
@@ -35,7 +46,7 @@ def home():
         elif formDict.get('register'):
             return redirect(url_for('users.register'))
 
-    return render_template('home.html')
+    return render_template('home.html', blog=blog)
 
 @users.route('/login', methods = ['GET', 'POST'])
 def login():

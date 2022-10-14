@@ -40,7 +40,7 @@ section.navbar_section {
             }
             .dandd_logo{
                 height:4rem;
-                margin-top: -1rem;
+                margin-top: -.5rem;
             }
         }
         .middle_nav_div {
@@ -150,71 +150,3 @@ section.navbar_section {
 }
 }
 
-
-
-
-// @media screen and (min-width: 576px) {
-//     section.navbar_section {
-//         .navbar_custom {
-//             height: 8rem;
-
-//             .left_and_middle {
-//                 display: flex;
-//                 justify-content: center;
-//                 align-items: center;
-//                 // background-color: olive;
-//                 width: 80%;
-
-//                 .nav_left {
-//                     flex: 1;
-
-//                     .dandd_logo {
-//                         height: 7rem;
-//                         margin-top: -1rem;
-//                     }
-//                 }
-
-//                 .middle_nav_div {
-//                     flex: 5;
-//                     // justify-content: center;
-//                     text-align: center;
-//                     display: inline;
-//                     color: white;
-
-//                     h1 {
-//                         font-size: 4vh;
-//                         margin-bottom: 0;
-//                         // padding-bottom:0;
-//                     }
-
-//                 }
-//             }
-//             nav{width: 30%;}
-//             .mobile-menu {
-//                 // position: absolute;
-//                 // cursor: pointer;
-//                 right: 1rem;
-//                 // top: 30px;
-//                 height: 100%;
-
-//             }
-//         }
-//     }
-// }
-
-
-// @media screen and (min-width: 620px) {
-//     section.navbar_section {
-//         .navbar_custom {
-//             .left_and_middle {
-//                 .middle_nav_div {
-//                     h1 {
-//                         font-size: 6vh;
-//                     }
-//                 }
-//             }
-//             nav{width: 25%;}
-//         }
-
-//     }
-// }

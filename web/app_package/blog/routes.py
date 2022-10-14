@@ -37,7 +37,9 @@ def blog_index():
     for i in sorted_date_pub_list:
         for post in posts_list:
             if post.date_published == i:
-                temp_dict={key: (getattr(post,key) if key!='date_published' else getattr(post,key).strftime("%m/%d/%Y") ) for key in items}
+                # temp_dict={key: (getattr(post,key) if key!='date_published' else getattr(post,key).strftime("%b %d %Y") ) for key in items}
+                temp_dict = {key: getattr(post, key) for key in items}
+                temp_dict['date_published'] = temp_dict['date_published'].strftime("%b %d %Y")
                 # temp_dict={key: getattr(post,key)  for key in items}
                 temp_dict['blog_name']='blog'+str(post.id).zfill(4)
                 # temp_dict={key: (getattr(post,key) if key=='date_published' else getattr(post,key)[:9] ) for key in items}
@@ -108,7 +110,7 @@ def blog_post():
         # if /static/blog_word_docs don't exist      
         try:
             print('** Tried ot make word_doc_dir in db folder')
-            os.makedirs(blog_word_docs_database_folder)
+            os.makedirs(os.path.abspath(blog_word_docs_database_folder))
             print('** Succesffully made word_doc_dir in db folder')
         except:
             # logger_terminal.info(f'database folder exists')
