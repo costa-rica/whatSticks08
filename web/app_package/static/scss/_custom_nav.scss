@@ -2,13 +2,10 @@
 /* Flash */
 .flash_custom_parent {
     position: relative;
-
     .alert_custom {
         position: absolute;
         top: var(--nav-height);
-
         width: 100%;
-
         .close_right {
             float: right;
         }
@@ -104,49 +101,41 @@ section.navbar_section {
 
 @media screen and (min-width: 768px) {
     section.navbar_section {
-    .navbar_custom{
-        height: 9rem;
-        .left_and_middle{
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            // background-color: olive;
-            padding: 0 0 1rem 0;
-            width: 80%;
-            .nav_left{
-                flex:1;
-                .dandd_logo{
-                    height:7rem;
-                    margin-top: -1rem;
+        .navbar_custom{
+            height: 9rem;
+            .left_and_middle{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 0 0 1rem 0;
+                width: 80%;
+                .nav_left{
+                    flex:1;
+                    .dandd_logo{
+                        height:7rem;
+                    }
+                }
+                .middle_nav_div {
+                    flex:5;
+                    text-align: center;
+                    display: inline;
+                    h1{
+                        font-size: 4rem;
+                        margin-bottom:0;
+                        color: var(--bs-gray-200)
+                    }
+                    h3 {color: var(--bs-gray-200)}
                 }
             }
-            .middle_nav_div {
-                flex:5;
-                // justify-content: center;
-                text-align: center;
-                display: inline;
-                // color: white;
-                h1{
-                    font-size: 4rem;
-                    margin-bottom:0;
-                    color: var(--bs-gray-200)
-                    // padding-bottom:0;
-                }
-                h3 {color: var(--bs-gray-200)}
-                
+            nav{
+                width:30%;
+                max-width:20rem;
             }
-        }
-        nav{
-            width:30%;
-            max-width:20rem;
-        }
-
-        .mobile-menu{
-            right:1rem;
-            height: 100%;
-
+            .mobile-menu{
+                right:1rem;
+                height: 100%;
+            }
         }
     }
-}
 }
 

@@ -7,7 +7,8 @@ from sqlalchemy import func
 import json
 from flask_login import login_user, current_user, logout_user, login_required
 # from app_package.blog.forms import BlogPostForm
-from app_package.blog.utils import last_first_list_util, wordToJson
+from app_package.blog.utils import last_first_list_util, wordToJson, \
+    word_docs_dir_util
 from ws_models01 import sess, Users, Posts, Postshtml, Postshtmltagchars
 # from app_package import db
 from sqlalchemy import func 
@@ -21,17 +22,9 @@ blog = Blueprint('blog', __name__)
     
 @blog.route("/blog", methods=["GET"])
 def blog_index():
-    # logger_terminal.info(f'****Blog Index Accessed*****')
-    # print('**** Accessing Blog Index ***')
-    # print('os.getcwd()')
-    # print(os.getcwd())
-    # blog_word_docs_database_folder = current_app.config.get('WORD_DOC_DIR')
-    # print('blog_word_docs_database_folder which is just curret_app.congif.get(worddoc_dir)')
-    # print(blog_word_docs_database_folder)
-    # print('os.path.abspath(blog_word_docs_database_folder)')
-    # print(os.path.abspath(blog_word_docs_database_folder))
-    # os.makedirs(blog_word_docs_database_folder)
-    # os.makedirs('../../databases/word_docs')
+
+    #make sure word doc folder exits with in static folder
+    word_docs_dir_util()
 
     #sorted list of published dates
     date_pub_list=[i.date_published for i in sess.query(Posts).all()]
@@ -57,43 +50,17 @@ def blog_index():
                 posts_list.remove(post)
 
     return render_template('blog/index.html', blog_dicts_for_index=blog_dict_for_index_sorted)
-    
+
+
 @blog.route("/blog/<blog_name>", methods=["GET"])
 def blog_template(blog_name):
-
-    #Two blog word doc and blog images folders
-
-    #Reason for two folders is :
-    # 1)blogs could be uploaded directly from working site or
-    #2) blogs could up uploaded from another vm when a new version of ws comes out.
-    
-    try:# make static blog images folder
-        os.makedirs(os.path.join(current_app.static_folder, 'images','blog_images'))
-    except:
-        print('blog images folder exists')
-    
-    static_images_list = os.listdir(os.path.join(current_app.static_folder, 'images','blog_images'))
-
-    if blog_name in static_images_list:
-        print('found blog_name!!')
-    else:# blog images not in the static images so get them from the database folder
-        #from
-        blog_word_docs_database_folder = current_app.config.get('WORD_DOC_DIR')
-        db_blog_dir = os.path.join(blog_word_docs_database_folder,'images',blog_name)
-        #to
-        static_blog_dir = os.path.join(current_app.static_folder, 'images','blog_images', blog_name)
-        shutil.copytree(db_blog_dir, static_blog_dir)
-
 
     blog_dict={}
     post_id=int(blog_name[4:])
     post=sess.query(Postshtml).filter_by(post_id=post_id).all()
     blog_dict={i.word_row_id: [i.row_tag,i.row_going_into_html] for i in post}
-    # print(blog_dict)
     post = sess.query(Posts).get(post_id)
     date = post.date_published.strftime("%m/%d/%Y")
-    print('date:: ', date)
-    print(type(date))
 
     return render_template('blog/template.html', blog_dict=blog_dict, date=date)
 
@@ -103,30 +70,18 @@ def blog_template(blog_name):
 def blog_post():
     if current_user.id != 1:
         return redirect(url_for('blog.blog_index'))
+    
+    #check, create directories between db/ and static/
+    word_docs_dir_util()
 
     blog_word_docs_database_folder = current_app.config.get('WORD_DOC_DIR')
-    print('** blog_word_docs_database_folder')
-    print(blog_word_docs_database_folder)
-
 
     if request.method == 'POST' and 'word_doc_name' in request.files:
         formDict = request.form.to_dict()
-        # filesDict = request.files.to_dict()
-        print('formDict:::', formDict)
 
         uploaded_file = request.files['word_doc_name']
         word_doc_file_name = uploaded_file.filename
         
-        # if /static/blog_word_docs don't exist      
-        try:
-            print('** Tried ot make word_doc_dir in db folder')
-            os.makedirs(blog_word_docs_database_folder)
-            # os.makedirs('../../databases/word_docs')
-            print('** Succesffully made word_doc_dir in db folder')
-        except:
-            # logger_terminal.info(f'database folder exists')
-            print('database folder exists')
-
         uploaded_file.save(os.path.join(blog_word_docs_database_folder,word_doc_file_name))
 
         if len(sess.query(Posts).all())>0:
@@ -134,11 +89,8 @@ def blog_post():
         else:
             blog_name = 'blog0001'
 
-
         post_id = wordToJson(word_doc_file_name, blog_word_docs_database_folder, blog_name,
             formDict.get('date_published'), description=formDict.get('blog_description'))
-        
-        
 
         flash(f'Post added successfully!', 'success')
         return redirect(url_for('blog.blog_edit',post_id=post_id ))
@@ -150,13 +102,15 @@ def blog_post():
 def blog_user_home():
     if current_user.id != 1:
         return redirect(url_for('blog.blog_index'))
-    # logger_terminal.info(f'**Accessed:: blog_user_home')
+
+    #check, create directories between db/ and static/
+    word_docs_dir_util()
+
     all_posts=sess.query(Posts).all()
     posts_details_list=[]
     for i in all_posts:
         posts_details_list.append([i.id, i.title, i.date_published.strftime("%m/%d/%Y"),
             i.description, i.word_doc])
-
     
     column_names=['id', 'blog_title', 'edit','date_published',
          'blog_description','word_doc']
@@ -208,13 +162,11 @@ def blog_delete(post_id):
     except:
         print(f'{blog_name} directory in database direcgtory does not exist')
 
-
     sess.query(Posts).filter(Posts.id==post_id).delete()
     sess.query(Postshtml).filter(Postshtml.post_id==post_id).delete()
     sess.query(Postshtmltagchars).filter(Postshtmltagchars.post_id==post_id).delete()
     sess.commit()
 
-    # logger_blog.info(f'blog post deleted for: {post_id}')
     return redirect(url_for('blog.blog_user_home'))
 
 
@@ -228,8 +180,6 @@ def blog_edit():
     post = sess.query(Posts).filter_by(id = post_id).first()
     postHtml_list = sess.query(Postshtml).filter_by(post_id = post_id).all()[1:]
     published_date = post.date_published.strftime("%Y-%m-%d")
-    # print('published_date::', type(published_date), published_date)
-
 
     # get list of word_row_id for post_id
     # put last object in first object's place
@@ -276,7 +226,6 @@ def blog_edit():
             sess.query(Postshtmltagchars).filter_by(post_id = post_id,word_row_id = row_to_delete).delete()
             sess.commit()
         
-
         if formDict.get('start_cons_line') and formDict.get('end_cons_line'):
             #This will merge multiple rows if the start and end inputs are filled
             row_to_keep = int(formDict.get('start_cons_line'))
@@ -300,7 +249,6 @@ def blog_edit():
         else:
             #Merge one button pressed
             #This will merge the selected tbutton tothe row above
-
             for i in formDict.keys():# i is the merge button value
                 if i[:1]=='_':
                     print('i that will become formDict_key: ', i, len(i))

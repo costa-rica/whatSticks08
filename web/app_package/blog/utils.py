@@ -5,7 +5,38 @@ from flask import current_app
 from flask_login import current_user
 import datetime
 from ws_models01 import Posts, Postshtml, Postshtmltagchars, sess
-# from app_package import db
+import shutil
+
+
+def word_docs_dir_util():
+    blog_word_docs_database_folder = current_app.config.get('WORD_DOC_DIR')
+    posts=sess.query(Posts).all()
+
+    static_blog_images = os.path.join(current_app.static_folder, 'images','blog_images')
+
+    try:# make static blog images folder
+        os.makedirs(static_blog_images)
+    except:
+        print('blog images folder exists')
+
+    #for each post try to make a blog000[post/id] directory within static/images/blog_images
+    for post in posts:
+        try:
+            os.makedirs(os.path.join(static_blog_images, 'blog' + str(post.id).zfill(4)))
+        except:
+            print(f"dir for {'blog' + str(post.id).zfill(4)} already exists")
+
+    #for each blog000[id] dir fill it with whatever exists in db/word_doc/blog_images/blog000[id]
+    db_blog_images_dir = os.path.join(blog_word_docs_database_folder,'blog_images')
+    if os.path.exists(db_blog_images_dir):
+        print(' ***** db_blog_images_dir exists and we have no problem !!! :)')
+        db_blog_images_dir_list = [os.path.join(blog_word_docs_database_folder,'blog_images', blog_image_dir) for blog_image_dir in os.listdir(db_blog_images_dir)]
+        for blog_image_dir in db_blog_images_dir_list:# <-- loop through all blog folders in db_blog_images
+            for file in os.listdir(blog_image_dir):# <-- loop htrough all files in that folder
+                static_blog_dir = os.path.join(static_blog_images, os.path.basename(blog_image_dir))
+                if file not in os.listdir(static_blog_images):# <-- if file not found in static folder add it
+                    print(f'{file} not found')
+                    shutil.copyfile(os.path.join(blog_image_dir,file), os.path.join(static_blog_images,os.path.basename(blog_image_dir),file))
 
 
 def last_first_list_util(post_id):
@@ -15,19 +46,8 @@ def last_first_list_util(post_id):
     merge_row_id_list = last_item+word_row_id_list[:-1]
     return merge_row_id_list
 
-#this def is used for going back previous 2 html_rows
-def last_first_list_util_2():
-    merge_row_id_list = last_first_list_util()
-    # word_row_id_list = [i.word_row_id for i in posts_html_list]
-    last_item = merge_row_id_list[-1:]
-    merge_row_id_list_2 = last_item+merge_row_id_list[:-1]
-    return merge_row_id_list_2
-
 
 def wordToJson(word_doc_file_name, word_doc_path, blog_name, date_published, description=''):
-    
-    # print('word_doc_path:::', word_doc_path)
-    # print('word_doc_file_name:::', word_doc_file_name)
 
     doc_result_html = docx2python(os.path.join(word_doc_path,word_doc_file_name),html=True)
     
@@ -56,11 +76,7 @@ def wordToJson(word_doc_file_name, word_doc_path, blog_name, date_published, des
         Posts.word_doc == word_doc_file_name).first()
     post_id = new_post.id
 
-
     count=1
-
-    # print('***doc_result_html.document[0] (in wordToJson)*** ')
-    # print(doc_result_html.document[0])
 
     for i in doc_result_html.document[0][0][0]:
 
@@ -93,12 +109,6 @@ def wordToJson(word_doc_file_name, word_doc_path, blog_name, date_published, des
             row_tag = 'image'
             # row_going_into_html = f"{ word_doc_path }/images/{'blog'+str(post_id).zfill(4)}/{i[10:-4]}"
             row_going_into_html = f"../static/images/blog_images/{'blog'+str(post_id).zfill(4)}/{i[10:-4]}"
-            # print('**************')
-            # print('row_going_into_html::: ',row_going_into_html)
-            # row_going_into_html = os.path.join(word_doc_path, 'images', 'blog'+str(post_id).zfill(4), i[10:-4])
-    #         image_name= i[10:-4]
-    #         html_image_path=f"../static/images/{blog_name}/{image_name}"
-    #         blog_dict[count]=['image',html_image_path]
         elif i[:3]=='<u>' or i[:3]=='<a ':
             row_tag_characters = [i[:3]]
             row_tag = 'html'
@@ -163,7 +173,6 @@ def wordToJson(word_doc_file_name, word_doc_path, blog_name, date_published, des
             sess.commit()
         
         count+=1
-
 
     #Update new_post title
     new_post.title=sess.query(Postshtml).filter_by(word_row_id=1, post_id=post_id).first().row_going_into_html
