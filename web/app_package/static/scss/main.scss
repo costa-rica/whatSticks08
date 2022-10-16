@@ -25,6 +25,38 @@ body {
     min-width: 75px;
     background-color: var(--bs-secondary);
 }
+.common_primary_div {
+    border: 1px solid var(--bs-primary);
+    border-width: .5em;
+    border-radius: 3rem;
+    background-color: var(--bs-primary);
+    padding: 1rem 0 1rem 0;
+    color: var(--bs-gray-200);
+}
+
+/* Modal */
+/* THIS WOrks with apple modal - middle */
+.modal {
+    text-align: center;
+    vertical-align: middle;
+  }
+// .modal:before {
+//     display: inline-block;
+//     vertical-align: middle;
+//     content: " ";
+//     height: 100%;
+// }
+.modal-dialog{
+    display: inline-block;
+    text-align: left;
+    vertical-align: middle;
+    position:relative;
+}
+.modal-body{
+    background-color: var(--bs-gray-500);
+}
+
+
 
 /* HOME */
 section.home {
@@ -103,7 +135,7 @@ section.home {
     }
     
     
-    /* BLOG Post on front page */
+    /* HOME page -- blog post */
     
     ul{
         list-style-type: none;
@@ -174,7 +206,8 @@ section.register {
         }
 
         .register_text {
-            min-width: 95%;
+            // min-width: 90%;
+            width: 95%;
         }
         .element_right {
             display: flex;
@@ -211,74 +244,134 @@ section.register {
     }
 }
 
-/* Account */
-section.account{
-    .account_body {
-        padding: var(--nav-height) 5px 0 10px;
-        // background-color: purple;
-        // .title {
-        //     // padding: 50px 0 0 25px;
-        //     font-size: 3em;
-        // }
-        .register_form {
-            // display:flex;
-            // padding-top: 5%;
-            border-radius: 3em;
-            padding: 50px 0 50px 5px;
-            margin: 0 0 0 30px;
-            // text-align: center;
-            font-size: 1.5em;
-            background-color: var(--bs-primary);
+
+/* Account_new */
+section.account {
+    padding-top: var(--nav-height);
+    display: flex;
+    justify-content: center;
+    font-size: 1.5em;
+    .account_body{
+        width:95%;
+        .title {font-size: 2.5rem;}
+
+        .account_grid {
             border: 1px solid var(--bs-primary);
             border-width: .5em;
-            // color: white;
+            border-radius: 3rem;
+            background-color: var(--bs-primary);
+            padding: 1rem 0 1rem 0;
             color: var(--bs-gray-200);
+
+            .register_text{
+                width: 100%;
+            }
 
             .btn_to_label{
                 min-width: 110px;
-                margin-left:-10px;
-                // outline: none; 
                 border: none;
                 background:none;
-                // color: white;
                 color: var(--bs-gray-200);
             }
-
-            label {
-                min-width: 110px;
-            }
-            .register_text {
-                min-width: 85%;
-            }
             .element_right{
-                
-                padding:0 20% 10% 0;
-                .btn_custom01 {
-                    float: right;
-                    font-size: 1.5em;
-                }
-                .password_checkbox {
-                    float: right;
-                }
-                .btn_loc {
-                    border-radius: 3em;
-                    float: right;
-                }
+                padding-top:.25rem;
+                display:flex;
+                justify-content: end;
             }
+            .submit_element_right{
+                display:flex;
+                justify-content:end;
+                input{
+                    font-size: 1.5rem;
+                }
+                
+            }
+        }
+    }
+}
+.accounts_modal:before{
+    display: inline-block;
+    vertical-align: middle;
+    content: " ";
+    height: 25%;
 
+}
+
+
+
+/* Add apple */
+section.apple{
+    padding-top: var(--nav-height);
+
+    .title{
+        padding:1rem 0 0 .5rem;
+        width:100%;
+        font-size: 2rem;
+    }
+    .apple_body{
+        padding: 1rem 0 0 0;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        font-size: 1.5em;
+        gap:1rem;
+        .add_xml_div{
+            width: 95%;
+            .you_have_x_apple_records{
+                padding: 0 0 2rem 0;
+            }
+            .apple_file{
+                width: 90%;
+                padding-left: 1rem;
+            }
+            .submit_element_right{
+                display:flex;
+                justify-content: end;
+                padding: 1rem 0 0 0;
+            }
+        }
+        .find_apple_export{
+            width: 95%;
+            h2{
+                color: var(--bs-gray-200)
+            }
+            ol {
+                margin-left: 1rem;
+            }
+        }
+
+        .delete_apple{
+            width:95%;
+            .submit_element_right{
+                display:flex;
+                justify-content: end;
+                padding: 1rem 0 0 0;
+            }
         }
     }
 }
 
-/* Modal Account */
-.modal-body{
-    background-color: var(--bs-gray-500);
+.apple_modal:before{
+    display: inline-block;
+    vertical-align: middle;
+    content: " ";
+    height: 100%;
+}
+
+.apple_modal_dialog {
+    width: 50%;
+    .yes_delete_apple{
+        display: flex;
+        justify-content: center;
+    }
 }
 
 
 
-/* Dashbaord */
 
+
+
+/* Dashbaord */
 section.dashboard {
     padding-top: var(--nav-height);
     .table_and_chart {
@@ -446,6 +539,13 @@ section.youtube {
 
 
 @media screen and (min-width: 576px) {
+    .accounts_modal:before{
+        display: inline-block;
+        vertical-align: middle;
+        content: " ";
+        height: 70%;
+    
+    }
     section.register{
         display: flex;
         justify-content: center;
@@ -463,15 +563,12 @@ section.youtube {
                     font-size: 2rem;
                     width:100%;
                     label{
-                        min-width: 25%;
-                        width:25%;
-                        // text-align: center;
-                        
+                        min-width:10rem;
+                        width:10rem;
                     }
                     .register_text{
-                        min-width: 60%;
-                        max-width: 70%;
-                        width:67%
+                        // min-width: 0;
+                        width:65%;
                     }
                 }
                 .element_right{
@@ -483,26 +580,27 @@ section.youtube {
                         .btn_custom02{margin-left:40%;}
                     }
                 }
-                
             }
         }
 
     }
 }
 
-
-
 @media screen and (min-width: 768px) {
-section.home {
-    .home_body{
-        width: 90%;
-        padding-top: 3rem;
-    }
-    .home_buttons{
-        .div_button{padding:2rem 0 2rem 0;}
+    section.home {
+        .home_body{
+            width: 90%;
+            padding-top: 3rem;
+        }
+        .home_buttons{
+            .div_button{padding:2rem 0 2rem 0;}
+        }
+
     }
 
-}
+    section.account{
+        font-size:1.7rem;
+    }
 
     section.register{
         display: flex;
@@ -512,6 +610,17 @@ section.home {
             max-width:90rem;
             justify-content: center;
             align-items: center;
+            // .register_form{
+            //     .email_combo{
+            //     .register_text{
+                    
+
+            //             width:80%;
+            //             // background-color: green;
+            //         }
+
+            //     }
+            // }
         }
     }
 
@@ -525,9 +634,6 @@ section.home {
         }
     }
 }
-
-
-
 
 
 //For Screen wider than 1080
@@ -556,6 +662,53 @@ section.home {
             .data_tools_list {width:100%;}
         }
     
+    }
+
+    /* Accounts */
+    section.account{
+        .account_body{
+            padding: 2rem 0 2rem 0;
+            max-width: 100rem;
+            .title {
+                font-size: 3rem;
+                padding:0 0 2rem 0;
+            }
+            .account_grid{
+                display: grid;
+                grid-template-columns: 15rem 1fr;
+                gap: 1.5rem;
+                .btn_to_label {
+                    display: flex;
+                    padding-left:0;
+                }
+                .element_right{
+                    padding-top:1rem;
+                }
+            }
+        }
+    }
+
+    /* Login */
+    section.register{
+        // display: flex;
+        // justify-content: center;
+        .register_body{
+            // width: 75%;
+            // max-width:90rem;
+            // justify-content: center;
+            // align-items: center;
+            .register_form{
+                .email_combo{
+                .register_text{
+                    
+
+                        width:75%;
+                        // background-color: green;
+                    }
+
+                }
+            }
+        }
     }
 
 

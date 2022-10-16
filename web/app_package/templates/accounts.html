@@ -8,43 +8,55 @@
             Account page
         </div>
 
-        <div class="register_form">
-            <form method="POST" action="">
+        <form method="POST" action="" >
+        <div class="account_grid">
+            
+                
+                <div class="label"><label>Email:</label></div>
+                <input type="text" name="email" class="register_text" value="{{ email }}">
 
-                <label for="email">Email:</label>
-                <input type="text" id="email" name="email" class="register_text" value="{{ email }}"><br><br>
 
-
-                <!-- <label for="oura_token">Oura Ring Token:</label> -->
                 <button type="button" class="btn_to_label" data-bs-toggle="modal" 
                     data-bs-target="#activityModal"><u>Oura Ring Token: </u>
                 </button>
                 <input type="text" id="oura_token" name="oura_token" class="register_text"
-                    value="{{ oura_token }}"><br><br>
-
+                    value="{{ oura_token }}">
+                
+                
+                    
                 <label for="location_text">Location:</label>
-                <input type="text" id="location_text" name="location_text" class="register_text"
+                <div class="location_input_and_check">
+
+                    <input type="text" id="location_text" name="location_text" class="register_text"
                     placeholder="Latitude, Longitude" value = "{{ location_coords }}">
 
-                <div class="element_right">
-                    <input class="btn btn-secondary btn_loc" type="button" value=""
-                        onclick="getLocation()">
-                    <label class="form-check-label password_checkbox">
-                        Get Location
-                    </label>
-                </div><br><br>
+                    <div class="element_right">
+                        <input class="btn btn-secondary btn_loc" type="button" value=""
+                            onclick="getLocation()">
+                        <label class="form-check-label password_checkbox">
+                            Get Location
+                        </label>
+                    </div>
 
-                <label>Apple Health Data</label>
-                <input type="file" name="apple_halth_data" accept=".zip" class="form-control">
-                <br><br>
-
-                <div class="element_right">
-                    <input type="submit" value="Update" class="btn btn-secondary btn_custom01">
                 </div>
 
-            </form>
+                
+
+
+                <br>
+
+                <div class="submit_element_right">
+                    <input type="submit" value="Update" class="btn btn-secondary btn_custom01">
+                </div>
+             
+                <br>
+                <div class="submit_element_right">
+                    <a href="{{ url_for('users.add_apple') }}" class="btn btn-secondary btn_custom01">Add Apple Health Data </a>
+                </div>
+            
 
         </div>
+    </form>
 
     </div>
 
@@ -52,7 +64,7 @@
 
 
 
-<div class="modal fade" id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true">
+<div class="modal fade accounts_modal" id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
@@ -69,10 +81,7 @@
 
             
         </div>
-        <!-- <div class="modal-footer">
-          <button type="button" class="btn btn-primary">Save changes</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        </div> -->
+
       </div>
     </div>
   </div>

@@ -55,6 +55,9 @@ def blog_index():
 @blog.route("/blog/<blog_name>", methods=["GET"])
 def blog_template(blog_name):
 
+    #make sure word doc folder exits with in static folder
+    word_docs_dir_util()
+    
     blog_dict={}
     post_id=int(blog_name[4:])
     post=sess.query(Postshtml).filter_by(post_id=post_id).all()

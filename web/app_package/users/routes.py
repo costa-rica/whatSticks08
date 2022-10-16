@@ -12,12 +12,17 @@ from app_package.users.utils import oura_sleep_call, oura_sleep_db_add
 from app_package.users.utils import call_location_api, location_exists, \
     add_weather_history, gen_weather_url, add_new_location
 #Email
-from app_package.users.utils import send_reset_email, send_confirm_email
+from app_package.users.utils import send_reset_email
+#Apple
+from app_package.users.utilsApple import make_dir_util, new_apple_data_util
 
 from sqlalchemy import func
 from datetime import datetime, timedelta
 import time
-
+# import os
+# from werkzeug.utils import secure_filename
+# import zipfile
+# import shutil
 
 salt = bcrypt.gensalt()
 
@@ -160,8 +165,11 @@ def account():
             user = sess.query(Users).filter_by(id = current_user.id).first()
             yesterday = datetime.today() - timedelta(days=1)
             yesterday_formatted =  yesterday.strftime('%Y-%m-%d')
-            user_loc_days = sess.query(User_location_day).filter_by(user_id=current_user.id).all()
-            user_loc_days_date_dict = {i.date : i.id for i in user_loc_days}
+            # user_loc_days = sess.query(User_location_day).filter_by(user_id=current_user.id).all()
+            # user_loc_days_date_dict = {i.date : i.id for i in user_loc_days}
+            # print(formDict)
+
+
 
             #1) User adds Oura_token data
             if new_token != existing_oura_token_str:#<-- if new token is different 
@@ -294,8 +302,47 @@ def account():
             return redirect(url_for('users.account'))
             
     
-    return render_template('account.html', page_name = page_name, email=email,
+    return render_template('accounts.html', page_name = page_name, email=email,
          oura_token = oura_token, location_coords = existing_coordinates)
+
+
+
+
+
+@users.route('/add_apple', methods=["GET", "POST"])
+def add_apple():
+    apple_records = "{:,}".format(100000)
+
+    # make APPLE_HEALTH_DIR
+    apple_health_dir = current_app.config.get('APPLE_HEALTH_DIR')
+    make_dir_util(apple_health_dir)
+
+    if request.method == 'POST':
+        if current_user.id ==2:
+            flash("Guest cannot change data. Register and then add data.", "info")
+            return redirect(url_for('users.add_apple'))
+        filesDict = request.files
+        apple_halth_data = filesDict.get('apple_health_data')
+        #4) Apple health data
+        if apple_halth_data:
+            print(' ****** WE have some apple data ****')
+            
+            new_apple_data_util(apple_health_dir, apple_halth_data)
+
+            flash('succesfully saved apple export', 'info')
+            return redirect(url_for('users.add_apple'))
+
+
+
+    return render_template('add_apple.html', apple_records=apple_records)
+
+
+
+
+
+
+
+
 
 
 
@@ -346,6 +393,7 @@ def reset_token(token):
             return redirect(url_for('users.reset_token', token=token))
 
     return render_template('reset_request.html', page_name='Reset Password')
+
 
 @users.route('/about_us')
 def about_us():

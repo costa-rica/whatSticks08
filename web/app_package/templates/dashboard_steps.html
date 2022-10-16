@@ -1,0 +1,76 @@
+{% extends "_layout.html" %}
+{% block main %}
+
+<section class="dashboard">
+    <div class = "title">
+        {{ page_name }}
+      </div>
+    <div class="table_and_chart">
+
+        <div class="table_div_outer">
+
+            <div class="table_flex">
+                <form method="POST">
+                <div class="table_div">
+                    <div class="header header_var">
+                        Sleep Score
+                    </div>
+                
+                    <div class="header header_corr">
+                        Correlation
+                    </div>
+                
+                
+                    <div class="row_header">
+                        {% if buttons_dict['avg_temp']!=1 %}
+                        <button type="submit" name="avg_temp" value="1" class="btn btn-primary btn_header">Avg Daily Temperature</button>
+                        {% else %}
+                        <button type="submit" name="avg_temp" value="1" class="btn btn-outline-primary btn_header">Avg Daily Temperature</button>
+                        {% endif %}
+                    </div>
+                    <div class="row_value">
+                        {% if buttons_dict['avg_temp']!=1 %}
+                        {{ corr_dict['avg_temp'] }}
+                      {% else %}
+                        Off
+                      {% endif %}
+                    </div>
+                    <div class="row_header">
+                        {% if buttons_dict['cloudiness']!=1 %}
+                        <button type="submit" value="1" name="cloudiness" class="btn btn-primary btn_header">Cloud Cover</button>
+                        {% else %}
+                        <button type="submit" value="1" name="cloudiness" class="btn btn-outline-primary btn_header " >Cloud Cover</button>
+                        {% endif %}
+                    </div>
+                    <div class="row_value">
+                    {% if buttons_dict['cloudiness']!=1 %}
+                        {{ corr_dict['cloudiness'] }}
+                    {% else %}
+                        Off
+                    {% endif %}
+                    </div>
+                </div>
+            </form>
+            </div>
+
+
+        </div>
+    
+        <div class="bokeh_div">
+            {{ div_b|safe }}
+        </div>
+
+    </div>
+
+
+
+</section>
+{{ script_b|safe }}
+
+
+<script src="../static/bokeh/bokeh-2.4.3.min.js" crossorigin="anonymous"></script>
+<script type="text/javascript">
+    Bokeh.set_log_level("info");
+</script>
+
+{% endblock %}

@@ -9,8 +9,21 @@ import time
 from flask_mail import Message
 from app_package import mail
 from ws_config01 import ConfigDev
+import os
+from werkzeug.utils import secure_filename
+import zipfile
+import shutil
 
 config = ConfigDev()
+
+
+
+def make_dir_util(dir):
+    try:
+        os.makedirs(dir)
+    except:
+        print(f'{dir} already exists')
+
 
 def send_reset_email(user):
     token = user.get_reset_token()
@@ -34,7 +47,6 @@ def send_confirm_email(email):
         recipients=[email])
     msg.body = 'You have succesfully been registered to What-Sticks.'
     mail.send(msg)
-
 
 
 def call_location_api(user):
@@ -174,8 +186,6 @@ def oura_sleep_db_add(sleep_dict, oura_token_id):
     
     return sessions_added
 
-
-    
 
 
 def location_exists(user):

@@ -3,13 +3,16 @@ from flask import Blueprint
 from flask import render_template, url_for, redirect, flash, request, abort, session,\
     Response, current_app, send_from_directory
 # import bcrypt
-from ws_models01 import sess, Users, login_manager, User_location_day, Oura_sleep_descriptions
+from ws_models01 import sess, Users, login_manager, User_location_day, Oura_sleep_descriptions, \
+    Apple_health_export
 from flask_login import login_required, login_user, logout_user, current_user
 from datetime import datetime
 import numpy as np
 import pandas as pd
 from app_package.dashboard.utilsChart import make_oura_df, make_user_loc_day_df, \
-    make_weather_hist_df, make_chart, buttons_dict_util
+    make_weather_hist_df, make_chart, buttons_dict_util, buttons_dict_update_util
+from app_package.dashboard.utilsSteps import apple_hist_steps, oura_hist_util, \
+    user_loc_day_util
 import json
 import os
 
@@ -26,6 +29,7 @@ def dashboard():
 
     any_loc_hist = sess.query(User_location_day).filter_by(user_id=USER_ID).all()
     any_oura_hist = sess.query(Oura_sleep_descriptions).filter_by(user_id=USER_ID).all()
+    any_apple_data = sess.query(Apple_health_export).filter_by(user_id=USER_ID).all()
 
     corr_dict = False
 
@@ -38,8 +42,21 @@ def dashboard():
         buttons_dict = buttons_dict_util(formDict, dashboard_routes_dir, buttons_dict)
 
     if os.path.exists(os.path.join(dashboard_routes_dir,'buttons_dict.json')):
-        with open(os.path.join(dashboard_routes_dir,'buttons_dict.json')) as json_file:
-            buttons_dict = json.load(json_file)
+        buttons_dict = buttons_dict_update_util(dashboard_routes_dir)
+
+
+    # 1) if user has apple_history
+        # call def apple_hist_steps_util() -> returns df[date, sum_of_steps]
+
+    # 2) if user has oura_history
+    # call def oura_hist_steps_utils() -> returns df[date, oura_sleep_score] 
+
+    # 3) if user has location
+    # call def weather_hist() -> returns df[date, temperature, cloudiness]
+
+    # 4) if users has all three
+
+
 
     if len(any_loc_hist) > 0 or len(any_oura_hist) > 0:
         
@@ -144,3 +161,81 @@ def dashboard():
         df = ''
 
         return render_template('dashboard_empty.html', page_name=page_name)
+
+
+
+
+@dash.route('/dashboard_steps', methods=['GET', 'POST'])
+@login_required
+def dash_steps():
+    page_name = "Steps Dashboard"
+
+
+    USER_ID = current_user.id if current_user.id !=2 else 1
+
+    # any_loc_hist = sess.query(User_location_day).filter_by(user_id=USER_ID).all()
+    # any_oura_hist = sess.query(Oura_sleep_descriptions).filter_by(user_id=USER_ID).all()
+    # any_apple_data = sess.query(Apple_health_export).filter_by(user_id=USER_ID).all()
+
+
+    # Buttons for dashboard table to toggle on/off correlations
+    buttons_dict = {}
+    dashboard_routes_dir = os.path.join(os.getcwd(),'app_package', 'dashboard')
+    if request.method == 'POST':
+        formDict = request.form.to_dict()
+
+        buttons_dict = buttons_dict_util(formDict, dashboard_routes_dir, buttons_dict)
+
+    if os.path.exists(os.path.join(dashboard_routes_dir,'buttons_dict.json')):
+        buttons_dict = buttons_dict_update_util(dashboard_routes_dir)
+
+    # df_dict = {}
+    corr_dict = {}
+
+    # 1) if user has apple_history
+        # call def apple_hist_steps_util() -> returns df[date, sum_of_steps]
+    df_apple_steps = apple_hist_steps(USER_ID)
+   
+
+    # 2) if user has oura_history
+    # call def oura_hist_steps_utils() -> returns df[date, oura_sleep_score]
+    df_oura_sleep = oura_hist_util(USER_ID)
+
+
+    # 3) if user has location
+    # call def weather_hist() -> returns df[date, temperature, cloudiness]
+    df_weather = user_loc_day_util(USER_ID)
+
+
+    #4) steps and temp and cloudiness
+    if df_apple_steps != False and df_weather != False:
+        df_steps_temp = pd.merge(df_apple_steps, df_weather, how='left', left_on=['date'], right_on=['date'])
+        df_steps_temp = df_steps_temp[df_steps_temp['temp'].notna()]
+
+        corr_dict['avg_temp'] = round(df_steps_temp['temp'].corr(df_steps_temp['steps']),2)
+        corr_dict['cloudiness'] = round(df_steps_temp['cloudcover'].corr(df_steps_temp['steps']),2)
+
+    #6) steps and sleep
+    if df_apple_steps != False and df_oura_sleep != False:
+        df_steps_oura = pd.merge(df_apple_steps, df_oura_sleep, how='left', left_on=['date'], right_on=['date'])
+        df_steps_oura = df_steps_oura[df_oura_sleep['score'].notna()]
+
+        corr_dict['sleep_score'] = round(df_steps_oura['score'].corr(df_steps_oura['steps']),2)
+
+    #TODO: Merge steps, oura, and temperature into one df using most dates possible
+    #TODO: convert to lists for each serires
+    # TODO: pass the series to make chart and basically copy what the sleep make_chart function does
+
+
+    #Use list data to make chart
+    script_b, div_b, cdn_js_b = "","",""
+    corr_dict =""
+
+    return render_template('dashboard_steps.html', page_name=page_name,
+        script_b = script_b, div_b = div_b, cdn_js_b = cdn_js_b, corr_dict=corr_dict, buttons_dict=buttons_dict)
+    # else:
+    #     df = ''
+
+    #     return render_template('dashboard_steps.html', page_name=page_name)
+
+    # return render_template('dashboard_steps.html', page_name=page_name)

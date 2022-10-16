@@ -1,0 +1,77 @@
+{% extends "_layout.html" %}
+{% block main %}
+
+<section class="apple">
+
+    <div class="title">
+        Apple Health Data (iPhone Export)
+    </div>
+
+    <div class="apple_body">
+
+
+        <div class="common_primary_div add_xml_div ">
+            <form method="POST" action="" enctype="multipart/form-data">
+                <div class="you_have_x_apple_records">
+                    You have {{ apple_records }} records from apple health stored in WS.
+                </div>
+                <label>Apple Health Data</label>
+                <div class="apple_file">
+                    <input type="file" name="apple_health_data" accept=".zip" class="form-control">
+                </div>
+                
+
+                <div class="submit_element_right">
+                    <input type="submit" value="Add Apple Data" class="btn btn-secondary btn_custom01">
+                </div>
+
+
+            </form>
+        </div>
+
+        <div class="common_primary_div find_apple_export">
+            <h2>How do I find my Apple Health data on my iPhone?</h2>
+            <ol>
+                <li>Go to apple health</li>
+                <li>Click on top right icon</li>
+                <li>Bottom of screen has export apple health</li>
+            </ol>
+        </div>
+
+        <div class="common_primary_div delete_apple">
+            Remove your Apple Health data from WS database
+            <div class="submit_element_right">
+                <button class="btn btn-danger btn_custom01" data-bs-toggle="modal" 
+                data-bs-target="#areYouSureModal">Delete</button>
+            </div>
+        </div>
+
+
+
+    </div>
+</section>
+        
+
+<div class="modal fade apple_modal" id="areYouSureModal" tabindex="-1" aria-labelledby="areYouSureModalLabel" aria-hidden="true">
+    <div class="modal-dialog apple_modal_dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Are you sure?</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true"></span>
+          </button>
+        </div>
+        <div class="modal-body">
+
+            <div class="yes_delete_apple">
+                <input type="submit" value="Delete Apple Data from WS" class="btn btn-danger btn_custom01">
+            </div>
+            
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+{% endblock %}

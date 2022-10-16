@@ -12,6 +12,9 @@ import pandas as pd
 from flask_login import current_user
 import json
 
+
+
+
 def make_oura_df():
     # STEP 1: OURA
     #get all summary_dates and scores from oura
@@ -55,7 +58,6 @@ def make_weather_hist_df():
     df_weath_hist = df_weath_hist[['date_time','temp','location_id', 'cloudcover']]
     df_weath_hist = df_weath_hist.rename(columns=({'date_time': 'date'}))
     return df_weath_hist
-
 
 
 # def make_chart(dates_list, temp_data_list, sleep_data_list):
@@ -142,3 +144,14 @@ def buttons_dict_util(formDict, dashboard_routes_dir, buttons_dict):
         convert_file.write(json.dumps(buttons_dict))
     print('Wrote buttons_dict.json')
     return buttons_dict
+
+
+def buttons_dict_update_util(dashboard_routes_dir):
+    with open(os.path.join(dashboard_routes_dir,'buttons_dict.json')) as json_file:
+        buttons_dict = json.load(json_file)
+    return buttons_dict
+
+def return_daily_temp_series(df):
+    #This def accepts a df with days temp
+    #Returns two series: days and temp
+    pass

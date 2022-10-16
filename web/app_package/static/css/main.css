@@ -11521,12 +11521,39 @@ body {
   background-color: var(--bs-secondary);
 }
 
+.common_primary_div {
+  border: 1px solid var(--bs-primary);
+  border-width: 0.5em;
+  border-radius: 3rem;
+  background-color: var(--bs-primary);
+  padding: 1rem 0 1rem 0;
+  color: var(--bs-gray-200);
+}
+
+/* Modal */
+/* THIS WOrks with apple modal - middle */
+.modal {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.modal-dialog {
+  display: inline-block;
+  text-align: left;
+  vertical-align: middle;
+  position: relative;
+}
+
+.modal-body {
+  background-color: var(--bs-gray-500);
+}
+
 /* HOME */
 section.home {
   padding-top: var(--nav-height);
   display: flex;
   justify-content: center;
-  /* BLOG Post on front page */
+  /* HOME page -- blog post */
 }
 section.home .home_body {
   padding: 1rem 2.5% 0 2.5%;
@@ -11648,7 +11675,7 @@ section.register .register_form .email_combo {
   padding: 0 0 1rem 0.2rem;
 }
 section.register .register_form .register_text {
-  min-width: 95%;
+  width: 95%;
 }
 section.register .register_form .element_right {
   display: flex;
@@ -11679,51 +11706,119 @@ section.register .register_form .element_right .element_right_sub .forgot_passwo
   color: var(--bs-gray-200);
 }
 
-/* Account */
-section.account .account_body {
-  padding: var(--nav-height) 5px 0 10px;
-}
-section.account .account_body .register_form {
-  border-radius: 3em;
-  padding: 50px 0 50px 5px;
-  margin: 0 0 0 30px;
+/* Account_new */
+section.account {
+  padding-top: var(--nav-height);
+  display: flex;
+  justify-content: center;
   font-size: 1.5em;
-  background-color: var(--bs-primary);
+}
+section.account .account_body {
+  width: 95%;
+}
+section.account .account_body .title {
+  font-size: 2.5rem;
+}
+section.account .account_body .account_grid {
   border: 1px solid var(--bs-primary);
   border-width: 0.5em;
+  border-radius: 3rem;
+  background-color: var(--bs-primary);
+  padding: 1rem 0 1rem 0;
   color: var(--bs-gray-200);
 }
-section.account .account_body .register_form .btn_to_label {
+section.account .account_body .account_grid .register_text {
+  width: 100%;
+}
+section.account .account_body .account_grid .btn_to_label {
   min-width: 110px;
-  margin-left: -10px;
   border: none;
   background: none;
   color: var(--bs-gray-200);
 }
-section.account .account_body .register_form label {
-  min-width: 110px;
+section.account .account_body .account_grid .element_right {
+  padding-top: 0.25rem;
+  display: flex;
+  justify-content: end;
 }
-section.account .account_body .register_form .register_text {
-  min-width: 85%;
+section.account .account_body .account_grid .submit_element_right {
+  display: flex;
+  justify-content: end;
 }
-section.account .account_body .register_form .element_right {
-  padding: 0 20% 10% 0;
-}
-section.account .account_body .register_form .element_right .btn_custom01 {
-  float: right;
-  font-size: 1.5em;
-}
-section.account .account_body .register_form .element_right .password_checkbox {
-  float: right;
-}
-section.account .account_body .register_form .element_right .btn_loc {
-  border-radius: 3em;
-  float: right;
+section.account .account_body .account_grid .submit_element_right input {
+  font-size: 1.5rem;
 }
 
-/* Modal Account */
-.modal-body {
-  background-color: var(--bs-gray-500);
+.accounts_modal:before {
+  display: inline-block;
+  vertical-align: middle;
+  content: " ";
+  height: 25%;
+}
+
+/* Add apple */
+section.apple {
+  padding-top: var(--nav-height);
+}
+section.apple .title {
+  padding: 1rem 0 0 0.5rem;
+  width: 100%;
+  font-size: 2rem;
+}
+section.apple .apple_body {
+  padding: 1rem 0 0 0;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: 1.5em;
+  gap: 1rem;
+}
+section.apple .apple_body .add_xml_div {
+  width: 95%;
+}
+section.apple .apple_body .add_xml_div .you_have_x_apple_records {
+  padding: 0 0 2rem 0;
+}
+section.apple .apple_body .add_xml_div .apple_file {
+  width: 90%;
+  padding-left: 1rem;
+}
+section.apple .apple_body .add_xml_div .submit_element_right {
+  display: flex;
+  justify-content: end;
+  padding: 1rem 0 0 0;
+}
+section.apple .apple_body .find_apple_export {
+  width: 95%;
+}
+section.apple .apple_body .find_apple_export h2 {
+  color: var(--bs-gray-200);
+}
+section.apple .apple_body .find_apple_export ol {
+  margin-left: 1rem;
+}
+section.apple .apple_body .delete_apple {
+  width: 95%;
+}
+section.apple .apple_body .delete_apple .submit_element_right {
+  display: flex;
+  justify-content: end;
+  padding: 1rem 0 0 0;
+}
+
+.apple_modal:before {
+  display: inline-block;
+  vertical-align: middle;
+  content: " ";
+  height: 100%;
+}
+
+.apple_modal_dialog {
+  width: 50%;
+}
+.apple_modal_dialog .yes_delete_apple {
+  display: flex;
+  justify-content: center;
 }
 
 /* Dashbaord */
@@ -11867,6 +11962,12 @@ section.youtube .div_writing .indent {
 }
 
 @media screen and (min-width: 576px) {
+  .accounts_modal:before {
+    display: inline-block;
+    vertical-align: middle;
+    content: " ";
+    height: 70%;
+  }
   section.register {
     display: flex;
     justify-content: center;
@@ -11887,13 +11988,11 @@ section.youtube .div_writing .indent {
     width: 100%;
   }
   section.register .register_body .register_form .email_combo label {
-    min-width: 25%;
-    width: 25%;
+    min-width: 10rem;
+    width: 10rem;
   }
   section.register .register_body .register_form .email_combo .register_text {
-    min-width: 60%;
-    max-width: 70%;
-    width: 67%;
+    width: 65%;
   }
   section.register .register_body .register_form .element_right {
     padding-right: 8%;
@@ -11915,6 +12014,9 @@ section.youtube .div_writing .indent {
   }
   section.home .home_buttons .div_button {
     padding: 2rem 0 2rem 0;
+  }
+  section.account {
+    font-size: 1.7rem;
   }
   section.register {
     display: flex;
@@ -11952,6 +12054,31 @@ section.youtube .div_writing .indent {
   }
   section.home .div_writing .data_tools_list {
     width: 100%;
+  }
+  /* Accounts */
+  section.account .account_body {
+    padding: 2rem 0 2rem 0;
+    max-width: 100rem;
+  }
+  section.account .account_body .title {
+    font-size: 3rem;
+    padding: 0 0 2rem 0;
+  }
+  section.account .account_body .account_grid {
+    display: grid;
+    grid-template-columns: 15rem 1fr;
+    gap: 1.5rem;
+  }
+  section.account .account_body .account_grid .btn_to_label {
+    display: flex;
+    padding-left: 0;
+  }
+  section.account .account_body .account_grid .element_right {
+    padding-top: 1rem;
+  }
+  /* Login */
+  section.register .register_body .register_form .email_combo .register_text {
+    width: 75%;
   }
   /* Dashboard */
   section.dashboard .bokeh_div {
