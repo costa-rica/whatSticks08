@@ -12,9 +12,10 @@ import pandas as pd
 from app_package.dashboard.utilsChart import make_oura_df, make_user_loc_day_df, \
     make_weather_hist_df, make_chart, buttons_dict_util, buttons_dict_update_util
 from app_package.dashboard.utilsSteps import apple_hist_steps, oura_hist_util, \
-    user_loc_day_util
+    user_loc_day_util, make_steps_chart_util, df_utils
 import json
 import os
+import time
 
 
 dash = Blueprint('dash', __name__)
@@ -33,16 +34,38 @@ def dashboard():
 
     corr_dict = False
 
+    #make static/dashbuttons
+    dash_btns_dir = os.path.join(current_app.static_folder,'dash_btns')
+    sleep_dash_btns_dir = os.path.join(dash_btns_dir, 'sleep')
+    
+    try:
+        os.makedirs(sleep_dash_btns_dir)
+    except:
+        print('folder exisits')
+
     # Buttons for dashboard table to toggle on/off correlations
     buttons_dict = {}
-    dashboard_routes_dir = os.path.join(os.getcwd(),'app_package', 'dashboard')
+    user_btn_json_name = f'user{current_user.id}_buttons_dict.json'
     if request.method == 'POST':
         formDict = request.form.to_dict()
 
-        buttons_dict = buttons_dict_util(formDict, dashboard_routes_dir, buttons_dict)
+        buttons_dict = buttons_dict_util(formDict, sleep_dash_btns_dir, buttons_dict, user_btn_json_name)
+        return redirect(url_for('dash.dash_steps', same_page=True))
 
-    if os.path.exists(os.path.join(dashboard_routes_dir,'buttons_dict.json')):
-        buttons_dict = buttons_dict_update_util(dashboard_routes_dir)
+    if os.path.exists(os.path.join(sleep_dash_btns_dir,user_btn_json_name)):
+        buttons_dict = buttons_dict_update_util(sleep_dash_btns_dir, user_btn_json_name)
+
+
+    # # Buttons for dashboard table to toggle on/off correlations
+    # buttons_dict = {}
+    # dashboard_routes_dir = os.path.join(os.getcwd(),'app_package', 'dashboard')
+    # if request.method == 'POST':
+    #     formDict = request.form.to_dict()
+
+    #     buttons_dict = buttons_dict_util(formDict, dashboard_routes_dir, buttons_dict)
+
+    # if os.path.exists(os.path.join(dashboard_routes_dir,'buttons_dict.json')):
+    #     buttons_dict = buttons_dict_update_util(dashboard_routes_dir, user_btn_json_name)
 
 
     # 1) if user has apple_history
@@ -167,69 +190,128 @@ def dashboard():
 
 @dash.route('/dashboard_steps', methods=['GET', 'POST'])
 @login_required
-def dash_steps():
+def dash_steps(same_page =False):
     page_name = "Steps Dashboard"
-
+    same_page =request.args.get('same_page')
 
     USER_ID = current_user.id if current_user.id !=2 else 1
 
-    # any_loc_hist = sess.query(User_location_day).filter_by(user_id=USER_ID).all()
-    # any_oura_hist = sess.query(Oura_sleep_descriptions).filter_by(user_id=USER_ID).all()
-    # any_apple_data = sess.query(Apple_health_export).filter_by(user_id=USER_ID).all()
-
+    #make static/dashbuttons
+    dash_btns_dir = os.path.join(current_app.static_folder,'dash_btns')
+    step_dash_btns_dir = os.path.join(dash_btns_dir, 'steps')
+    
+    try:
+        os.makedirs(step_dash_btns_dir)
+    except:
+        print('folder exisits')
 
     # Buttons for dashboard table to toggle on/off correlations
     buttons_dict = {}
-    dashboard_routes_dir = os.path.join(os.getcwd(),'app_package', 'dashboard')
+    user_btn_json_name = f'user{current_user.id}_buttons_dict.json'
     if request.method == 'POST':
         formDict = request.form.to_dict()
 
-        buttons_dict = buttons_dict_util(formDict, dashboard_routes_dir, buttons_dict)
+        buttons_dict = buttons_dict_util(formDict, step_dash_btns_dir, buttons_dict, user_btn_json_name)
+        return redirect(url_for('dash.dash_steps', same_page=True))
 
-    if os.path.exists(os.path.join(dashboard_routes_dir,'buttons_dict.json')):
-        buttons_dict = buttons_dict_update_util(dashboard_routes_dir)
+    if os.path.exists(os.path.join(step_dash_btns_dir,user_btn_json_name)):
+        buttons_dict = buttons_dict_update_util(step_dash_btns_dir, user_btn_json_name)
 
-    # df_dict = {}
+    # Get raw df's with all the exisiting data
+    # df_apple_steps, df_oura_sleep, df_weather = df_utils(USER_ID, step_dash_btns_dir, same_page)
+    df_dict = df_utils(USER_ID, step_dash_btns_dir, same_page)
+
+
+
+    list_of_user_data = [df_name  for df_name, df in df_dict.items() if not isinstance(df, bool)]
+    print(' -- list of user data --')
+    print(list_of_user_data)
+    # not_false_in_tuple = 0
+    # for _, df in df_dict.items():
+    #     print(df)
+    #     if not isinstance(df,bool):
+            
+    #         not_false_in_tuple += 1
+    #         print('--- at least once this should fire?')
+    
+    # if user has no data return empty dashboard page
+    if len(list_of_user_data) == 0:
+        return render_template('dashboard_empty.html', page_name=page_name)
+
+    tuple_count = 0
+    for _, df in df_dict.items():
+        if not isinstance(df, bool) and tuple_count==0:
+            df_all = df
+            tuple_count += 1
+            # print('---- use these column names::: ')
+            # print(df_all.columns)
+        elif not isinstance(df, bool):
+            df_all = pd.merge(df_all, df, how='outer')
+            print('---- use these column names::: ')
+            print(df_all.columns)
+    
+    # print(df_all.head())
+    # df_all = pd.merge(df_apple_steps, df_oura_sleep, how='outer')
+    # df_all = pd.merge(df_all, df_weather, how='outer')
+    df_all = df_all.dropna(axis=1, how='all')#remove columns with all missing values
+    if df_all.dtypes['date'].str =='<M8[ns]':# when read from .json file df's are datetime, but should be strings
+        print('convert to string')
+        df_all['date'] = df_all['date'].dt.strftime('%Y-%m-%d')
+
+    print('-- df_all --')
+    # print(df_all.head())
+
+    # make each column into a list series
+    series_lists_dict = {}
+    for col_name in df_all.columns:
+        if col_name == 'date':
+            series_lists_dict[col_name] =[datetime.strptime(i,'%Y-%m-%d') for i in df_all['date'].to_list() ]
+        else:
+            series_lists_dict[col_name] = [i for i in df_all[col_name]]
+    
+    # send to chart making
+    script_b, div_b, cdn_js_b = make_steps_chart_util(series_lists_dict, buttons_dict)
+
+    # 2) calcualute correlations for items that have correlations based on matching dates
+    # Correlation: if more than one df and there is STEPS data then make correlation dictioanry
     corr_dict = {}
-
-    # 1) if user has apple_history
-        # call def apple_hist_steps_util() -> returns df[date, sum_of_steps]
-    df_apple_steps = apple_hist_steps(USER_ID)
-   
-
-    # 2) if user has oura_history
-    # call def oura_hist_steps_utils() -> returns df[date, oura_sleep_score]
-    df_oura_sleep = oura_hist_util(USER_ID)
-
-
-    # 3) if user has location
-    # call def weather_hist() -> returns df[date, temperature, cloudiness]
-    df_weather = user_loc_day_util(USER_ID)
+    if len(list_of_user_data)>1 and 'steps' in list_of_user_data:
+        list_of_user_data.remove('steps')
+        for df_name in list_of_user_data:
+            df = pd.merge(df_dict['steps'], df_dict[df_name], how='outer')
+            df = df[df[df_name].notna()]
+            print(' --- df_head:: ', df_name)
+            print(df.head())
+            corr_dict[df_name] = round(df[df_name].corr(df['steps']),2)
+    
+    print(' --- buttons_dict ---')
+    print(buttons_dict)
 
 
-    #4) steps and temp and cloudiness
-    if df_apple_steps != False and df_weather != False:
-        df_steps_temp = pd.merge(df_apple_steps, df_weather, how='left', left_on=['date'], right_on=['date'])
-        df_steps_temp = df_steps_temp[df_steps_temp['temp'].notna()]
+    # if not isinstance(df_apple_steps, bool) and not isinstance(df_weather,bool):
+    #     # df = pd.merge(df_apple_steps, df_weather, how='left', left_on=['date'], right_on=['date'])
+    #     df = pd.merge(df_apple_steps, df_weather, how='outer')
 
-        corr_dict['avg_temp'] = round(df_steps_temp['temp'].corr(df_steps_temp['steps']),2)
-        corr_dict['cloudiness'] = round(df_steps_temp['cloudcover'].corr(df_steps_temp['steps']),2)
+    #     df = df[df['temp'].notna()]
+    #     corr_dict['avg_temp'] = round(df['temp'].corr(df['steps']),2)
+    #     corr_dict['cloudiness'] = round(df['cloudcover'].corr(df['steps']),2)
 
-    #6) steps and sleep
-    if df_apple_steps != False and df_oura_sleep != False:
-        df_steps_oura = pd.merge(df_apple_steps, df_oura_sleep, how='left', left_on=['date'], right_on=['date'])
-        df_steps_oura = df_steps_oura[df_oura_sleep['score'].notna()]
+    # # Correlation: steps and sleep
+    # if not isinstance(df_apple_steps, bool) and not isinstance(df_oura_sleep,bool):
+    # # if df_apple_steps != False and df_oura_sleep != False:
+    #     # df = pd.merge(df_apple_steps, df_oura_sleep, how='left', left_on=['date'], right_on=['date'])
+    #     df = pd.merge(df_apple_steps, df_oura_sleep, how='outer')
+    #     df = df[df['score'].notna()]
 
-        corr_dict['sleep_score'] = round(df_steps_oura['score'].corr(df_steps_oura['steps']),2)
-
-    #TODO: Merge steps, oura, and temperature into one df using most dates possible
-    #TODO: convert to lists for each serires
-    # TODO: pass the series to make chart and basically copy what the sleep make_chart function does
+    #     corr_dict['sleep_score'] = round(df['score'].corr(df['steps']),2)
 
 
-    #Use list data to make chart
-    script_b, div_b, cdn_js_b = "","",""
-    corr_dict =""
+    # #Use list data to make chart
+    # script_b, div_b, cdn_js_b = "","",""
+    # # corr_dict =""
+    # corr_dict['avg_temp'] = 88
+    # corr_dict['cloudiness'] = 78
+    # corr_dict['sleep_score'] = 99
 
     return render_template('dashboard_steps.html', page_name=page_name,
         script_b = script_b, div_b = div_b, cdn_js_b = cdn_js_b, corr_dict=corr_dict, buttons_dict=buttons_dict)

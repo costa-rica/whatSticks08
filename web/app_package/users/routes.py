@@ -3,7 +3,7 @@ from flask import render_template, url_for, redirect, flash, request, \
     abort, session, Response, current_app, send_from_directory
 import bcrypt
 from ws_models01 import sess, Users, login_manager, Oura_token, Locations, \
-    Weather_history, User_location_day, Oura_sleep_descriptions, Posts
+    Weather_history, User_location_day, Oura_sleep_descriptions, Posts, Apple_health_export
 from flask_login import login_required, login_user, logout_user, current_user
 import requests
 #Oura
@@ -75,7 +75,7 @@ def login():
                 if bcrypt.checkpw(password.encode(), user.password):
                     print("match")
                     login_user(user)
-                    flash('Logged in succesfully', 'info')
+                    # flash('Logged in succesfully', 'info')
 
                     return redirect(url_for('dash.dashboard'))
                 else:
@@ -86,7 +86,7 @@ def login():
             print('GUEST EMAIL::: ', current_app.config['GUEST_EMAIL'])
             user = sess.query(Users).filter_by(id=2).first()
             login_user(user)
-            flash('Logged in succesfully as Guest', 'info')
+            # flash('Logged in succesfully as Guest', 'info')
 
             return redirect(url_for('dash.dashboard'))
         else:
@@ -269,6 +269,7 @@ def account():
                     #2-1b-2) use response to populate yesterday's history in WEather_history
                                 print('** Adding weather history')
                                 add_weather_history(weather_api_response, location_id)
+                                flash('Succesfully added user location', 'info')
                             else:
                                 print('** FAILING to adding weather history')
                                 flash(f"Unable to add weather history - problem communicating with Visual Crossing", 'warning')
@@ -311,7 +312,10 @@ def account():
 
 @users.route('/add_apple', methods=["GET", "POST"])
 def add_apple():
-    apple_records = "{:,}".format(100000)
+    
+    existing_records = sess.query(Apple_health_export).filter_by(user_id=current_user.id).all()
+    apple_records = "{:,}".format(len(existing_records))
+
 
     # make APPLE_HEALTH_DIR
     apple_health_dir = current_app.config.get('APPLE_HEALTH_DIR')
@@ -327,9 +331,9 @@ def add_apple():
         if apple_halth_data:
             print(' ****** WE have some apple data ****')
             
-            new_apple_data_util(apple_health_dir, apple_halth_data)
+            new_rec_count = new_apple_data_util(apple_health_dir, apple_halth_data)
 
-            flash('succesfully saved apple export', 'info')
+            flash(f"succesfully saved {'{:,}'.format(new_rec_count)} records from apple export", 'info')
             return redirect(url_for('users.add_apple'))
 
 

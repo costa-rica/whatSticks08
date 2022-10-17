@@ -13,42 +13,63 @@
                 <form method="POST">
                 <div class="table_div">
                     <div class="header header_var">
-                        Sleep Score
+                        
                     </div>
                 
                     <div class="header header_corr">
-                        Correlation
+                        Correlation <br> with Daily Steps Taken
                     </div>
                 
                 
                     <div class="row_header">
-                        {% if buttons_dict['avg_temp']!=1 %}
-                        <button type="submit" name="avg_temp" value="1" class="btn btn-primary btn_header">Avg Daily Temperature</button>
+                        {% if buttons_dict['temp']!=1 %}
+                        <button type="submit" name="temp" value="1" class="btn btn-primary btn_header">Avg Daily Temperature</button>
                         {% else %}
-                        <button type="submit" name="avg_temp" value="1" class="btn btn-outline-primary btn_header">Avg Daily Temperature</button>
+                        <button type="submit" name="temp" value="1" class="btn btn-outline-primary btn_header">Avg Daily Temperature</button>
                         {% endif %}
                     </div>
                     <div class="row_value">
-                        {% if buttons_dict['avg_temp']!=1 %}
-                        {{ corr_dict['avg_temp'] }}
+                        {% if buttons_dict['temp']!=1 %}
+                        {{ corr_dict['temp'] }}
                       {% else %}
                         Off
                       {% endif %}
                     </div>
+
+
                     <div class="row_header">
-                        {% if buttons_dict['cloudiness']!=1 %}
-                        <button type="submit" value="1" name="cloudiness" class="btn btn-primary btn_header">Cloud Cover</button>
+                        {% if buttons_dict['cloudcover']!=1 %}
+                        <button type="submit" value="1" name="cloudcover" class="btn btn-primary btn_header">Cloud Cover</button>
                         {% else %}
-                        <button type="submit" value="1" name="cloudiness" class="btn btn-outline-primary btn_header " >Cloud Cover</button>
+                        <button type="submit" value="1" name="cloudcover" class="btn btn-outline-primary btn_header " >Cloud Cover</button>
                         {% endif %}
                     </div>
                     <div class="row_value">
-                    {% if buttons_dict['cloudiness']!=1 %}
-                        {{ corr_dict['cloudiness'] }}
+                    {% if buttons_dict['cloudcover']!=1 %}
+                        {{ corr_dict['cloudcover'] }}
                     {% else %}
                         Off
                     {% endif %}
                     </div>
+
+                    <div class="row_header">
+                        {% if buttons_dict['sleep'] != 1 %}
+                        <button type="submit" name="sleep" value="1" class="btn btn-primary btn_header">Sleep</button>
+                        {% else %}
+                        <button type="submit" name="sleep" value="1" class="btn btn-outline-primary btn_header">Sleep</button>
+                        {% endif %}
+                    </div>
+                    <div class="row_value">
+                        {% if buttons_dict['sleep'] != 1 %}
+                            {{ corr_dict['sleep'] }}
+                        {% else %}
+                            Off
+                        {% endif %}
+                    </div>
+
+
+
+
                 </div>
             </form>
             </div>

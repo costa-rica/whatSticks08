@@ -53,7 +53,7 @@ def new_apple_data_util(apple_health_dir, apple_halth_data):
         input_data = xmltodict.parse(xml_file.read())
     records_list = input_data['HealthData']['Record']
     df = pd.DataFrame(records_list)
-    df['user_id'] = 1
+    df['user_id'] = current_user.id
     df['time_stamp_utc']=datetime.utcnow()
     for name in list(df.columns):
         if name.find('@')!=-1:
@@ -86,3 +86,5 @@ def new_apple_data_util(apple_health_dir, apple_halth_data):
     print('Adding new data')
     #add to database
     df.to_sql('apple_health_export', con=engine, if_exists='append', index=False)
+
+    return len(df)

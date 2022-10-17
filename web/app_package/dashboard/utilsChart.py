@@ -128,11 +128,14 @@ def make_chart(lists_tuple, buttons_dict):
 
 
 
-def buttons_dict_util(formDict, dashboard_routes_dir, buttons_dict):
+def buttons_dict_util(formDict, dashboard_routes_dir, buttons_dict, user_btn_json_name):
+    if formDict.get('same_page'):
+        del formDict['same_page']
     # if len(formDict)>0:
     #1 read json dict with switches
-    if os.path.exists(os.path.join(dashboard_routes_dir,'buttons_dict.json')):
-        with open(os.path.join(dashboard_routes_dir,'buttons_dict.json')) as json_file:
+
+    if os.path.exists(os.path.join(dashboard_routes_dir,user_btn_json_name)):
+        with open(os.path.join(dashboard_routes_dir,user_btn_json_name)) as json_file:
             buttons_dict = json.load(json_file)
 
     if buttons_dict.get(list(formDict.keys())[0]) != None:
@@ -140,14 +143,14 @@ def buttons_dict_util(formDict, dashboard_routes_dir, buttons_dict):
     else:
         buttons_dict[list(formDict.keys())[0]] = int(formDict[list(formDict.keys())[0]])
 
-    with open(os.path.join(dashboard_routes_dir,'buttons_dict.json'), 'w') as convert_file:
+    with open(os.path.join(dashboard_routes_dir,user_btn_json_name), 'w') as convert_file:
         convert_file.write(json.dumps(buttons_dict))
     print('Wrote buttons_dict.json')
     return buttons_dict
 
 
-def buttons_dict_update_util(dashboard_routes_dir):
-    with open(os.path.join(dashboard_routes_dir,'buttons_dict.json')) as json_file:
+def buttons_dict_update_util(dashboard_routes_dir, user_btn_json_name):
+    with open(os.path.join(dashboard_routes_dir,user_btn_json_name)) as json_file:
         buttons_dict = json.load(json_file)
     return buttons_dict
 

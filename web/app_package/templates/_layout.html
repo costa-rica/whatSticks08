@@ -47,28 +47,25 @@
 
         <nav>
             <img id="mobile-exit" class="mobile-menu-exit" src="../static/images/exit.svg" alt="Close Navigation">
+            
             <ul class="primary-nav ul_primary" id="nav_horizontal_list">
                 {% if current_user.is_authenticated %}
-
+                <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('users.account') }}">Account</a></li>
                 <li class="nav-item dropdown li_primary">
                     <a href="#" class="nav-link dropdown-toggle" id="navbarDropdown2"role="button"
                         data-bs-toggle="dropdown"aria-expanded="false">About</a>
-
                     <div class="dropdown-menu wsh_items_alignment" aria-labelledby="navbarDropdown2">
                         <a class="dropdown-item" href="{{ url_for('users.about_us') }}">About</a>
                         <a class="dropdown-item" href="{{ url_for('users.privacy') }}">Privacy</a>
-                        
-
                     </div>
                 </li>
-                <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('dash.dashboard') }}">Dashboard</a></li>
-                <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('dash.dash_steps') }}">Steps Dashboard</a></li>
+                <li class="nav-item li_primary"><a class="" href="{{ url_for('dash.dashboard') }}">Sleep</a></li>
+                <li class="nav-item li_primary"><a class="" href="{{ url_for('dash.dash_steps') }}">Steps</a></li>
+                <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('blog.blog_index') }}">Blog</a></li>
                 
-                <li class="nav-item li_primary"><a class="" href="{{ url_for('blog.blog_index') }}">Blog</a></li>
-                <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('users.account') }}">Account</a></li>
                 <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('users.logout') }}">Logout</a></li>
                     {% if current_user.id ==1 %}
-                        <li class="nav-item li_primary"><a class="" href="{{ url_for('blog.blog_user_home') }}">Admin Blog</a></li>
+                        <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('blog.blog_user_home') }}">Admin Blog</a></li>
                     {% endif %}
                 
                 <!-- <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('users.youtube_request') }}">YouTube Request</a></li> -->
@@ -88,7 +85,7 @@
 
                 <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('users.login') }}">Login</a></li>
                 <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('users.home') }}">Home</a></li>
-                <li class="nav-item li_primary"><a class="" href="{{ url_for('blog.blog_index') }}">Blog</a></li>
+                <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('blog.blog_index') }}">Blog</a></li>
                 <!-- <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('users.youtube_request') }}">YouTube Request</a></li> -->
                 
                 
@@ -130,12 +127,10 @@
 
     mobileBtn.addEventListener('click', () => {
         nav.classList.add('menu-btn');
-        document.documentElement.style.setProperty('--table-chart-width', "90%");
     })
 
     mobileBtnExit.addEventListener('click', () => {
         nav.classList.remove('menu-btn');
-        document.documentElement.style.setProperty('--table-chart-width', "100%");
     })
 </script>
 

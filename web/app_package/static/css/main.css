@@ -10989,6 +10989,8 @@ thead th {
 
 /* Navbar */
 section.navbar_section {
+  position: fixed;
+  z-index: 1;
   padding-top: 0;
   margin-top: 0;
 }
@@ -11033,7 +11035,6 @@ section.navbar_section .navbar_custom .mobile-menu {
 }
 section.navbar_section .navbar_custom nav {
   position: fixed;
-  z-index: 99999;
   width: 50%;
   right: 0;
   top: 0;

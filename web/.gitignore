@@ -3,4 +3,4 @@ __pycache__/
 buttons_dict.json
 config_dict.json
 /app_package/static/images/blog_images/
-
+/app_package/static/dash_btns/
