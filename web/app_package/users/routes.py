@@ -34,14 +34,19 @@ def home():
     if current_user.is_authenticated:
         return redirect(url_for('dash.dashboard'))
     
-    latest_post = sess.query(Posts).all()[-1]
-    print(latest_post)
-    blog = {}
-    keys = latest_post.__table__.columns.keys()
-    blog = {key: getattr(latest_post, key) for key in keys}
-    blog['blog_name']='blog'+str(latest_post.id).zfill(4)
-    blog['date_published'] = blog['date_published'].strftime("%b %d %Y")
-    print(blog)
+
+    latest_post = sess.query(Posts).all()
+    if len(latest_post) > 0:
+        latest_post = latest_post[-1]
+
+        blog = {}
+        keys = latest_post.__table__.columns.keys()
+        blog = {key: getattr(latest_post, key) for key in keys}
+        blog['blog_name']='blog'+str(latest_post.id).zfill(4)
+        blog['date_published'] = blog['date_published'].strftime("%b %d %Y")
+        print(blog)
+    else:
+        blog =''
 
 
     if request.method == 'POST':
@@ -106,7 +111,12 @@ def register():
     if request.method == 'POST':
         formDict = request.form.to_dict()
         new_email = formDict.get('email')
-        check_email = sess.query(Users).filter_by(email = new_email)
+        
+        check_email = sess.query(Users).filter_by(email = new_email).all()
+        if len(check_email)==1:
+            flash(f'The email you entered already exists you can sign in or try another email.', 'warning')
+            return redirect(url_for('users.register'))
+ 
         hash_pw = bcrypt.hashpw(formDict.get('password_text').encode(), salt)
         new_user = Users(email = new_email, password = hash_pw)
         sess.add(new_user)
