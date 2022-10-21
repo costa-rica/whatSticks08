@@ -46,9 +46,17 @@ def new_apple_data_util(apple_health_dir, apple_halth_data):
     # delete .zip and apple_health_export
     os.remove(path_to_zip_file)
     shutil.rmtree(os.path.join(apple_health_dir,'apple_health_export'))
+    
+    df_length = add_apple_to_db(dst_path)
+    # df_length = 5
 
+    return df_length
+
+
+
+def add_apple_to_db(dst_path):
     #Add new users apple data to database
-    input_path = r"C:\Users\captian2020\Documents\_jupyterNotebooks\iPhoneHealthExport\export\apple_health_export\export.xml"
+    # input_path = r"C:\Users\captian2020\Documents\_jupyterNotebooks\iPhoneHealthExport\export\apple_health_export\export.xml"
     with open(dst_path, 'r') as xml_file:
         input_data = xmltodict.parse(xml_file.read())
     records_list = input_data['HealthData']['Record']

@@ -6,7 +6,7 @@ import os
 import json
 
 config_dict = {}
-if os.environ.get('COMPUTERNAME')=='CAPTAIN2020' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
+if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
     config_object = ConfigDev()
     print('* ---> Configured for Development')
     config_dict['production'] = False

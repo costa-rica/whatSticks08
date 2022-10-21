@@ -1,6 +1,7 @@
 {% extends "_layout.html" %}
 {% block main %}
 
+
 <section class="apple">
 
     <div class="title">
@@ -11,23 +12,30 @@
 
 
         <div class="common_primary_div add_xml_div ">
-            <form method="POST" action="" enctype="multipart/form-data">
+            
                 <div class="you_have_x_apple_records">
                     You have {{ apple_records }} records from apple health stored in WS.
                 </div>
                 <label>Apple Health Data</label>
-                <div class="apple_file">
-                    <input type="file" name="apple_health_data" accept=".zip" class="form-control">
-                </div>
+
+                <form method="POST" action="" enctype="multipart/form-data" >
+
+                    <div class="apple_file">
+                        <input type="file" name="apple_health_data" accept=".zip" class="form-control"  >
+                    </div>
+                    
+
+                    <div class="submit_element_right">
+                        <input type="submit" value="Add Apple Data" class="btn btn-secondary btn_custom01" onclick="update()">
+
+                    </div>
+
+                </form>
                 
-
-                <div class="submit_element_right">
-                    <input type="submit" value="Add Apple Data" class="btn btn-secondary btn_custom01">
-                </div>
-
-
-            </form>
+          
         </div>
+
+
 
         <div class="common_primary_div find_apple_export">
             <h2>How do I find my Apple Health data on my iPhone?</h2>
@@ -37,6 +45,10 @@
                 <li>Bottom of screen has export apple health</li>
             </ol>
         </div>
+
+
+
+
 
         <div class="common_primary_div delete_apple">
             Remove your Apple Health data from WS database
@@ -52,26 +64,78 @@
 </section>
         
 
-<div class="modal fade apple_modal" id="areYouSureModal" tabindex="-1" aria-labelledby="areYouSureModalLabel" aria-hidden="true">
-    <div class="modal-dialog apple_modal_dialog" role="document">
+
+<div class="modal fade apple_modal" id="largeModal" tabindex="-1" role="dialog" aria-labelledby="largeModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Are you sure?</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true"></span>
-          </button>
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title" id="myModalLabel">Loading Apple Data</h4>
         </div>
         <div class="modal-body">
-
-            <div class="yes_delete_apple">
-                <input type="submit" value="Delete Apple Data from WS" class="btn btn-danger btn_custom01">
-            </div>
-            
+        
+          <p>Upload status bar</p>
+          <div id="Progress_Status">
+            <div id="myprogressBar"></div>
         </div>
 
+        <p>This message will disappear when the app has successfully </p>
+        </div>
+        <div class="modal-footer">
+
+        </div>
       </div>
     </div>
   </div>
 
+
+
+
+
+    <div class="modal fade apple_modal" id="areYouSureModal" tabindex="-1" aria-labelledby="areYouSureModalLabel" aria-hidden="true">
+        <div class="modal-dialog apple_modal_dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Are you sure?</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true"></span>
+              </button>
+            </div>
+            <div class="modal-body">
+    <form method="POST">
+        <div class="yes_delete_apple">
+            <input type="submit" value="Delete Apple Data from WS" name="btn_delete_apple_data" class="btn btn-danger btn_custom01">
+        </div>
+    </form>
+
+            
+            </div>
+    
+          </div>
+        </div>
+      </div>
+
+
+
+  <script>
+
+
+
+    function update() {
+        var element = document.getElementById("myprogressBar");   
+        var width = 1;
+        var identity = setInterval(scene, 10);
+        function scene() {
+        if (width >= 100) {
+            clearInterval(identity);
+        } else {
+            width++; 
+            element.style.width = width + '%'; 
+            
+            }
+        }
+        $('#largeModal').modal('show'); 
+    }
+    </script>
 
 {% endblock %}

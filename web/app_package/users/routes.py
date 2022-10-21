@@ -337,17 +337,29 @@ def add_apple():
             return redirect(url_for('users.add_apple'))
         filesDict = request.files
         apple_halth_data = filesDict.get('apple_health_data')
+        
+        formDict = request.form.to_dict()
+        print('formDict: ', formDict)
+        
         #4) Apple health data
         if apple_halth_data:
             print(' ****** WE have some apple data ****')
             
             new_rec_count = new_apple_data_util(apple_health_dir, apple_halth_data)
-
+            # new_rec_count = 9
             flash(f"succesfully saved {'{:,}'.format(new_rec_count)} records from apple export", 'info')
-            return redirect(url_for('users.add_apple'))
+            
+        elif formDict.get('btn_delete_apple_data'):
+            
+            
+            
+            print('Delete apple data')
+            rows_deleted = sess.query(Apple_health_export).filter_by(user_id = current_user.id).delete()
+            sess.commit()
+            flash(f"succesfully deleted {'{:,}'.format(rows_deleted)} records from apple export", 'warning')
 
 
-
+        return redirect(url_for('users.add_apple'))
     return render_template('add_apple.html', apple_records=apple_records)
 
 

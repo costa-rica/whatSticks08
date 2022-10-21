@@ -11807,6 +11807,16 @@ section.apple .apple_body .delete_apple .submit_element_right {
   padding: 1rem 0 0 0;
 }
 
+#largeModal #Progress_Status {
+  width: 50%;
+  background-color: #ddd;
+}
+#largeModal #myprogressBar {
+  width: 0%;
+  height: 20px;
+  background-color: #4CAF50;
+}
+
 .apple_modal:before {
   display: inline-block;
   vertical-align: middle;

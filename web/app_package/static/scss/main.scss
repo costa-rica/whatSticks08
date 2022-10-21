@@ -329,6 +329,10 @@ section.apple{
                 justify-content: end;
                 padding: 1rem 0 0 0;
             }
+
+
+
+
         }
         .find_apple_export{
             width: 95%;
@@ -349,6 +353,19 @@ section.apple{
             }
         }
     }
+}
+
+#largeModal {
+    
+    #Progress_Status {
+        width: 50%;
+        background-color: #ddd;
+      }
+      #myprogressBar {
+        width: 0%;
+        height: 20px;
+        background-color: #4CAF50;
+      }
 }
 
 .apple_modal:before{
