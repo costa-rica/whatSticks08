@@ -69,9 +69,9 @@ def oura_hist_util(USER_ID):
 
 def user_loc_day_util(USER_ID):
     df = create_raw_df(USER_ID, User_location_day, 'user_location_day_')
-    
+
     if isinstance(df,bool):
-        return df
+        return False, False
     # 1) get make df of user_day_location
     df = df[['date', 'location_id']]
     df= df.drop_duplicates(subset='date', keep='last')
@@ -80,7 +80,7 @@ def user_loc_day_util(USER_ID):
     df_weath_hist = create_raw_df(USER_ID, Weather_history, 'weather_history_')
 
     if isinstance(df_weath_hist,bool):
-        return df_weath_hist
+        return False, False
 
     df_weath_hist = df_weath_hist[['date_time','temp','location_id', 'cloudcover']].copy()
     df_weath_hist = df_weath_hist.rename(columns=({'date_time': 'date'}))
@@ -129,7 +129,6 @@ def make_steps_chart_util(series_lists_dict, buttons_dict):
             source1 = ColumnDataSource(dict(x=dates_list, y=temp_ln_list, text=temp_list)) # data
             glyph1 = Text(text="text",text_font_size={'value': '1.3rem'},x_offset=-10, y_offset=10) # Image
             fig1.add_glyph(source1, glyph1)
-
 
 #cloud cover
     if series_lists_dict.get('cloudcover'):
@@ -193,7 +192,7 @@ def make_steps_chart_util(series_lists_dict, buttons_dict):
 
 
 def df_utils(USER_ID, step_dash_btns_dir, same_page):
-
+    print('-- in df_utils() --')
     user_df_apple_steps_file = f'user{USER_ID}_df_apple_steps.json'
     user_df_oura_sleep_file = f'user{USER_ID}_df_oura_sleep.json'
     user_df_temp_file = f'user{USER_ID}_df_temp.json'
@@ -219,14 +218,6 @@ def df_utils(USER_ID, step_dash_btns_dir, same_page):
         df_dict['sleep'] = oura_hist_util(USER_ID)
         df_dict['temp'], df_dict['cloudcover'] = user_loc_day_util(USER_ID)
 
-        # print(' - in df_utils -')
-        # # print(df_apple_steps)
-        # # print(type(df_apple_steps))
-        # print(df_apple_steps)
-        # print(df_oura_sleep)
-        # print(df_weather)
-        # if isinstance(df_apple_steps,bool):
-        #     return False, False, False
         if not isinstance(df_dict['steps'], bool): df_dict['steps'].to_json(df_apple_steps_path)
         if not isinstance(df_dict['sleep'], bool): df_dict['sleep'].to_json(df_oura_sleep_path)
         if not isinstance(df_dict['temp'] , bool): df_dict['temp'] .to_json(df_temp_path)

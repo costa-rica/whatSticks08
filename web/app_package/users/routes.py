@@ -1,6 +1,6 @@
 from flask import Blueprint
 from flask import render_template, url_for, redirect, flash, request, \
-    abort, session, Response, current_app, send_from_directory
+    abort, session, Response, current_app, send_from_directory, make_response
 import bcrypt
 from ws_models01 import sess, Users, login_manager, Oura_token, Locations, \
     Weather_history, User_location_day, Oura_sleep_descriptions, Posts, Apple_health_export
@@ -326,7 +326,6 @@ def add_apple():
     existing_records = sess.query(Apple_health_export).filter_by(user_id=current_user.id).all()
     apple_records = "{:,}".format(len(existing_records))
 
-
     # make APPLE_HEALTH_DIR
     apple_health_dir = current_app.config.get('APPLE_HEALTH_DIR')
     make_dir_util(apple_health_dir)
@@ -336,7 +335,9 @@ def add_apple():
             flash("Guest cannot change data. Register and then add data.", "info")
             return redirect(url_for('users.add_apple'))
         filesDict = request.files
-        apple_halth_data = filesDict.get('apple_health_data')
+        apple_halth_data = filesDict.get('apple_halth_data')
+        print('- filesDict -')
+        print(filesDict)
         
         formDict = request.form.to_dict()
         print('formDict: ', formDict)
@@ -356,7 +357,7 @@ def add_apple():
             print('Delete apple data')
             rows_deleted = sess.query(Apple_health_export).filter_by(user_id = current_user.id).delete()
             sess.commit()
-            flash(f"succesfully deleted {'{:,}'.format(rows_deleted)} records from apple export", 'warning')
+            flash(f"Removed {'{:,}'.format(rows_deleted)} Apple Health records from What Sticks data storage", 'warning')
 
 
         return redirect(url_for('users.add_apple'))
@@ -364,6 +365,21 @@ def add_apple():
 
 
 
+@users.route('/add_apple2', methods=['GET', 'POST'])
+def add_apple_2():
+    if request.method == 'POST':
+        print(request.method)
+        print(request.files)
+        filesize = request.cookies.get('filesize')
+        # file = request.files['files']
+        print(f"Filesize: {filesize}")
+        # print(file)
+
+        # res = make_response(jsonify({"message": f"{file.filename} uploaded"}), 200)
+        # return res
+        flash('upload successful', 'info')
+        return redirect(url_for('users.add_apple_2'))
+    return render_template('add_apple.html')
 
 
 

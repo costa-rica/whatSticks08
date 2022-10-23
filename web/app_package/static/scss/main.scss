@@ -355,8 +355,7 @@ section.apple{
     }
 }
 
-#largeModal {
-    
+#addDataModal {
     #Progress_Status {
         width: 50%;
         background-color: #ddd;
@@ -367,16 +366,26 @@ section.apple{
         background-color: #4CAF50;
       }
 }
+.apple_add_data_modal:before {
+    display: inline-block;
+    vertical-align: middle;
+    content: " ";
+    height: 25%;
+}
 
-.apple_modal:before{
+.apple_delete_modal:before{
     display: inline-block;
     vertical-align: middle;
     content: " ";
     height: 100%;
 }
 
-.apple_modal_dialog {
-    width: 50%;
+.apple_delete_modal_dialog {
+    width: 80%;
+    height: 50%;
+    .modal-body{
+        margin-bottom: 1rem;
+    }
     .yes_delete_apple{
         display: flex;
         justify-content: center;
@@ -627,17 +636,7 @@ section.youtube {
             max-width:90rem;
             justify-content: center;
             align-items: center;
-            // .register_form{
-            //     .email_combo{
-            //     .register_text{
-                    
 
-            //             width:80%;
-            //             // background-color: green;
-            //         }
-
-            //     }
-            // }
         }
     }
 
@@ -650,6 +649,28 @@ section.youtube {
             }
         }
     }
+
+/* Add Apple Data */
+    /* Modals */
+    .apple_add_modal_content{
+        height: 15rem;
+    }
+    .apple_add_data_modal:before {
+        height: 80%;
+    }
+
+    .apple_delete_modal_dialog {
+        .apple_delete_modal_content{
+            height: 15rem;
+        }
+        .apple_delete_modal_body{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+
+
 }
 
 

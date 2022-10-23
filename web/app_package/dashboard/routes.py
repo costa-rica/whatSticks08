@@ -12,7 +12,7 @@ import pandas as pd
 from app_package.dashboard.utilsChart import make_oura_df, make_user_loc_day_df, \
     make_weather_hist_df, make_chart, buttons_dict_util, buttons_dict_update_util
 from app_package.dashboard.utilsSteps import apple_hist_steps, oura_hist_util, \
-    user_loc_day_util, make_steps_chart_util, df_utils
+    make_steps_chart_util, df_utils
 import json
 import os
 import time
@@ -191,8 +191,10 @@ def dashboard():
 @dash.route('/dashboard_steps', methods=['GET', 'POST'])
 @login_required
 def dash_steps(same_page =False):
+
     page_name = "Steps Dashboard"
     same_page =request.args.get('same_page')
+    print('request.referrer::: ', request.referrer)
 
     USER_ID = current_user.id if current_user.id !=2 else 1
 

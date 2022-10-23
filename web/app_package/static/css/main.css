@@ -11807,27 +11807,38 @@ section.apple .apple_body .delete_apple .submit_element_right {
   padding: 1rem 0 0 0;
 }
 
-#largeModal #Progress_Status {
+#addDataModal #Progress_Status {
   width: 50%;
   background-color: #ddd;
 }
-#largeModal #myprogressBar {
+#addDataModal #myprogressBar {
   width: 0%;
   height: 20px;
   background-color: #4CAF50;
 }
 
-.apple_modal:before {
+.apple_add_data_modal:before {
+  display: inline-block;
+  vertical-align: middle;
+  content: " ";
+  height: 25%;
+}
+
+.apple_delete_modal:before {
   display: inline-block;
   vertical-align: middle;
   content: " ";
   height: 100%;
 }
 
-.apple_modal_dialog {
-  width: 50%;
+.apple_delete_modal_dialog {
+  width: 80%;
+  height: 50%;
 }
-.apple_modal_dialog .yes_delete_apple {
+.apple_delete_modal_dialog .modal-body {
+  margin-bottom: 1rem;
+}
+.apple_delete_modal_dialog .yes_delete_apple {
   display: flex;
   justify-content: center;
 }
@@ -12042,6 +12053,22 @@ section.youtube .div_writing .indent {
   section.dashboard .row_header button {
     width: 90%;
     font-size: 2rem;
+  }
+  /* Add Apple Data */
+  /* Modals */
+  .apple_add_modal_content {
+    height: 15rem;
+  }
+  .apple_add_data_modal:before {
+    height: 80%;
+  }
+  .apple_delete_modal_dialog .apple_delete_modal_content {
+    height: 15rem;
+  }
+  .apple_delete_modal_dialog .apple_delete_modal_body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 }
 @media only screen and (min-width: 1080px) {
