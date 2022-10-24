@@ -15,7 +15,7 @@ if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERN
     print('* Development')
 else:
     config = ConfigProd()
-    config.app_dir = r"/home/ubuntu/applications/scheduler/"
+    config.app_dir = r"/home/nick/applications/scheduler/"
     logs_dir = config.app_dir
     config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
     print('* ---> Configured for Production')
