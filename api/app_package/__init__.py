@@ -32,7 +32,7 @@ logging.getLogger('werkzeug').setLevel(logging.DEBUG)
 logging.getLogger('werkzeug').addHandler(file_handler)
 #End set up logger
 
-logger_init.info(f'--- Starting wsh08 API ---')
+logger_init.info(f'--- Starting ws08api ---')
 
 
 

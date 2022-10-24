@@ -3,14 +3,12 @@ import json
 import requests
 from datetime import datetime, timedelta
 import os
-from wsh_config import ConfigDev, ConfigProd
+from ws_config01 import ConfigDev, ConfigProd
 import logging
 from logging.handlers import RotatingFileHandler
 
 
-
-
-if os.environ.get('COMPUTERNAME')=='CAPTAIN2020' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
+if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
     config = ConfigDev()
     logs_dir = os.getcwd()
     config.json_utils_dir = os.path.join(os.getcwd(),'json_utils_dir')
@@ -57,9 +55,9 @@ def scheduler_funct():
 
     scheduler = BackgroundScheduler()
 
-    # job_call_get_locations = scheduler.add_job(get_locations, 'cron',  day='*', hour='23')#Production
-    job_call_get_locations = scheduler.add_job(get_locations, 'cron', [date_formatted], hour='*', minute='46', second='05')#Testing
-    # job_call_harmless = scheduler.add_job(harmless, 'cron',  hour='*', minute='26', second='15')#Testing
+    job_call_get_locations = scheduler.add_job(get_locations, 'cron', [date_formatted], day='*', hour='23', minute='01', second='05')#Production
+    # job_call_get_locations = scheduler.add_job(get_locations, 'cron', [date_formatted], hour='*', minute='01', second='05')#Testing
+    # job_call_harmless = scheduler.add_job(harmless, 'cron',  hour='*', minute='59', second='15')#Testing
 
     scheduler.start()
 

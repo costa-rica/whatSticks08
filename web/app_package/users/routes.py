@@ -19,10 +19,34 @@ from app_package.users.utilsApple import make_dir_util, new_apple_data_util
 from sqlalchemy import func
 from datetime import datetime, timedelta
 import time
-# import os
-# from werkzeug.utils import secure_filename
-# import zipfile
-# import shutil
+import logging
+from logging.handlers import RotatingFileHandler
+import os
+
+logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+
+#Setting up Logger
+formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
+formatter_terminal = logging.Formatter('%(asctime)s:%(filename)s:%(name)s:%(message)s')
+
+#initialize a logger
+logger_users = logging.getLogger(__name__)
+logger_users.setLevel(logging.DEBUG)
+# logger_terminal = logging.getLogger('terminal logger')
+# logger_terminal.setLevel(logging.DEBUG)
+
+#where do we store logging information
+file_handler = RotatingFileHandler(os.path.join(logs_dir,'users_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler.setFormatter(formatter)
+
+#where the stream_handler will print
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter_terminal)
+
+# logger_sched.handlers.clear() #<--- This was useful somewhere for duplicate logs
+logger_users.addHandler(file_handler)
+logger_users.addHandler(stream_handler)
+
 
 salt = bcrypt.gensalt()
 
@@ -136,6 +160,7 @@ def logout():
 @users.route('/account', methods = ['GET', 'POST'])
 @login_required
 def account():
+    logger_users.info(f"--- user accessed Accounts")
     page_name = 'Account Page'
     email = current_user.email
 
@@ -330,31 +355,50 @@ def add_apple():
     apple_health_dir = current_app.config.get('APPLE_HEALTH_DIR')
     make_dir_util(apple_health_dir)
 
+    logger_users.info(f"--- POSTING Apple Health Data (user: {current_user.id}) ---")
+    start_post_time = time.time()
+
     if request.method == 'POST':
         if current_user.id ==2:
             flash("Guest cannot change data. Register and then add data.", "info")
             return redirect(url_for('users.add_apple'))
         filesDict = request.files
         apple_halth_data = filesDict.get('apple_halth_data')
-        print('- filesDict -')
-        print(filesDict)
+        # print('- filesDict -')
+        # print(filesDict)
         
         formDict = request.form.to_dict()
         print('formDict: ', formDict)
         
         #4) Apple health data
         if apple_halth_data:
-            print(' ****** WE have some apple data ****')
             
             new_rec_count = new_apple_data_util(apple_health_dir, apple_halth_data)
             # new_rec_count = 9
+
+
+
+            # Measuring file loading time and size
+            filesize = float(request.cookies.get('filesize'))
+            filesize = "{:,}".format(round(filesize/ 10**6,1))
+            logger_users.info(f"Filesize: {filesize} Mb")
+
+            end_post_time = time.time()
+            run_seconds = round(end_post_time - start_post_time)
+            if run_seconds <60:
+                logger_users.info(f"---run_time: {str(run_seconds)} seconds")
+            elif run_seconds > 60:
+                run_minutes =  round(run_seconds / 60)
+                logger_users.info(f"--- run_time: {str(run_minutes)} mins and {str(run_seconds % 60)} seconds")
+
+            
             flash(f"succesfully saved {'{:,}'.format(new_rec_count)} records from apple export", 'info')
             
         elif formDict.get('btn_delete_apple_data'):
+            print('- delete apple data -')
             
             
-            
-            print('Delete apple data')
+            # print('Delete apple data')
             rows_deleted = sess.query(Apple_health_export).filter_by(user_id = current_user.id).delete()
             sess.commit()
             flash(f"Removed {'{:,}'.format(rows_deleted)} Apple Health records from What Sticks data storage", 'warning')
