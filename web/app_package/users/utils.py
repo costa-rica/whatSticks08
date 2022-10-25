@@ -8,13 +8,46 @@ from ws_models01 import sess, Users, Locations, Weather_history, \
 import time
 from flask_mail import Message
 from app_package import mail
-from ws_config01 import ConfigDev
+from ws_config01 import ConfigDev, ConfigProd
 import os
 from werkzeug.utils import secure_filename
 import zipfile
 import shutil
+import logging
+from logging.handlers import RotatingFileHandler
 
-config = ConfigDev()
+# config = ConfigDev()
+if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
+    config = ConfigDev()
+else:
+    config = ConfigProd()
+
+
+
+logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+
+#Setting up Logger
+formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
+formatter_terminal = logging.Formatter('%(asctime)s:%(filename)s:%(name)s:%(message)s')
+
+#initialize a logger
+logger_users = logging.getLogger(__name__)
+logger_users.setLevel(logging.DEBUG)
+# logger_terminal = logging.getLogger('terminal logger')
+# logger_terminal.setLevel(logging.DEBUG)
+
+#where do we store logging information
+file_handler = RotatingFileHandler(os.path.join(logs_dir,'users_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler.setFormatter(formatter)
+
+#where the stream_handler will print
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter_terminal)
+
+# logger_sched.handlers.clear() #<--- This was useful somewhere for duplicate logs
+logger_users.addHandler(file_handler)
+logger_users.addHandler(stream_handler)
+
 
 
 
@@ -22,13 +55,12 @@ def make_dir_util(dir):
     try:
         os.makedirs(dir)
     except:
-        print(f'{dir} already exists')
+        logger_users.info(f'{dir} already exists')
 
 
 def send_reset_email(user):
     token = user.get_reset_token()
-    print('Let s try email::::')
-    print('config.EMAIL: ', config.MAIL_USERNAME)
+    logger_users.info('config.EMAIL: ', config.MAIL_USERNAME)
     msg = Message('Password Reset Request',
                   sender=config.MAIL_USERNAME,
                   recipients=[user.email])
@@ -63,13 +95,13 @@ def call_location_api(user):
     payload['hour'] = 0
 
 #2-1b) if new location is new add location to Locations
-    print('* --> start location data process')
+    logger_users.info('* --> start location data process')
     # new_location = Locations()
     try:
         r_history = requests.get(base_url + history, params = payload)
         
         if r_history.status_code == 200:
-            print('Location API response code: ', r_history.status_code)
+            logger_users.info('Location API response code: ', r_history.status_code)
             #2) for each id call weather api
             return r_history.json()
         else:
@@ -85,8 +117,8 @@ def gen_weather_url(location_id, date):
     lat = loc.lat
     lon = loc.lon
     weather_call_url =f"{current_app.config['VISUAL_CROSSING_BASE_URL']}{str(lat)},{str(lon)}/{str(date_time)}?key={api_token}&include=current"
-    print('Weather_call:::')
-    print(weather_call_url)
+    logger_users.info('Weather_call:::')
+    logger_users.info(weather_call_url)
     return weather_call_url
 
 
@@ -102,7 +134,7 @@ def add_new_location(location_api_response):
     sess.add(new_location)
     sess.commit()
     location_id = new_location.id
-    print(f'***** New location added, id: {location_id} ****')
+    logger_users.info(f'--- New location added, id: {location_id} ---')
     return location_id
 
 
@@ -132,19 +164,20 @@ def add_weather_history(weather_api_response, location_id):
 
 
 def oura_sleep_call(new_token):
-
+    logger_users.info(f"--- making Oura API call ---")
     # url_sleep='https://api.ouraring.com/v1/sleep?start=2020-03-11&end=2020-03-21?'
     url_sleep = current_app.config['OURA_API_URL_BASE']
     response_sleep = requests.get(url_sleep, headers={"Authorization": "Bearer " + new_token})
     sleep_dict = response_sleep.json()
-    print('response_code: ',response_sleep.status_code)
+    logger_users.info('response_code: ',response_sleep.status_code)
     if response_sleep.status_code !=200:
-        print('*** Error With Token ****')
+        logger_users.info('*** Error With Token ****')
         return f'Error {str(response_sleep.status_code)}'
     else:
         return sleep_dict
 
 def oura_sleep_db_add(sleep_dict, oura_token_id):
+    logger_users.info(f"--- Adding Oura Ring data to database for user ---")
     # Add oura dictionary response to database
     startTime_db_oura_add = time.time()
     deleted_elements = 0
@@ -178,11 +211,13 @@ def oura_sleep_db_add(sleep_dict, oura_token_id):
                     sess.commit()
                     sessions_added +=1
                 except:
-                    print(f"Failed to add oura data row for sleepend: {sleep_session.get('bedtime_end')}")
+                    logger_users.info(f"Failed to add oura data row for sleepend: {sleep_session.get('bedtime_end')}")
     
     executionTime = (time.time() - startTime_db_oura_add)
-    print('Add Oura Data Execution time in seconds: ' + str(executionTime))
-    print(f'Number of eleements deleted {deleted_elements}')
+    logger_users.info('Add Oura Data Execution time in seconds: ' + str(executionTime))
+    deleted_elements_formatted = "{:,}".format(deleted_elements)
+    logger_users.info(f'Number of eleements deleted {deleted_elements_formatted}')
+    logger_users.info("Elements are data items in sleep sessions. Each sleep sesssion has score, summary_date, etc.")
     
     return sessions_added
 

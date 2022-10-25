@@ -22,6 +22,16 @@ import time
 import logging
 from logging.handlers import RotatingFileHandler
 import os
+import json
+from ws_config01 import ConfigDev, ConfigProd
+
+if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
+    config = ConfigDev()
+    testing = True
+else:
+    config = ConfigProd()
+    testing = False
+
 
 logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
 
@@ -163,28 +173,18 @@ def account():
     logger_users.info(f"--- user accessed Accounts")
     page_name = 'Account Page'
     email = current_user.email
-
-    existing_oura_token =sess.query(Oura_token, func.max(
-        Oura_token.id)).filter_by(user_id=current_user.id).first()[0]
     
-    print('Current User: ', current_user.email)
+    logger_users.info(f'Current User: {current_user.email}')
 
     user = sess.query(Users).filter_by(id = current_user.id).first()
     
-
-    print('Current user Latitude: ', user.lat)
     if user.lat == None or user.lat == '':
         existing_coordinates = ''
+        city_name = ''
     else:
         existing_coordinates = f'{user.lat}, {user.lon}'
-        
-    
-    if existing_oura_token:
-        oura_token = current_user.oura_token_id[-1].token
-        existing_oura_token_str = str(existing_oura_token.token)
-    else:
-        oura_token = ''
-        existing_oura_token_str = ''
+        location =sess.query(Locations).get(location_exists(user))
+        city_name = f"{location.city}, {location.country}"
 
 
     if request.method == 'POST':
@@ -194,10 +194,10 @@ def account():
         else:
             startTime_post = time.time()
             formDict = request.form.to_dict()
-            new_token = formDict.get('oura_token')
+            # new_token = formDict.get('oura_token')
             new_location = formDict.get('location_text')
             email = formDict.get('email')
-            user = sess.query(Users).filter_by(id = current_user.id).first()
+            # user = sess.query(Users).filter_by(id = current_user.id).first()
             yesterday = datetime.today() - timedelta(days=1)
             yesterday_formatted =  yesterday.strftime('%Y-%m-%d')
             # user_loc_days = sess.query(User_location_day).filter_by(user_id=current_user.id).all()
@@ -206,108 +206,145 @@ def account():
 
 
 
-            #1) User adds Oura_token data
-            if new_token != existing_oura_token_str:#<-- if new token is different 
-                print('------ New token detected ------')
-                #1-1a) if user has token replace it
-                if existing_oura_token:
-                    existing_oura_token.token = new_token
-                    sess.commit()
-                    oura_token_id = existing_oura_token.id
-                    print('Existing token')
-                #1-1b) else add new token
-                else:
-                    print('Completely new token')
-                    new_oura_token = Oura_token(user_id = current_user.id,
-                        token = new_token)
-                    sess.add(new_oura_token)
-                    sess.commit()
+            # #1) User adds Oura_token data
+            # if new_token != existing_oura_token_str:#<-- if new token is different 
+            #     print('------ New token detected ------')
+            #     #1-1a) if user has token replace it
+            #     if existing_oura_token:
+            #         existing_oura_token.token = new_token
+            #         sess.commit()
+            #         oura_token_id = existing_oura_token.id
+            #         print('Existing token')
+            #     #1-1b) else add new token
+            #     else:
+            #         print('Completely new token')
+            #         new_oura_token = Oura_token(user_id = current_user.id,
+            #             token = new_token)
+            #         sess.add(new_oura_token)
+            #         sess.commit()
 
-                    oura_token_id = new_oura_token.id
+            #         oura_token_id = new_oura_token.id
 
-                #1-1b-1) check if user has oura data yesterday
-                oura_yesterday = sess.query(Oura_sleep_descriptions).filter_by(
-                    user_id = current_user.id,
-                    summary_date = yesterday_formatted).first()
+            #     #1-1b-1) check if user has oura data yesterday
+            #     oura_yesterday = sess.query(Oura_sleep_descriptions).filter_by(
+            #         user_id = current_user.id,
+            #         summary_date = yesterday_formatted).first()
 
-                # --> 1-1b-1b) if no data yesterday, call API
-                if not oura_yesterday and new_token != '':
-                    sleep_dict = oura_sleep_call(new_token)
+            #     # --> 1-1b-1b) if no data yesterday, call API
+            #     if not oura_yesterday and new_token != '':
+            #         sleep_dict = oura_sleep_call(new_token)
 
-                    if isinstance(sleep_dict,dict):
-                        sessions_added = oura_sleep_db_add(sleep_dict, oura_token_id)
-                        flash(f'Successfully added {str(sessions_added)} sleep sesions and updated user Oura Token', 'info')
-                    else:
-                        print(f'** Unable to get data from Oura API becuase {sleep_dict}')
-                        flash(f'Unable to get data from Oura API becuase {sleep_dict}', 'warning')
-                elif not new_token:
-                    flash('User oura token successfully removed','info')
-                    print('** removed oura token from user')
-                else:
-                    print('-- date detected yesterday for this user')
-                    print(oura_yesterday)
+            #         if isinstance(sleep_dict,dict):
+            #             sessions_added = oura_sleep_db_add(sleep_dict, oura_token_id)
+            #             flash(f'Successfully added {str(sessions_added)} sleep sesions and updated user Oura Token', 'info')
+            #         else:
+            #             print(f'** Unable to get data from Oura API becuase {sleep_dict}')
+            #             flash(f'Unable to get data from Oura API becuase {sleep_dict}', 'warning')
+            #     elif not new_token:
+            #         flash('User oura token successfully removed','info')
+            #         print('** removed oura token from user')
+            #     else:
+            #         print('-- date detected yesterday for this user')
+            #         print(oura_yesterday)
        
 
             #2) User adds location data
             if new_location != existing_coordinates:
-                if new_location == '':                          #<--- clear old locations
+                if new_location == '':                          #<--- User is removing their location data
                     user.lat = None
                     user.lon = None
                     sess.commit()
                     flash('User coordinates removed succesfully','info')
                 
-                else:                                           #<-- location has latitude and longitude
+                else:                                           #<-- User is updating their location
                     # add lat/lon to users table
                     user.lat = formDict.get('location_text').split(',')[0]
                     user.lon = formDict.get('location_text').split(',')[1]
                     sess.commit()
-                    print('---- Added new coordinates for user ----')
+                    logger_users.info('---- Added new coordinates for user ----')
 
-                    location_id = location_exists(user)
-                    if location_id > 0:                             #<--- locations already exists in database
-                        print('--- location already exists ----')
-                        new_user_loc_day = User_location_day(user_id=current_user.id,
-                            location_id = location_id,
-                            date = yesterday_formatted,
-                            local_time = f"{str(datetime.now().hour)}:{str(datetime.now().minute)}",
-                            row_type='user input')
-                        sess.add(new_user_loc_day)
-                        sess.commit()
-                        flash(f"Updated user's location and add weather history", 'info')
-
-                    else:                                               #<--- Location is completely new
-                        print('--- location does not exist, in process of adding ---')
+                    location_id = location_exists(user)# --------- Check if coordinates are in Locations table
+                    if location_id == 0:     #<--- Coordinates NOT in database
+                        logger_users.info('--- location does not exist, in process of adding ---')
                         location_api_response = call_location_api(user)
                         if isinstance(location_api_response,dict):
                             location_id = add_new_location(location_api_response)
-                            
 
-                #Add User_Loc_day
-                            yesterday = datetime.today() - timedelta(days=1)
-                            yesterday_formatted =  yesterday.strftime('%Y-%m-%d')
-                            new_user_loc_day = User_location_day(
-                                user_id = user.id,
-                                location_id = location_id,
-                                local_time = f"{str(datetime.now().hour)}:{str(datetime.now().minute)}",
-                                date = yesterday_formatted,
-                                row_type = 'user input'
-                            )
-                            sess.add(new_user_loc_day)
+                    else:   #<--- Coordinates in database
+                        logger_users.info('--- location already exists in WS database ----')
+
+                    # make list of past 14 days [Y-M-D]
+                    today = datetime.now()
+                    today_list = [(today-timedelta(days=i)).strftime('%Y-%m-%d') for i in range(1,15)]
+
+                    # Add/update user_loc_day for all in list
+                    
+                    for day in today_list:
+                        user_loc_day_hist = sess.query(User_location_day).filter_by(user_id=current_user.id, date=day).first()
+                        if user_loc_day_hist:
+                            sess.query(User_location_day).filter_by(user_id = current_user.id , date=day).delete()
                             sess.commit()
 
-            #new #2-1b-2) call weather history 
-                            # call_weather_api(location_id, today)
-                            weather_api_response = requests.get(gen_weather_url(location_id, yesterday_formatted))
-                            print('weather_api_response status code: ', weather_api_response.status_code)
-                            
+                        new_user_loc_day = User_location_day(user_id=current_user.id,
+                            location_id = location_id,
+                            date = day,
+                            # local_time = f"{str(datetime.now().hour)}:{str(datetime.now().minute)}",
+                            row_type='user input')
+                        sess.add(new_user_loc_day)
+                        sess.commit()
+
+
+                    # flash(f"Updated user's location and add weather history", 'info')
+                    weather_api_trouble = False
+                    for day in today_list:
+                        loc_day_weather_hist = sess.query(Weather_history).filter_by(location_id=location_id, date_time=day).first()
+                        if loc_day_weather_hist is None:
+                            logger_users.info(f'--- Calling Weather api for {day} in loc_id: {location_id} ----')
+                            weather_api_response = requests.get(gen_weather_url(location_id, day))
                             if weather_api_response.status_code == 200:
-                    #2-1b-2) use response to populate yesterday's history in WEather_history
-                                print('** Adding weather history')
                                 add_weather_history(weather_api_response, location_id)
-                                flash('Succesfully added user location', 'info')
                             else:
-                                print('** FAILING to adding weather history')
-                                flash(f"Unable to add weather history - problem communicating with Visual Crossing", 'warning')
+                                logger_users.info(f'--- Bad API call for Weather history {day} in location_id: {location_id} ----')
+                                logger_users.info(f'--- Status code: {weather_api_response.status_code} ----')
+                                weather_api_trouble = True
+
+
+                        else:
+                            logger_users.info(f'--- Weather history already exists for {day} in loc_id: {location_id} ----')
+
+                    if weather_api_trouble == True:
+                        flash("Some days might not have been updated with weather due to problems with Weather API", "info")
+                    else:
+                        flash("Recent weather history updated!", "success")
+
+                #     if weather_api_response.status_code == 200:
+                # #2-1b-2) use response to populate yesterday's history in WEather_history
+                #         logger_users.info('** Adding weather history')
+                #         add_weather_history(weather_api_response, location_id)
+                #         flash('Succesfully added user location', 'info')
+                #     else:
+                #         logger_users.info('** FAILING to adding weather history')
+                #         flash(f"Unable to add weather history - problem communicating with Visual Crossing", 'warning')
+
+                # #Add User_Loc_day
+                #     yesterday = datetime.today() - timedelta(days=1)
+                #     yesterday_formatted =  yesterday.strftime('%Y-%m-%d')
+                #     new_user_loc_day = User_location_day(
+                #         user_id = user.id,
+                #         location_id = location_id,
+                #         local_time = f"{str(datetime.now().hour)}:{str(datetime.now().minute)}",
+                #         date = yesterday_formatted,
+                #         row_type = 'user input'
+                #     )
+                #     sess.add(new_user_loc_day)
+                #     sess.commit()
+
+                #new #2-1b-2) call weather history 
+                    # call_weather_api(location_id, today)
+                    # weather_api_response = requests.get(gen_weather_url(location_id, yesterday_formatted))
+                    # logger_users.info(f'weather_api_response status code: {weather_api_response.status_code}')
+                    
+
 
 
 
@@ -334,12 +371,12 @@ def account():
 
             #END of POST
             executionTime = (time.time() - startTime_post)
-            print('POST time in seconds: ' + str(executionTime))
+            logger_users.info('POST time in seconds: ' + str(executionTime))
             return redirect(url_for('users.account'))
             
     
     return render_template('accounts.html', page_name = page_name, email=email,
-         oura_token = oura_token, location_coords = existing_coordinates)
+        location_coords = existing_coordinates, city_name = city_name)
 
 
 
@@ -368,7 +405,7 @@ def add_apple():
         # print(filesDict)
         
         formDict = request.form.to_dict()
-        print('formDict: ', formDict)
+        logger_users.info('formDict: ', formDict)
         
         #4) Apple health data
         if apple_halth_data:
@@ -395,7 +432,7 @@ def add_apple():
             flash(f"succesfully saved {'{:,}'.format(new_rec_count)} records from apple export", 'info')
             
         elif formDict.get('btn_delete_apple_data'):
-            print('- delete apple data -')
+            logger_users.info('- delete apple data -')
             
             
             # print('Delete apple data')
@@ -409,21 +446,165 @@ def add_apple():
 
 
 
-@users.route('/add_apple2', methods=['GET', 'POST'])
-def add_apple_2():
-    if request.method == 'POST':
-        print(request.method)
-        print(request.files)
-        filesize = request.cookies.get('filesize')
-        # file = request.files['files']
-        print(f"Filesize: {filesize}")
-        # print(file)
+@users.route('/add_oura', methods=["GET", "POST"])
+def add_oura():
+    logger_users.info(f"--- Add Oura route ---")
+    existing_records = sess.query(Oura_sleep_descriptions).filter_by(user_id=current_user.id).all()
+    oura_sleep_records = "{:,}".format(len(existing_records))
 
-        # res = make_response(jsonify({"message": f"{file.filename} uploaded"}), 200)
-        # return res
-        flash('upload successful', 'info')
-        return redirect(url_for('users.add_apple_2'))
-    return render_template('add_apple.html')
+    existing_oura_token =sess.query(Oura_token, func.max(
+        Oura_token.id)).filter_by(user_id=current_user.id).first()[0]
+
+    
+    if existing_oura_token:
+        oura_token = current_user.oura_token_id[-1].token
+        existing_oura_token_str = str(existing_oura_token.token)
+    else:
+        oura_token = ''
+        existing_oura_token_str = ''
+
+    # logger_users.info(f"--- POST (calling) Oura Ring (user: {current_user.id}) ---")
+    # print('-- Oura Ring --')
+    start_post_time = time.time()
+
+    if request.method == 'POST':
+        formDict = request.form.to_dict()
+        logger_users.info(formDict)
+        if current_user.id ==2:
+            flash("Guest cannot change data. Register and then add data.", "info")
+            return redirect(url_for('users.add_oura'))
+        
+
+
+        oura_token_user = sess.query(Oura_token).filter_by(user_id=current_user.id).first()
+        if oura_token_user:
+            logger_users.info(f"oura_token_user: {oura_token_user}")
+            oura_token_id = oura_token_user.id
+
+        if formDict.get('btn_link_oura'):
+
+            startTime_post = time.time()
+            # formDict = request.form.to_dict()
+            new_token = formDict.get('oura_token_textbox')
+            # new_location = formDict.get('location_text')
+            # email = formDict.get('email')
+            user = sess.query(Users).filter_by(id = current_user.id).first()
+            yesterday = datetime.today() - timedelta(days=1)
+            yesterday_formatted =  yesterday.strftime('%Y-%m-%d')
+
+
+
+            #1) User adds Oura_token data
+            if new_token != existing_oura_token_str:#<-- if new token is different 
+                logger_users.info('------ New token detected ------')
+                #1-1a) if user has token replace it
+                if existing_oura_token:
+                    existing_oura_token.token = new_token
+                    sess.commit()
+                    oura_token_id = existing_oura_token.id
+                    logger_users.info('One alrady exists ---> replace exisiting token')
+                #1-1b) else add new token
+                else:
+                    print('Completely new token')
+                    new_oura_token = Oura_token(user_id = current_user.id,
+                        token = new_token)
+                    sess.add(new_oura_token)
+                    sess.commit()
+
+                    oura_token_id = new_oura_token.id
+
+                #1-1b-1) check if user has oura data yesterday
+                oura_yesterday = sess.query(Oura_sleep_descriptions).filter_by(
+                    user_id = current_user.id,
+                    summary_date = yesterday_formatted).first()
+
+                # --> 1-1b-1b) if no data yesterday, call API
+                if not oura_yesterday and new_token != '':
+
+                    if testing:# use local json file
+                        json_utils_dir = r"/Users/nick/Documents/_testData/json_utils_dir_FromScheduler"
+                        with open(os.path.join(json_utils_dir, '_oura2_call_oura_api.json')) as json_file:
+                            sleep_dict = json.loads(json.load(json_file))
+
+                        sleep_dict = sleep_dict.get(str(current_user.id))
+                        logger_users.info(f"--- Adding oura data from Local json file ---")
+                    else:# Make api call
+                        sleep_dict = oura_sleep_call(new_token)
+
+
+
+                    if isinstance(sleep_dict,dict):
+                        sessions_added = oura_sleep_db_add(sleep_dict, oura_token_id)
+                        flash(f'Successfully added {str(sessions_added)} sleep sesions and updated user Oura Token', 'info')
+                    else:
+                        logger_users.info(f'** Unable to get data from Oura API becuase {sleep_dict}')
+                        flash(f'Unable to get data from Oura API becuase {sleep_dict}', 'warning')
+                elif not new_token:
+                    flash('User oura token successfully removed','info')
+                    logger_users.info('** removed oura token from user')
+                else:
+                    logger_users.info('-- date detected yesterday for this user')
+                    logger_users.info(oura_yesterday)
+       
+
+
+        elif formDict.get('recall_api'):
+            if not existing_oura_token_str in ["", None]:
+                logger_users.info('--- recall_api')
+                if testing:# use local json file
+                    json_utils_dir = r"/Users/nick/Documents/_testData/json_utils_dir_FromScheduler"
+                    with open(os.path.join(json_utils_dir, '_oura2_call_oura_api.json')) as json_file:
+                        sleep_dict = json.loads(json.load(json_file))
+                    
+                    sleep_dict = sleep_dict.get(str(current_user.id))
+
+                    logger_users.info(sleep_dict.keys())
+                    logger_users.info(f"--- Adding oura data from Local json file ---")
+                else:# Make api call
+                    sleep_dict = oura_sleep_call(new_token)
+
+                if isinstance(sleep_dict,dict):
+                    sessions_added = oura_sleep_db_add(sleep_dict, oura_token_id)
+                    flash(f'Successfully added {str(sessions_added)} sleep sesion(s)', 'info')
+            else:
+                flash(f"Must have a Oura Token", "warning")
+
+        elif formDict.get('btn_delete_data'):
+            logger_users.info('----> delete button pressed')
+            # sleep_session_date_for_delete = "2022-10-23"
+            delete_count = sess.query(Oura_sleep_descriptions).filter_by(user_id = current_user.id).delete()
+            sess.query(Oura_token).filter_by(user_id=current_user.id).delete()
+            sess.commit()
+            logger_users.info('* successful delel;ete ')
+            flash(f"Removed {delete_count} records", "warning")
+        return redirect(url_for('users.add_oura'))
+
+    return render_template('add_oura.html', oura_sleep_records = oura_sleep_records, 
+        oura_token = oura_token)
+
+
+
+@users.route('/add_more_weather', methods=["GET","POST"])
+def add_more_weather():
+    return render_template('add_more_weather.html')
+
+
+
+# @users.route('/add_apple2', methods=['GET', 'POST'])
+# def add_apple_2():
+#     if request.method == 'POST':
+#         print(request.method)
+#         print(request.files)
+#         filesize = request.cookies.get('filesize')
+#         # file = request.files['files']
+#         print(f"Filesize: {filesize}")
+#         # print(file)
+
+#         # res = make_response(jsonify({"message": f"{file.filename} uploaded"}), 200)
+#         # return res
+#         flash('upload successful', 'info')
+#         return redirect(url_for('users.add_apple_2'))
+#     return render_template('add_apple.html')
 
 
 
@@ -445,7 +626,7 @@ def reset_password():
         user = sess.query(Users).filter_by(email=email).first()
         if user:
         # send_reset_email(user)
-            print('Email reaquested to reset: ', email)
+            logger_users.info('Email reaquested to reset: ', email)
             send_reset_email(user)
             flash('Email has been sent with instructions to reset your password','info')
             # return redirect(url_for('users.login'))
@@ -461,7 +642,7 @@ def reset_token(token):
     if current_user.is_authenticated:
         return redirect(url_for('dash.dashboard'))
     user = Users.verify_reset_token(token)
-    print('user::', user)
+    logger_users.info('user::', user)
     if user is None:
         flash('That is an invalid or expired token', 'warning')
         return redirect(url_for('users.reset_password'))

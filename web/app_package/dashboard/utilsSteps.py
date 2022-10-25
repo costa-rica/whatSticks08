@@ -193,42 +193,75 @@ def make_steps_chart_util(series_lists_dict, buttons_dict):
 
 def df_utils(USER_ID, step_dash_btns_dir, same_page):
     print('-- in df_utils() --')
-    user_df_apple_steps_file = f'user{USER_ID}_df_apple_steps.json'
-    user_df_oura_sleep_file = f'user{USER_ID}_df_oura_sleep.json'
-    user_df_temp_file = f'user{USER_ID}_df_temp.json'
-    user_df_cloudcover_file = f'user{USER_ID}_df_cloudcover.json'
-    df_apple_steps_path = os.path.join(step_dash_btns_dir, user_df_apple_steps_file)
-    df_oura_sleep_path = os.path.join(step_dash_btns_dir, user_df_oura_sleep_file)
-    df_temp_path = os.path.join(step_dash_btns_dir, user_df_temp_file)
-    df_cloudcover_path = os.path.join(step_dash_btns_dir, user_df_cloudcover_file)
+    data_list = ['steps', 'sleep', 'temp', 'cloudcover']
+    
+    file_dict = {}
+    for data_item in data_list:
+        temp_file_name = f'user{USER_ID}_df_{data_item}.json'
+        file_dict[data_item] = os.path.join(step_dash_btns_dir, temp_file_name)
+    # user_df_apple_steps_file = f'user{USER_ID}_df_apple_steps.json'
+    # user_df_oura_sleep_file = f'user{USER_ID}_df_oura_sleep.json'
+    # user_df_temp_file = f'user{USER_ID}_df_temp.json'
+    # user_df_cloudcover_file = f'user{USER_ID}_df_cloudcover.json'
+
+    # df_apple_steps_path = os.path.join(step_dash_btns_dir, user_df_apple_steps_file)
+    # df_oura_sleep_path = os.path.join(step_dash_btns_dir, user_df_oura_sleep_file)
+    # df_temp_path = os.path.join(step_dash_btns_dir, user_df_temp_file)
+    # df_cloudcover_path = os.path.join(step_dash_btns_dir, user_df_cloudcover_file)
 
     if not same_page:
         print('** Deleteing exisiting files')
-        try:
-            os.remove(df_apple_steps_path)
-            os.remove(df_oura_sleep_path)
-            os.remove(df_temp_path)
-            os.remove(df_cloudcover_path)
-        except:
-            pass
+        for _, f in file_dict.items():
+            if os.path.exists(f):
+                os.remove(f)
+            # try:
+            #     os.remove(df_apple_steps_path)
+            #     os.remove(df_oura_sleep_path)
+            #     os.remove(df_temp_path)
+            #     os.remove(df_cloudcover_path)
+            # except:
+            #     pass
 
     df_dict = {}
-    if not os.path.exists(df_apple_steps_path):
-        df_dict['steps'] = apple_hist_steps(USER_ID)
-        df_dict['sleep'] = oura_hist_util(USER_ID)
-        df_dict['temp'], df_dict['cloudcover'] = user_loc_day_util(USER_ID)
 
-        if not isinstance(df_dict['steps'], bool): df_dict['steps'].to_json(df_apple_steps_path)
-        if not isinstance(df_dict['sleep'], bool): df_dict['sleep'].to_json(df_oura_sleep_path)
-        if not isinstance(df_dict['temp'] , bool): df_dict['temp'] .to_json(df_temp_path)
-        if not isinstance(df_dict['cloudcover'] , bool): df_dict['cloudcover'] .to_json(df_cloudcover_path)
-        print(' --> CREATED new json files for each df')
     
-    else:
-        df_dict['steps'] = pd.read_json(df_apple_steps_path)
-        df_dict['sleep'] = pd.read_json(df_oura_sleep_path)
-        df_dict['temp']  = pd.read_json(df_temp_path)
-        df_dict['cloudcover']  = pd.read_json(df_cloudcover_path)
-        print(' --> READ json files for each df')
+    
+    # for data_item in data_list:
+    #     if not os.path.exists(df_apple_steps_path):
+    for data_item, file_path in file_dict.items():
+        if not os.path.exists(file_path):
+            if data_item == 'steps':
+                df_dict[data_item] = apple_hist_steps(USER_ID)
+                if not isinstance(df_dict['steps'], bool): df_dict['steps'].to_json(file_path)
+            elif data_item == 'sleep':
+                df_dict[data_item] = oura_hist_util(USER_ID)
+                if not isinstance(df_dict['sleep'], bool): df_dict['sleep'].to_json(file_path)
+            elif data_item =='temp':
+                df_dict['temp'], _ = user_loc_day_util(USER_ID)
+                if not isinstance(df_dict['temp'] , bool): df_dict['temp'] .to_json(file_path)
+            elif data_item == 'cloudcover':
+                _, df_dict['cloudcover'] = user_loc_day_util(USER_ID)
+                if not isinstance(df_dict['cloudcover'] , bool): df_dict['cloudcover'] .to_json(file_path)
+        else:
+            df_dict[data_item] = pd.read_json(file_path)
+
+
+    # if not os.path.exists(df_apple_steps_path):
+    #     # df_dict['steps'] = apple_hist_steps(USER_ID)
+    #     # df_dict['sleep'] = oura_hist_util(USER_ID)
+    #     # df_dict['temp'], df_dict['cloudcover'] = user_loc_day_util(USER_ID)
+
+    #     if not isinstance(df_dict['steps'], bool): df_dict['steps'].to_json(df_apple_steps_path)
+    #     if not isinstance(df_dict['sleep'], bool): df_dict['sleep'].to_json(df_oura_sleep_path)
+    #     if not isinstance(df_dict['temp'] , bool): df_dict['temp'] .to_json(df_temp_path)
+    #     if not isinstance(df_dict['cloudcover'] , bool): df_dict['cloudcover'] .to_json(df_cloudcover_path)
+    #     print(' --> CREATED new json files for each df')
+    
+    # else:
+    #     df_dict['steps'] = pd.read_json(df_apple_steps_path)
+    #     df_dict['sleep'] = pd.read_json(df_oura_sleep_path)
+    #     df_dict['temp']  = pd.read_json(df_temp_path)
+    #     df_dict['cloudcover']  = pd.read_json(df_cloudcover_path)
+    #     print(' --> READ json files for each df')
 
     return df_dict

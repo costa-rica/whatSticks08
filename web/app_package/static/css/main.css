@@ -11710,6 +11710,7 @@ section.register .register_form .element_right .element_right_sub .forgot_passwo
 /* Account_new */
 section.account {
   padding-top: var(--nav-height);
+  padding-bottom: var(--nav-height);
   display: flex;
   justify-content: center;
   font-size: 1.5em;
@@ -11728,8 +11729,16 @@ section.account .account_body .account_grid {
   padding: 1rem 0 1rem 0;
   color: var(--bs-gray-200);
 }
+section.account .account_body .account_grid .small_font {
+  font-size: 1rem;
+  display: flex;
+  justify-content: end;
+}
 section.account .account_body .account_grid .register_text {
   width: 100%;
+}
+section.account .account_body .account_grid .disabled_input {
+  background-color: gray;
 }
 section.account .account_body .account_grid .btn_to_label {
   min-width: 110px;
@@ -11748,6 +11757,19 @@ section.account .account_body .account_grid .submit_element_right {
 }
 section.account .account_body .account_grid .submit_element_right input {
   font-size: 1.5rem;
+}
+section.account .account_body .add_apple_link_right {
+  display: flex;
+  justify-content: end;
+}
+section.account .account_body .a_href_no_decor {
+  text-decoration: none;
+}
+section.account .account_body .div_a_href {
+  padding-left: 2rem;
+}
+section.account .account_body .div_a_href:hover {
+  border: 0.5rem solid white;
 }
 
 .accounts_modal:before {
@@ -11841,6 +11863,95 @@ section.apple .apple_body .delete_apple .submit_element_right {
 .apple_delete_modal_dialog .yes_delete_apple {
   display: flex;
   justify-content: center;
+}
+
+/* Add Oura */
+section.oura {
+  padding-top: var(--nav-height);
+}
+section.oura .title {
+  padding: 1rem 0 0 0.5rem;
+  width: 100%;
+  font-size: 2rem;
+}
+section.oura .oura_body {
+  padding: 1rem 0 0 0;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: 1.5em;
+  gap: 1rem;
+}
+section.oura .oura_body .add_token_div {
+  width: 95%;
+}
+section.oura .oura_body .add_token_div .add_oura_input_text {
+  width: 100%;
+}
+section.oura .oura_body .add_token_div .disabled_input {
+  background-color: gray;
+}
+section.oura .oura_body .add_token_div .submit_element_right {
+  display: flex;
+  justify-content: end;
+  padding: 1rem 0 0 0;
+}
+section.oura .oura_body .btn_to_label {
+  min-width: 110px;
+  border: none;
+  background: none;
+  color: var(--bs-gray-200);
+}
+section.oura .oura_body .add_instructions {
+  width: 95%;
+}
+section.oura .oura_body .add_instructions a {
+  color: white;
+}
+section.oura .oura_body .delete_instructions {
+  width: 95%;
+}
+section.oura .oura_body .delete_instructions .submit_element_right {
+  display: flex;
+  justify-content: end;
+  padding: 1rem 0 0 0;
+}
+
+.data_delete_modal:before {
+  display: inline-block;
+  vertical-align: middle;
+  content: " ";
+  height: 100%;
+}
+
+.data_delete_modal_dialog {
+  width: 80%;
+  height: 50%;
+}
+.data_delete_modal_dialog .modal-body {
+  margin-bottom: 1rem;
+}
+.data_delete_modal_dialog .yes_delete_data {
+  display: flex;
+  justify-content: center;
+}
+
+/* Add Oura */
+section.more_weather {
+  padding-top: var(--nav-height);
+}
+section.more_weather .title {
+  padding: 1rem 0 0 0.5rem;
+  width: 100%;
+  font-size: 2rem;
+}
+section.more_weather .more_weather_body {
+  padding: 1rem 0 0 0;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: 1.5em;
+  gap: 1rem;
 }
 
 /* Dashbaord */

@@ -9,26 +9,32 @@
         </div>
 
         <form method="POST" action="" >
-        <div class="account_grid">
+            <div class="account_grid">
             
                 
                 <div class="label"><label>Email:</label></div>
                 <input type="text" name="email" class="register_text" value="{{ email }}">
-
+<!-- 
 
                 <button type="button" class="btn_to_label" data-bs-toggle="modal" 
                     data-bs-target="#activityModal"><u>Oura Ring Token: </u>
                 </button>
                 <input type="text" id="oura_token" name="oura_token" class="register_text"
-                    value="{{ oura_token }}">
+                    value="{{ oura_token }}"> -->
                 
                 
-                    
                 <label for="location_text">Location:</label>
                 <div class="location_input_and_check">
 
                     <input type="text" id="location_text" name="location_text" class="register_text"
                     placeholder="Latitude, Longitude" value = "{{ location_coords }}">
+                    
+                    <input type="text" id="city_name_textbox" name="city_name_textbox" class="register_text disabled_input"
+                    value="{{ city_name }}" readonly>
+
+                    {% if city_name != "2" %}
+                    <small class="small_font">*If you wish to remove your location from WS, delete the coordinates and update.</small>
+                    {% endif %}
 
                     <div class="element_right">
                         <input class="btn btn-secondary btn_loc" type="button" value=""
@@ -38,10 +44,8 @@
                         </label>
                     </div>
 
+
                 </div>
-
-                
-
 
                 <br>
 
@@ -49,14 +53,54 @@
                     <input type="submit" value="Update" class="btn btn-secondary btn_custom01">
                 </div>
              
-                <br>
-                <div class="submit_element_right">
-                    <a href="{{ url_for('users.add_apple') }}" class="btn btn-secondary btn_custom01">Add Apple Health Data </a>
-                </div>
+                
+
             
 
+            </div>
+        </form>
+        
+        <br>
+        <h2>Manage Your Data </h2>
+
+        <br>
+        <a href="{{ url_for('users.add_apple') }}" class="a_href_no_decor">
+            <div class="common_primary_div div_a_href">
+                <div>
+                    Add/remove your Apple Health Data
+                </div>
+
+            </div>
+
+        </a>
+
+
+       <br>
+
+        <a href="{{ url_for('users.add_oura') }}" class="a_href_no_decor">
+        
+        <div class="common_primary_div div_a_href">
+            <div>
+                Add/remove your Oura Ring
+            </div>
+
         </div>
-    </form>
+
+        </a>
+
+        <br>
+        <a href="{{ url_for('users.add_more_weather') }}" class="a_href_no_decor">
+        
+            <div class="common_primary_div div_a_href">
+                <div>
+                    Add more historical weather data
+                </div>
+    
+            </div>
+    
+            </a>
+
+
 
     </div>
 

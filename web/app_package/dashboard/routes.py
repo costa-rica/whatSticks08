@@ -18,6 +18,7 @@ import os
 import time
 
 
+
 dash = Blueprint('dash', __name__)
 
 @dash.route('/dashboard', methods=['GET', 'POST'])
@@ -107,6 +108,9 @@ def dashboard():
         # print(df_user_date_temp)
         # print(df_oura_scores)
 
+        # if user has no data return empty dashboard page
+        if len(df_user_date_temp)  == 0:
+            return render_template('dashboard_empty.html', page_name=page_name)
 
 
         if len(df_oura_scores) > 0 and len(df_user_date_temp) > 0:
@@ -190,11 +194,16 @@ def dashboard():
 
 @dash.route('/dashboard_steps', methods=['GET', 'POST'])
 @login_required
-def dash_steps(same_page =False):
+def dash_steps():
 
     page_name = "Steps Dashboard"
-    same_page =request.args.get('same_page')
+    if request.referrer == request.base_url:
+        same_page = True
+    else:
+        same_page = False
+
     print('request.referrer::: ', request.referrer)
+    print('current url: ', request.base_url)
 
     USER_ID = current_user.id if current_user.id !=2 else 1
 
@@ -202,10 +211,8 @@ def dash_steps(same_page =False):
     dash_btns_dir = os.path.join(current_app.static_folder,'dash_btns')
     step_dash_btns_dir = os.path.join(dash_btns_dir, 'steps')
     
-    try:
+    if not os.path.exists(step_dash_btns_dir):
         os.makedirs(step_dash_btns_dir)
-    except:
-        print('folder exisits')
 
     # Buttons for dashboard table to toggle on/off correlations
     buttons_dict = {}
@@ -214,27 +221,15 @@ def dash_steps(same_page =False):
         formDict = request.form.to_dict()
 
         buttons_dict = buttons_dict_util(formDict, step_dash_btns_dir, buttons_dict, user_btn_json_name)
-        return redirect(url_for('dash.dash_steps', same_page=True))
+        return redirect(url_for('dash.dash_steps'))
 
     if os.path.exists(os.path.join(step_dash_btns_dir,user_btn_json_name)):
         buttons_dict = buttons_dict_update_util(step_dash_btns_dir, user_btn_json_name)
 
     # Get raw df's with all the exisiting data
-    # df_apple_steps, df_oura_sleep, df_weather = df_utils(USER_ID, step_dash_btns_dir, same_page)
     df_dict = df_utils(USER_ID, step_dash_btns_dir, same_page)
 
-
-
     list_of_user_data = [df_name  for df_name, df in df_dict.items() if not isinstance(df, bool)]
-    print(' -- list of user data --')
-    print(list_of_user_data)
-    # not_false_in_tuple = 0
-    # for _, df in df_dict.items():
-    #     print(df)
-    #     if not isinstance(df,bool):
-            
-    #         not_false_in_tuple += 1
-    #         print('--- at least once this should fire?')
     
     # if user has no data return empty dashboard page
     if len(list_of_user_data) == 0:
@@ -245,22 +240,22 @@ def dash_steps(same_page =False):
         if not isinstance(df, bool) and tuple_count==0:
             df_all = df
             tuple_count += 1
-            # print('---- use these column names::: ')
-            # print(df_all.columns)
+
         elif not isinstance(df, bool):
             df_all = pd.merge(df_all, df, how='outer')
-            print('---- use these column names::: ')
-            print(df_all.columns)
+            # print('---- use these column names::: ')
+            # print(df_all.columns)
     
-    # print(df_all.head())
-    # df_all = pd.merge(df_apple_steps, df_oura_sleep, how='outer')
-    # df_all = pd.merge(df_all, df_weather, how='outer')
     df_all = df_all.dropna(axis=1, how='all')#remove columns with all missing values
+
+    if len(df_all)==0:# No weather data will cause this
+        return render_template('dashboard_empty.html', page_name=page_name)
+
     if df_all.dtypes['date'].str =='<M8[ns]':# when read from .json file df's are datetime, but should be strings
-        print('convert to string')
+        # print('convert to string')
         df_all['date'] = df_all['date'].dt.strftime('%Y-%m-%d')
 
-    print('-- df_all --')
+    # print('-- df_all --')
     # print(df_all.head())
 
     # make each column into a list series
@@ -282,44 +277,19 @@ def dash_steps(same_page =False):
         for df_name in list_of_user_data:
             df = pd.merge(df_dict['steps'], df_dict[df_name], how='outer')
             df = df[df[df_name].notna()]
-            print(' --- df_head:: ', df_name)
-            print(df.head())
+            # print(' --- df_head:: ', df_name)
+            # print(df.head())
             corr_dict[df_name] = round(df[df_name].corr(df['steps']),2)
+            # print(f'---- Correlation for {df_name} ----')
+            # print(type(corr_dict[df_name] ))
+            # print(corr_dict[df_name] )
+            # if corr_dict[df_name] == "nan":
+            if corr_dict[df_name] != corr_dict[df_name]:# Pythonic way for checking for nan
+                corr_dict[df_name] = "Not enough data"
     
-    print(' --- buttons_dict ---')
-    print(buttons_dict)
 
+    
 
-    # if not isinstance(df_apple_steps, bool) and not isinstance(df_weather,bool):
-    #     # df = pd.merge(df_apple_steps, df_weather, how='left', left_on=['date'], right_on=['date'])
-    #     df = pd.merge(df_apple_steps, df_weather, how='outer')
-
-    #     df = df[df['temp'].notna()]
-    #     corr_dict['avg_temp'] = round(df['temp'].corr(df['steps']),2)
-    #     corr_dict['cloudiness'] = round(df['cloudcover'].corr(df['steps']),2)
-
-    # # Correlation: steps and sleep
-    # if not isinstance(df_apple_steps, bool) and not isinstance(df_oura_sleep,bool):
-    # # if df_apple_steps != False and df_oura_sleep != False:
-    #     # df = pd.merge(df_apple_steps, df_oura_sleep, how='left', left_on=['date'], right_on=['date'])
-    #     df = pd.merge(df_apple_steps, df_oura_sleep, how='outer')
-    #     df = df[df['score'].notna()]
-
-    #     corr_dict['sleep_score'] = round(df['score'].corr(df['steps']),2)
-
-
-    # #Use list data to make chart
-    # script_b, div_b, cdn_js_b = "","",""
-    # # corr_dict =""
-    # corr_dict['avg_temp'] = 88
-    # corr_dict['cloudiness'] = 78
-    # corr_dict['sleep_score'] = 99
 
     return render_template('dashboard_steps.html', page_name=page_name,
         script_b = script_b, div_b = div_b, cdn_js_b = cdn_js_b, corr_dict=corr_dict, buttons_dict=buttons_dict)
-    # else:
-    #     df = ''
-
-    #     return render_template('dashboard_steps.html', page_name=page_name)
-
-    # return render_template('dashboard_steps.html', page_name=page_name)

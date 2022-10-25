@@ -248,6 +248,7 @@ section.register {
 /* Account_new */
 section.account {
     padding-top: var(--nav-height);
+    padding-bottom: var(--nav-height);
     display: flex;
     justify-content: center;
     font-size: 1.5em;
@@ -262,11 +263,16 @@ section.account {
             background-color: var(--bs-primary);
             padding: 1rem 0 1rem 0;
             color: var(--bs-gray-200);
-
+            .small_font{
+                font-size: 1rem;
+                display:flex;
+                justify-content: end;}
             .register_text{
                 width: 100%;
             }
-
+            .disabled_input {
+                background-color: gray;
+            }
             .btn_to_label{
                 min-width: 110px;
                 border: none;
@@ -286,6 +292,24 @@ section.account {
                 }
                 
             }
+        }
+
+        .add_apple_link_right {
+            display: flex;
+            justify-content: end;
+            // background-color: red;
+        }
+
+        .a_href_no_decor {
+            text-decoration: none;
+        }
+        .div_a_href {
+            padding-left: 2rem;
+        }
+        .div_a_href:hover {
+            // border-color: white;
+            border:.5rem solid white;
+            // padding-left: 2rem;
         }
     }
 }
@@ -393,7 +417,102 @@ section.apple{
 }
 
 
+/* Add Oura */
+section.oura{
+    padding-top: var(--nav-height);
 
+    .title{
+        padding:1rem 0 0 .5rem;
+        width:100%;
+        font-size: 2rem;
+    }
+    .oura_body{
+        padding: 1rem 0 0 0;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        font-size: 1.5em;
+        gap:1rem;
+
+        .add_token_div {
+            width: 95%;
+            .add_oura_input_text {
+                width: 100%;
+                // background-color: gray;
+            }
+            .disabled_input {
+                background-color: gray;
+            }
+            // .enabled_input {
+            //     background-color: white;
+            // }
+            .submit_element_right{
+                display:flex;
+                justify-content: end;
+                padding: 1rem 0 0 0;
+            }
+        }
+        .btn_to_label{
+            min-width: 110px;
+            border: none;
+            background:none;
+            color: var(--bs-gray-200);
+        }
+        .add_instructions{
+            width: 95%;
+            a{color: white;}
+        }
+
+        .delete_instructions{
+            width:95%;
+            .submit_element_right{
+                display:flex;
+                justify-content: end;
+                padding: 1rem 0 0 0;
+            }
+        }
+    }
+}
+
+
+.data_delete_modal:before{
+    display: inline-block;
+    vertical-align: middle;
+    content: " ";
+    height: 100%;
+}
+
+.data_delete_modal_dialog {
+    width: 80%;
+    height: 50%;
+    .modal-body{
+        margin-bottom: 1rem;
+    }
+    .yes_delete_data{
+        display: flex;
+        justify-content: center;
+    }
+}
+
+
+/* Add Oura */
+section.more_weather{
+    padding-top: var(--nav-height);
+
+    .title{
+        padding:1rem 0 0 .5rem;
+        width:100%;
+        font-size: 2rem;
+    }
+    .more_weather_body{
+        padding: 1rem 0 0 0;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        font-size: 1.5em;
+        gap:1rem;
+    }
+}
 
 
 
