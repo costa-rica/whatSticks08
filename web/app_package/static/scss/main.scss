@@ -40,12 +40,7 @@ body {
     text-align: center;
     vertical-align: middle;
   }
-// .modal:before {
-//     display: inline-block;
-//     vertical-align: middle;
-//     content: " ";
-//     height: 100%;
-// }
+
 .modal-dialog{
     display: inline-block;
     text-align: left;
@@ -61,6 +56,7 @@ body {
 /* HOME */
 section.home {
     padding-top: var(--nav-height);
+    padding-bottom: var(--nav-height);
     display: flex;
     justify-content: center;
     // .not_nav{padding-top: var(--nav-height);}
@@ -186,6 +182,7 @@ section.home {
 /* Register */
 section.register {
     padding-top: var(--nav-height);
+    padding-bottom: var(--nav-height);
     display: flex;
     flex-wrap: wrap;
     // .title {
@@ -326,7 +323,7 @@ section.account {
 /* Add apple */
 section.apple{
     padding-top: var(--nav-height);
-
+    padding-bottom: var(--nav-height);
     .title{
         padding:1rem 0 0 .5rem;
         width:100%;
@@ -416,11 +413,42 @@ section.apple{
     }
 }
 
+/* More Apple */
+section.apple_more{
+    padding-top: var(--nav-height);
+    padding-bottom: var(--nav-height);
+    .title{
+        padding:1rem 0 0 .5rem;
+        width:100%;
+        font-size: 2rem;
+    }
+    .apple_more_body{
+        padding: 1rem 0 0 0;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        font-size: 1.5em;
+        gap:1rem;
+        .more_apple_description{
+            padding: 1rem;
+            // margin: 2rem;
+            width: 90%;
+        }
+        .table_background_sub{
+        
+            width: 90%;
+            .middleize{
+                text-align: center;
+            }
+        }
 
+    }
+
+}
 /* Add Oura */
 section.oura{
     padding-top: var(--nav-height);
-
+    padding-bottom: var(--nav-height);
     .title{
         padding:1rem 0 0 .5rem;
         width:100%;
@@ -498,7 +526,7 @@ section.oura{
 /* Add Oura */
 section.more_weather{
     padding-top: var(--nav-height);
-
+    padding-bottom: var(--nav-height);
     .title{
         padding:1rem 0 0 .5rem;
         width:100%;
@@ -519,6 +547,7 @@ section.more_weather{
 /* Dashbaord */
 section.dashboard {
     padding-top: var(--nav-height);
+    padding-bottom: var(--nav-height);
     .table_and_chart {
         display:flex;
         flex-wrap:wrap;
@@ -597,6 +626,16 @@ section.dashboard {
                 z-index: 0;
                 // display: none;
             }
+        }
+    }
+    .custom_apple{
+        width:95%;
+        padding: 1rem;
+        font-size: 1.5rem;
+        .submit_element_right{
+            display:flex;
+            justify-content: end;
+            padding: 1rem 0 0 0;
         }
     }
 }

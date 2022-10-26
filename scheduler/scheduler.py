@@ -152,6 +152,8 @@ def call_weather_api(date_formatted):
         #locatinos_dict = {loc_id: [lat, lon]}
 
     weather_dict = {}
+    call_list = []
+    call_response = []
     #1) Loop through dictionary
     for loc_id, coords in locations_dict.items():
         location_coords = f"{coords[0]},{coords[1]}"
@@ -162,9 +164,11 @@ def call_weather_api(date_formatted):
         date_time = datetime.strptime(date_formatted + " 13:00:00", "%Y-%m-%d %H:%M:%S").isoformat()
 
         weather_call_url =f"{config.VISUAL_CROSSING_BASE_URL}{location_coords}/{str(date_time)}?key={config.VISUAL_CROSSING_TOKEN}&include=current"
+        call_list.append(weather_call_url)
 
         try:
             r_history = requests.get(weather_call_url)
+            call_response.append(r_history.status_code)#tracking weather_call_urls
             
             if r_history.status_code == 200:
             
@@ -174,7 +178,12 @@ def call_weather_api(date_formatted):
                 weather_dict[loc_id] = f'Problem connecting with Weather API. Response code: {r_history.status_code}'
         except:
             weather_dict[loc_id] = 'Error making call to Weather API. No response.'
+            call_response.append("Error making this call")#tracking weather_call_urls
     
+    #This just to record my calls
+    df=pd.DataFrame(zip(call_list,call_response),columns=(["weather_call_url", "response"]))
+    df.to_csv(os.path.join(config.json_utils_dir,'weather_call_urls.csv'))
+
     #3) put response in  a json
     weather_dict_json = json.dumps(weather_dict)
     with open(os.path.join(config.json_utils_dir, '_locations2_call_weather_api.json'), 'w') as outfile:
@@ -242,6 +251,9 @@ def call_oura_api():
         oura_tokens_dict = json.loads(json.load(json_file))
     
     oura_response_dict = {}
+    oura_call_list = []
+    oura_user_id_list = []
+    oura_call_response = []
     for user_id, oura_token_list in oura_tokens_dict.get('content').items():
         if len(oura_token_list)==2:# this means there is a token_id and token, otherwise we just received ['User has no Oura token']
             # url_sleep='https://api.ouraring.com/v1/sleep?start=2020-03-11&end=2020-03-21?'#TODO: put this address in config
@@ -249,7 +261,10 @@ def call_oura_api():
             response_sleep = requests.get(url_sleep, headers={"Authorization": "Bearer " + oura_token_list[1]})
             # print('--> response_sleep.status_code: ', response_sleep.status_code)
             logger_init.info(f'--> response_sleep.status_code: {response_sleep.status_code}')
-            if response_sleep.status_code ==200:
+            oura_call_list.append(url_sleep)
+            oura_user_id_list.append(user_id)
+            oura_call_response.append(response_sleep.status_code)
+            if response_sleep.status_code == 200:
                 sleep_dict = response_sleep.json()
                 #add whatSticks token id to dict
                 sleep_dict['wsh_oura_token_id'] = oura_token_list[0]
@@ -263,6 +278,10 @@ def call_oura_api():
             sleep_dict['No Oura data reason'] = 'User has no Oura Ring Token'
         oura_response_dict[user_id] = sleep_dict
     
+    #This just to record my calls
+    df=pd.DataFrame(zip(oura_user_id_list,oura_call_list, oura_call_response),columns=(["user_id","weather_call_url", "response"]))
+    df.to_csv(os.path.join(config.json_utils_dir,'oura_call_urls.csv'))
+
     oura_sleep_json = json.dumps(oura_response_dict)
     with open(os.path.join(config.json_utils_dir, '_oura2_call_oura_api.json'), 'w') as outfile:
         json.dump(oura_sleep_json, outfile)

@@ -1,0 +1,73 @@
+{% extends "_layout.html" %}
+{% block main %}
+
+
+<section class="apple_more">
+
+  <div class="title">
+    More Apple Health Data (iPhone Export)
+  </div>
+
+  <div class="apple_more_body">
+
+    <div class="common_primary_div more_apple_description">
+
+    The table below shows all the different types of data Apple Health has collected in your phone.
+    </div>
+
+    <br>
+    <br>
+
+    <div class=" table_background_sub ">
+      <div class="table_background">
+        <table id="table_id" class="display table responsive table_custom_fit">
+          <thead>
+            <tr >
+
+            <th class="word_row_column">Type </th>
+            <th class="row_tag_column middleize">Record Count </th>
+
+            
+
+
+            </tr>
+          </thead>
+          <tbody>
+            {% for key, value in df_dict.items() %}
+            <tr>
+              <td>
+                {{ key }}
+              </td>
+              <td class="middleize">
+                {{ "{:,}".format(value) }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+
+        </table>
+      </div>
+    </div>
+
+
+
+
+  </div>
+</section>
+
+
+  
+<script type="text/javascript">
+
+  $(document).ready(function() {
+    $('#table_id').DataTable({
+      aLengthMenu: [
+        [25, 50, 100, -1],
+        [25, 50, 100, "All"]
+    ],
+    iDisplayLength: 50
+    });
+
+  } );
+</script>
+{% endblock %}

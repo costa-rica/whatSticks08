@@ -15,7 +15,7 @@ from app_package.users.utils import call_location_api, location_exists, \
 from app_package.users.utils import send_reset_email
 #Apple
 from app_package.users.utilsApple import make_dir_util, new_apple_data_util
-
+from app_package.dashboard.utilsSteps import create_raw_df
 from sqlalchemy import func
 from datetime import datetime, timedelta
 import time
@@ -380,8 +380,6 @@ def account():
 
 
 
-
-
 @users.route('/add_apple', methods=["GET", "POST"])
 def add_apple():
     
@@ -444,6 +442,24 @@ def add_apple():
         return redirect(url_for('users.add_apple'))
     return render_template('add_apple.html', apple_records=apple_records)
 
+@users.route('/add_more_apple', methods=['GET', 'POST'])
+def add_more_apple():
+    table_name = 'apple_health_export_'
+    USER_ID = current_user.id if current_user.id !=2 else 1
+    df = create_raw_df(USER_ID, Apple_health_export, table_name)
+    print('--- ')
+    # print(df.head())
+    df_type = df[['type']].copy()
+    df_type = df_type.groupby(['type'])['type'].count()
+    # df_type.rename(columns = {list(df_type)[1]: 'record_count'}, inplace = True)
+    # df_type.style.format({"record_count": "{:,.0f}"})
+    print(df_type.head())
+    df_dict = df_type.to_dict()
+    # print(df_dict.keys())
+    # print('------')
+    # print(df_dict)
+
+    return render_template('add_apple_more.html', df_dict=df_dict)
 
 
 @users.route('/add_oura', methods=["GET", "POST"])
