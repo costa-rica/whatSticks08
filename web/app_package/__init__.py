@@ -6,7 +6,8 @@ import os
 import json
 import logging
 from logging.handlers import RotatingFileHandler
-import os
+from pytz import timezone
+from datetime import datetime
 
 # Config Begin
 config_dict = {}
@@ -30,9 +31,19 @@ logs_dir = os.path.join(os.getcwd(), 'logs')
 if not os.path.exists(logs_dir):
     os.makedirs(logs_dir)
 
+# timezone 
+def timetz(*args):
+    return datetime.now(tz).timetuple()
+# tz = timezone('Europe/Paris')
+
+tz = timezone('Asia/Shanghai') 
+logging.Formatter.converter = timetz
+
+
 #Setting up Logger
 formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
 formatter_terminal = logging.Formatter('%(asctime)s:%(filename)s:%(name)s:%(message)s')
+# formatter_terminal_tz = logging_tz.LocalFormatter('%(asctime)s:%(filename)s:%(name)s:%(message)s', datefmt=datefmt)# new for tz
 
 logger_init = logging.getLogger('__init__')
 logger_init.setLevel(logging.DEBUG)
@@ -40,11 +51,21 @@ logger_init.setLevel(logging.DEBUG)
 file_handler = RotatingFileHandler(os.path.join(logs_dir,'__init__.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
 file_handler.setFormatter(formatter)
 
+# logger_tz = logging.getLogger(('__init__-tz'))# new for tz
+# logger_tz.setFormatter(formatter_terminal_tz)# new for tz
+
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter_terminal)
 
+stream_handler_tz = logging.StreamHandler()
+# stream_handler_tz.setFormatter(formatter_terminal_tz)# new for tz
+
 logger_init.addHandler(file_handler)
 logger_init.addHandler(stream_handler)
+
+# logger_tz.addHandler(stream_handler_tz)# new for tz
+
+
 
 #set werkzeug handler
 logging.getLogger('werkzeug').setLevel(logging.DEBUG)
@@ -52,6 +73,7 @@ logging.getLogger('werkzeug').addHandler(file_handler)
 #End set up logger
 
 logger_init.info(f'--- Starting ws08web ---')
+# logger_tz.info(f'--- Starting ws08web ---')
 
 
 # App init

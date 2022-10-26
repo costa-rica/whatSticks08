@@ -96,7 +96,7 @@ def home():
 def login():
     print('* in login *')
     if current_user.is_authenticated:
-        return redirect(url_for('dash.dashboard'))
+        return redirect(url_for('dash.dash_steps'))
     page_name = 'Login'
     if request.method == 'POST':
         formDict = request.form.to_dict()
@@ -116,7 +116,7 @@ def login():
                     login_user(user)
                     # flash('Logged in succesfully', 'info')
 
-                    return redirect(url_for('dash.dashboard'))
+                    return redirect(url_for('dash.dash_steps'))
                 else:
                     flash('Password or email incorrectly entered', 'warning')
             else:
@@ -127,7 +127,7 @@ def login():
             login_user(user)
             # flash('Logged in succesfully as Guest', 'info')
 
-            return redirect(url_for('dash.dashboard'))
+            return redirect(url_for('dash.dash_steps'))
         else:
             flash('No user by that name', 'warning')
 

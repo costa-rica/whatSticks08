@@ -16,7 +16,33 @@ from app_package.dashboard.utilsSteps import apple_hist_steps, oura_hist_util, \
 import json
 import os
 import time
+import logging
+from logging.handlers import RotatingFileHandler
 
+
+logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+
+#Setting up Logger
+formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
+formatter_terminal = logging.Formatter('%(asctime)s:%(filename)s:%(name)s:%(message)s')
+
+#initialize a logger
+logger_dash = logging.getLogger(__name__)
+logger_dash.setLevel(logging.DEBUG)
+# logger_terminal = logging.getLogger('terminal logger')
+# logger_terminal.setLevel(logging.DEBUG)
+
+#where do we store logging information
+file_handler = RotatingFileHandler(os.path.join(logs_dir,'dashboard_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler.setFormatter(formatter)
+
+#where the stream_handler will print
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter_terminal)
+
+# logger_sched.handlers.clear() #<--- This was useful somewhere for duplicate logs
+logger_dash.addHandler(file_handler)
+logger_dash.addHandler(stream_handler)
 
 
 dash = Blueprint('dash', __name__)
@@ -195,7 +221,7 @@ def dashboard():
 @dash.route('/dashboard_steps', methods=['GET', 'POST'])
 @login_required
 def dash_steps():
-
+    logger_dash.info(f'--- Entered dashboard_steps ---')
     page_name = "Steps Dashboard"
     if request.referrer == request.base_url:
         same_page = True
