@@ -54,7 +54,7 @@ def test_function(args):
     return print('process complete')
 
 
-test_function(argv[1])
+# test_function(argv[1])
 
 # def send_email():
 #     print('call email api with user_id and message')
@@ -102,5 +102,5 @@ def add_apple(xml_file_name, user_id):
     
     logger_apple.info('Apple subprocess complete!')
 
-# add_apple(argv[1], argv[2])
+add_apple(argv[1], argv[2])
 

@@ -130,13 +130,43 @@ def header_fix_util(line_list):
     return new_string
 
 
-def body_fix_util(body_list):
-    start_time = time.time()
-    counter = 0
+# def body_fix_util(body_list):
+#     start_time = time.time()
+#     counter = 0
+#     string_obj = ''
+#     error_count = 0
+#     checkpoint = 5*10**5
+# #     checkpoint = 10
+    
+#     for line in body_list:
+#         start_date_line_list = [m.start() for m in re.finditer('startDate', line)]
+#         if len(start_date_line_list)>1:
+#             error_count += 1
+#             string_obj = string_obj + line[:start_date_line_list[1]] + "endDate" + line[start_date_line_list[1]+len('startDate'):]
+#         else:
+#             string_obj = string_obj + line
+        
+#         if counter% checkpoint == 0:
+            
+#             end_time = time.time()
+#             run_seconds = round(end_time - start_time)
+#             if run_seconds <60:
+#                 print(f'{"{:,}".format(counter)} rows have been reviewed --run_time: {str(run_seconds)} seconds')
+#             elif run_seconds > 60:
+#                 run_minutes =  round(run_seconds / 60)
+#                 print(f'{"{:,}".format(counter)} rows have been reviewed ---- run_time: {str(run_minutes)} mins and {str(run_seconds % 60)} seconds')
+
+#         counter += 1
+#     print(f'Completed: Found {error_count} startDate errors')
+#     return string_obj
+
+
+
+def body_fix_small_util(body_list):
+    row_counter = 0
     string_obj = ''
     error_count = 0
-    checkpoint = 5*10**5
-#     checkpoint = 10
+    # checkpoint = 2.5*10**5
     
     for line in body_list:
         start_date_line_list = [m.start() for m in re.finditer('startDate', line)]
@@ -146,19 +176,47 @@ def body_fix_util(body_list):
         else:
             string_obj = string_obj + line
         
-        if counter% checkpoint == 0:
-            
-            end_time = time.time()
-            run_seconds = round(end_time - start_time)
-            if run_seconds <60:
-                print(f'{"{:,}".format(counter)} rows have been reviewed --run_time: {str(run_seconds)} seconds')
-            elif run_seconds > 60:
-                run_minutes =  round(run_seconds / 60)
-                print(f'{"{:,}".format(counter)} rows have been reviewed ---- run_time: {str(run_minutes)} mins and {str(run_seconds % 60)} seconds')
+        row_counter += 1
+    return string_obj, row_counter, error_count
 
-        counter += 1
-    print(f'Completed: Found {error_count} startDate errors')
-    return string_obj
+def body_fix_looper_util(body_line_list):
+    start_time = time.time()
+    fixed_body_dict = {}
+    break_point_list = []
+    error_count = 0
+    row_count = 0
+    #break list into 10 parts
+    for i in range(0,10):
+        break_point_list.append(int(len(body_line_list)*(i*.1)))
+
+    #fix one of the ten parts at a time and store into a dictionary (fixed_body_dict)
+    for i in range(0,10):
+        start = break_point_list[i]
+        if i<9:
+            end = break_point_list[i+1]
+            temp_string, temp_row_count, temp_error_count = body_fix_small_util(body_line_list[start:end])
+            fixed_body_dict[i]= temp_string
+        else:
+            temp_string, temp_row_count, temp_error_count = body_fix_small_util(body_line_list[start:])
+            fixed_body_dict[i]= temp_string
+        
+        error_count = error_count + temp_error_count
+        row_count = row_count + temp_row_count
+            
+    body_string_fixed =''
+    for _, string in fixed_body_dict.items():
+        body_string_fixed = body_string_fixed + string      
+        
+    end_time = time.time()
+    run_seconds = round(end_time - start_time)
+    if run_seconds <60:
+        logger_apple.info(f'{"{:,}".format(row_count)} rows, {"{:,}".format(error_count)} errors --run_time: {str(run_seconds)} seconds')
+    elif run_seconds > 60:
+        run_minutes =  round(run_seconds / 60)
+        logger_apple.info(f'{"{:,}".format(row_count)} rows, {"{:,}".format(error_count)} errors -- run_time: {str(run_minutes)} mins and {str(run_seconds % 60)} seconds')
+
+    return body_string_fixed
+
 
 
 def xml_get_header_body(header_string,body_string):
@@ -203,7 +261,8 @@ def xml_file_fixer(xml_path):
     except:
         logger_users.info(f"--- xml_util: attempting to fix body string ---")
 
-    body_string_fixed = body_fix_util(body_line_list)
+    # body_string_fixed = body_fix_util(body_line_list)
+    body_string_fixed = body_fix_looper_util(body_line_list)
 
     # try to convert combined FIXED header and FIXED body string to dict
     try:
