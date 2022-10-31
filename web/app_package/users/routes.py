@@ -1,3 +1,4 @@
+from contextlib import redirect_stderr
 from flask import Blueprint
 from flask import render_template, url_for, redirect, flash, request, \
     abort, session, Response, current_app, send_from_directory, make_response
@@ -14,8 +15,12 @@ from app_package.users.utils import call_location_api, location_exists, \
 #Email
 from app_package.users.utils import send_reset_email
 #Apple
-from app_package.users.utilsApple import make_dir_util, new_apple_data_util
+from app_package.users.utilsApple import make_dir_util, decompress_and_save_apple_health, \
+    add_apple_to_db, report_process_time
+from app_package.users.utilsXmlUtility import xml_file_fixer, compress_to_save_util
+
 from app_package.dashboard.utilsSteps import create_raw_df
+
 from sqlalchemy import func
 from datetime import datetime, timedelta
 import time
@@ -24,6 +29,7 @@ from logging.handlers import RotatingFileHandler
 import os
 import json
 from ws_config01 import ConfigDev, ConfigProd
+import xmltodict
 
 if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
     config = ConfigDev()
@@ -67,7 +73,7 @@ users = Blueprint('users', __name__)
 def home():
     if current_user.is_authenticated:
         return redirect(url_for('dash.dashboard'))
-    
+
 
     latest_post = sess.query(Posts).all()
     if len(latest_post) > 0:
@@ -134,7 +140,7 @@ def login():
         # if successsful login_something_or_other...
 
 
-    
+
     return render_template('login.html', page_name = page_name)
 
 @users.route('/register', methods = ['GET', 'POST'])
@@ -145,12 +151,12 @@ def register():
     if request.method == 'POST':
         formDict = request.form.to_dict()
         new_email = formDict.get('email')
-        
+
         check_email = sess.query(Users).filter_by(email = new_email).all()
         if len(check_email)==1:
             flash(f'The email you entered already exists you can sign in or try another email.', 'warning')
             return redirect(url_for('users.register'))
- 
+
         hash_pw = bcrypt.hashpw(formDict.get('password_text').encode(), salt)
         new_user = Users(email = new_email, password = hash_pw)
         sess.add(new_user)
@@ -173,11 +179,11 @@ def account():
     logger_users.info(f"--- user accessed Accounts")
     page_name = 'Account Page'
     email = current_user.email
-    
+
     logger_users.info(f'Current User: {current_user.email}')
 
     user = sess.query(Users).filter_by(id = current_user.id).first()
-    
+
     if user.lat == None or user.lat == '':
         existing_coordinates = ''
         city_name = ''
@@ -207,7 +213,7 @@ def account():
 
 
             # #1) User adds Oura_token data
-            # if new_token != existing_oura_token_str:#<-- if new token is different 
+            # if new_token != existing_oura_token_str:#<-- if new token is different
             #     print('------ New token detected ------')
             #     #1-1a) if user has token replace it
             #     if existing_oura_token:
@@ -246,7 +252,7 @@ def account():
             #     else:
             #         print('-- date detected yesterday for this user')
             #         print(oura_yesterday)
-       
+
 
             #2) User adds location data
             if new_location != existing_coordinates:
@@ -255,7 +261,7 @@ def account():
                     user.lon = None
                     sess.commit()
                     flash('User coordinates removed succesfully','info')
-                
+
                 else:                                           #<-- User is updating their location
                     # add lat/lon to users table
                     user.lat = formDict.get('location_text').split(',')[0]
@@ -278,7 +284,7 @@ def account():
                     today_list = [(today-timedelta(days=i)).strftime('%Y-%m-%d') for i in range(1,15)]
 
                     # Add/update user_loc_day for all in list
-                    
+
                     for day in today_list:
                         user_loc_day_hist = sess.query(User_location_day).filter_by(user_id=current_user.id, date=day).first()
                         if user_loc_day_hist:
@@ -339,18 +345,18 @@ def account():
                 #     sess.add(new_user_loc_day)
                 #     sess.commit()
 
-                #new #2-1b-2) call weather history 
+                #new #2-1b-2) call weather history
                     # call_weather_api(location_id, today)
                     # weather_api_response = requests.get(gen_weather_url(location_id, yesterday_formatted))
                     # logger_users.info(f'weather_api_response status code: {weather_api_response.status_code}')
-                    
+
 
 
 
 
             #3) User changes email
             if email != user.email:
-                
+
                 #check that not blank
                 if email == '':
                     flash('Must enter a valid email.', 'warning')
@@ -362,7 +368,7 @@ def account():
                 if email in other_users_email_list:
                     flash('That email is being used by another user. Please choose another.', 'warning')
                     return redirect(url_for('users.account'))
-                
+
                 #update user email
                 user.email = email
                 sess.commit()
@@ -373,8 +379,8 @@ def account():
             executionTime = (time.time() - startTime_post)
             logger_users.info('POST time in seconds: ' + str(executionTime))
             return redirect(url_for('users.account'))
-            
-    
+
+
     return render_template('accounts.html', page_name = page_name, email=email,
         location_coords = existing_coordinates, city_name = city_name)
 
@@ -382,7 +388,8 @@ def account():
 
 @users.route('/add_apple', methods=["GET", "POST"])
 def add_apple():
-    
+
+
     existing_records = sess.query(Apple_health_export).filter_by(user_id=current_user.id).all()
     apple_records = "{:,}".format(len(existing_records))
 
@@ -398,41 +405,94 @@ def add_apple():
             flash("Guest cannot change data. Register and then add data.", "info")
             return redirect(url_for('users.add_apple'))
         filesDict = request.files
-        apple_halth_data = filesDict.get('apple_halth_data')
-        # print('- filesDict -')
-        # print(filesDict)
-        
-        formDict = request.form.to_dict()
-        logger_users.info('formDict: ', formDict)
-        
-        #4) Apple health data
-        if apple_halth_data:
-            
-            new_rec_count = new_apple_data_util(apple_health_dir, apple_halth_data)
-            # new_rec_count = 9
+        apple_health_data = filesDict.get('apple_health_data')
 
+        # logger_users.info('---- filesDict ----')
+        # logger_users.info(filesDict)
+        # logger_users.info('---- file name ----')
+        if filesDict.get('apple_health_data'):
+            logger_users.info(filesDict.get('apple_health_data').filename)
+
+
+        formDict = request.form.to_dict()
+        # logger_users.info('- formDict -')
+        # logger_users.info(formDict)
+
+
+        #4) Apple health data
+        if apple_health_data:
 
 
             # Measuring file loading time and size
             filesize = float(request.cookies.get('filesize'))
-            filesize = "{:,}".format(round(filesize/ 10**6,1))
-            logger_users.info(f"Filesize: {filesize} Mb")
+            filesize_mb = round(filesize/ 10**6,1)
+            filesize = "{:,}".format(filesize_mb)
+            logger_users.info(f"Compressed filesize: {filesize} Mb")
 
-            end_post_time = time.time()
-            run_seconds = round(end_post_time - start_post_time)
-            if run_seconds <60:
-                logger_users.info(f"---run_time: {str(run_seconds)} seconds")
-            elif run_seconds > 60:
-                run_minutes =  round(run_seconds / 60)
-                logger_users.info(f"--- run_time: {str(run_minutes)} mins and {str(run_seconds % 60)} seconds")
 
-            
-            flash(f"succesfully saved {'{:,}'.format(new_rec_count)} records from apple export", 'info')
-            
+            new_file_path = decompress_and_save_apple_health(apple_health_dir, apple_health_data)
+            xml_file_name = os.path.basename(new_file_path)
+            # new_rec_count = 9
+
+            filesize_mb = os.stat(new_file_path).st_size / (1024 * 1024)
+            logger_users.info(f"--- Decompressed Apple Health Export file size: {filesize_mb} MB ---")
+
+            # 1) if size small try to xmltodict
+
+            if filesize_mb < 100:
+                logger_users.info(f"--- Apple export is small processing file while user waits ---")
+                try:
+
+                    with open(new_file_path, 'r') as xml_file:
+                        xml_dict = xmltodict.parse(xml_file.read())
+                    
+                except:
+                    #Trying to fix file
+                    logger_users.info(f'---- xmltodict failed first go around. Sending to xml_file_fixer --')
+                    xml_dict = xml_file_fixer(new_file_path)
+                    if isinstance(xml_dict, str):
+                        logger_users.info(f'---- Failed to process Apple file. No header for data found')
+                        flash('Failed to process Apple file. No header for data found', 'warning')
+                        return redirect(url_for('users.add_apple'))
+                
+                try:
+                    df_uploaded_record_count = add_apple_to_db(xml_dict)
+                    logger_users.info('- Successfully added xml to database!')
+
+                except:
+                    logger_users.info('---- Failed to add data to database')
+                    return redirect(url_for('users.add_apple'))
+                # Store successful download in compressed version of /databases/apple_health_data/...
+                print(new_file_path)
+                compress_to_save_util(os.path.basename(new_file_path))
+            else:
+                logger_users.info(f"--- Apple export is large. Send to API. Email user when complete ---")
+                headers = { 'Content-Type': 'application/json'}
+                payload = {}
+                payload['password'] = config.WSH_API_PASSWORD
+                payload['user_id'] = current_user.id
+                payload['xml_file_name'] = xml_file_name
+                r_store_apple = requests.request('GET', config.WSH_API_URL_BASE + '/store_apple_health', headers=headers, 
+                                 data=str(json.dumps(payload)))
+                logger_users.info(f'-- Sent api file processing request. Response status code: {r_store_apple.status_code}')
+                
+        ##### TODO: intentional ERROR so the javascript flag is warning that the user will be emailed ***
+                return redirect(url_for('user.add_apple'))
+                
+            logger_users.info(report_process_time(start_post_time))
+
+            if isinstance(df_uploaded_record_count, str):
+                flash('This file cannot be read. Contact nick@dashanddata.com if you would like him to fix it', 'warning')
+                return redirect(url_for('users.add_apple'))
+
+
+            # At this point we already know if the file can be used or not
+            flash(f"succesfully saved {'{:,}'.format(df_uploaded_record_count)} records from apple export", 'info')
+
         elif formDict.get('btn_delete_apple_data'):
             logger_users.info('- delete apple data -')
-            
-            
+
+
             # print('Delete apple data')
             rows_deleted = sess.query(Apple_health_export).filter_by(user_id = current_user.id).delete()
             sess.commit()
@@ -441,6 +501,12 @@ def add_apple():
 
         return redirect(url_for('users.add_apple'))
     return render_template('add_apple.html', apple_records=apple_records)
+
+
+users.route('/redirect_test', methods=['GET', 'POST'])
+def redirect_test():
+    return redirect(url_for('users.add_apple', test_var='Stop sending'))
+
 
 @users.route('/add_more_apple', methods=['GET', 'POST'])
 def add_more_apple():
@@ -471,7 +537,7 @@ def add_oura():
     existing_oura_token =sess.query(Oura_token, func.max(
         Oura_token.id)).filter_by(user_id=current_user.id).first()[0]
 
-    
+
     if existing_oura_token:
         oura_token = current_user.oura_token_id[-1].token
         existing_oura_token_str = str(existing_oura_token.token)
@@ -489,7 +555,7 @@ def add_oura():
         if current_user.id ==2:
             flash("Guest cannot change data. Register and then add data.", "info")
             return redirect(url_for('users.add_oura'))
-        
+
 
 
         oura_token_user = sess.query(Oura_token).filter_by(user_id=current_user.id).first()
@@ -511,7 +577,7 @@ def add_oura():
 
 
             #1) User adds Oura_token data
-            if new_token != existing_oura_token_str:#<-- if new token is different 
+            if new_token != existing_oura_token_str:#<-- if new token is different
                 logger_users.info('------ New token detected ------')
                 #1-1a) if user has token replace it
                 if existing_oura_token:
@@ -561,7 +627,7 @@ def add_oura():
                 else:
                     logger_users.info('-- date detected yesterday for this user')
                     logger_users.info(oura_yesterday)
-       
+
 
 
         elif formDict.get('recall_api'):
@@ -571,7 +637,7 @@ def add_oura():
                     json_utils_dir = r"/Users/nick/Documents/_testData/json_utils_dir_FromScheduler"
                     with open(os.path.join(json_utils_dir, '_oura2_call_oura_api.json')) as json_file:
                         sleep_dict = json.loads(json.load(json_file))
-                    
+
                     sleep_dict = sleep_dict.get(str(current_user.id))
 
                     logger_users.info(sleep_dict.keys())
@@ -595,7 +661,7 @@ def add_oura():
             flash(f"Removed {delete_count} records", "warning")
         return redirect(url_for('users.add_oura'))
 
-    return render_template('add_oura.html', oura_sleep_records = oura_sleep_records, 
+    return render_template('add_oura.html', oura_sleep_records = oura_sleep_records,
         oura_token = oura_token)
 
 
@@ -603,24 +669,6 @@ def add_oura():
 @users.route('/add_more_weather', methods=["GET","POST"])
 def add_more_weather():
     return render_template('add_more_weather.html')
-
-
-
-# @users.route('/add_apple2', methods=['GET', 'POST'])
-# def add_apple_2():
-#     if request.method == 'POST':
-#         print(request.method)
-#         print(request.files)
-#         filesize = request.cookies.get('filesize')
-#         # file = request.files['files']
-#         print(f"Filesize: {filesize}")
-#         # print(file)
-
-#         # res = make_response(jsonify({"message": f"{file.filename} uploaded"}), 200)
-#         # return res
-#         flash('upload successful', 'info')
-#         return redirect(url_for('users.add_apple_2'))
-#     return render_template('add_apple.html')
 
 
 
@@ -663,7 +711,7 @@ def reset_token(token):
         flash('That is an invalid or expired token', 'warning')
         return redirect(url_for('users.reset_password'))
     if request.method == 'POST':
-        
+
         formDict = request.form.to_dict()
         if formDict.get('password_text') != '':
             hash_pw = bcrypt.hashpw(formDict.get('password_text').encode(), salt)

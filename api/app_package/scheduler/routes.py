@@ -9,12 +9,13 @@ from logging.handlers import RotatingFileHandler
 import os
 
 
-if os.environ.get('COMPUTERNAME')=='CAPTAIN2020' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
+if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
     config = ConfigDev()
-    print('* Development')
+    testing = True
 else:
     config = ConfigProd()
-    print('* ---> Configured for Production')
+    testing = False
+
 
 logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
 

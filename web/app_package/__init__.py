@@ -11,6 +11,7 @@ from datetime import datetime
 
 # Config Begin
 config_dict = {}
+
 if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
     config_object = ConfigDev()
     print('* ---> Configured for Development')
@@ -87,6 +88,7 @@ def create_app():
 
     login_manager.init_app(app)
     mail.init_app(app)
+    logger_init.info(f"--- Running DEBUG: {app.config.get('DEBUG')}")
 
     from app_package.users.routes import users
     from app_package.dashboard.routes import dash

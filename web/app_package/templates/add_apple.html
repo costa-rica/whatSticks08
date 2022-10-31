@@ -32,6 +32,11 @@
           Upload</button>
       </div>
 
+      <!-- <form method="POST">
+        <input type="submit" name="test_submit" value="test_submit_btn">
+      </form> -->
+      
+
 
     </div>
 
@@ -199,7 +204,7 @@
     var filesize = file.size;
     document.cookie = `filesize=${filesize}`
 
-    data.append("apple_halth_data", file);
+    data.append("apple_health_data", file);
 
 
     request.upload.addEventListener("progress", function (e) {
@@ -214,14 +219,21 @@
     })
 
     request.addEventListener("load", function (e) {
-
+      console.log("This is the request status: ")
+      console.log(request.status)
       if (request.status == 200) {
         console.log("This was a request thing")
         show_alert("Successfully uploaded and stored Apple Health data!", "info");
-        location.reload();
+        // location.reload();
+        
+        // console.log({{ flash_flag}})
       }
       else {
-        show_alert(`Error uplaoding file`, "warning");
+        // show_alert(`Error uplaoding file`, "warning");
+        show_alert(`WS is processing the file. You will be emailed when the processing is complete`,'info')
+        // console.log({{ flash_flag }})
+        console.log('We tried')
+        
       }
       reset();
     })
