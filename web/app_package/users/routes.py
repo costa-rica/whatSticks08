@@ -75,7 +75,7 @@ users = Blueprint('users', __name__)
 @users.route('/', methods=['GET', 'POST'])
 def home():
     if current_user.is_authenticated:
-        return redirect(url_for('dash.dashboard'))
+        return redirect(url_for('dash.dashboard', dash_dependent_var='steps'))
 
 
     make_dir_util(config.DF_FILES_DIR)
@@ -151,7 +151,7 @@ def login():
 @users.route('/register', methods = ['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('dash.dashboard'))
+        return redirect(url_for('dash.dashboard', dash_dependent_var='steps'))
     page_name = 'Register'
     if request.method == 'POST':
         formDict = request.form.to_dict()
@@ -627,7 +627,7 @@ def add_more_weather():
 def reset_password():
     page_name = 'Request Password Change'
     if current_user.is_authenticated:
-        return redirect(url_for('dash.dashboard'))
+        return redirect(url_for('dash.dashboard', dash_dependent_var='steps'))
     # form = RequestResetForm()
     # if form.validate_on_submit():
     if request.method == 'POST':
@@ -650,7 +650,7 @@ def reset_password():
 @users.route('/reset_password/<token>', methods = ["GET", "POST"])
 def reset_token(token):
     if current_user.is_authenticated:
-        return redirect(url_for('dash.dashboard'))
+        return redirect(url_for('dash.dashboard', dash_dependent_var='steps'))
     user = Users.verify_reset_token(token)
     logger_users.info('user::', user)
     if user is None:

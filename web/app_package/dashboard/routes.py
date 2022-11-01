@@ -88,11 +88,21 @@ def dashboard(dash_dependent_var):
 
     df_dict = df_utils(USER_ID, data_item_list)
 
+    print('**** CHECK dep_var ****')
+    print(df_dict.get(dash_dependent_var))
+
+
     list_of_user_data = [df_name  for df_name, df in df_dict.items() if not isinstance(df, bool)]
     
     # if user has no data return empty dashboard page
     if len(list_of_user_data) == 0:
-        return render_template('dashboard_empty.html', page_name=page_name)
+        message = "There is no data attached to your user. Go to accounts and add location and oura information."
+        return render_template('dashboard_empty.html', page_name=page_name, message = message)
+    
+    # If user has no data for dash_dependent_var return empty dashboard page
+    if isinstance(df_dict.get(dash_dependent_var), bool):
+        message = f"You have not added any {dash_dependent_var} data to your profile. Go to your accounts page to add {dash_dependent_var} data."
+        return render_template('dashboard_empty.html', page_name=page_name, message=message)
 
     # Create dataframe of combined data by looping over df_dict and merging df's
     tuple_count = 0
@@ -107,7 +117,8 @@ def dashboard(dash_dependent_var):
     df_all = df_all.dropna(axis=1, how='all')#remove columns with all missing values
 
     if len(df_all)==0:# No weather data will cause this
-        return render_template('dashboard_empty.html', page_name=page_name)
+        message = "Missing weather data. Go to your accounts page and add your location to see this dashboard."
+        return render_template('dashboard_empty.html', page_name=page_name, message=message)
 
     if df_all.dtypes['date'].str =='<M8[ns]':# when read from .json file df's are datetime, but should be strings
         # print('convert to string')
