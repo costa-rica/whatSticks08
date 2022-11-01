@@ -30,10 +30,12 @@ def word_docs_dir_util():
     db_blog_images_dir = os.path.join(blog_word_docs_database_folder,'blog_images')
     if os.path.exists(db_blog_images_dir):
         print(' ***** db_blog_images_dir exists and we have no problem !!! :)')
-        db_blog_images_dir_list = [os.path.join(blog_word_docs_database_folder,'blog_images', blog_image_dir) for blog_image_dir in os.listdir(db_blog_images_dir)]
+        stuff_in_dir_list = os.listdir(db_blog_images_dir)
+        stuff_in_dir_list.remove('.DS_Store')
+        db_blog_images_dir_list = [os.path.join(blog_word_docs_database_folder,'blog_images', blog_image_dir) for blog_image_dir in stuff_in_dir_list]
         for blog_image_dir in db_blog_images_dir_list:# <-- loop through all blog folders in db_blog_images
+
             for file in os.listdir(blog_image_dir):# <-- loop htrough all files in that folder
-                static_blog_dir = os.path.join(static_blog_images, os.path.basename(blog_image_dir))
                 if file not in os.listdir(static_blog_images):# <-- if file not found in static folder add it
                     print(f'{file} not found')
                     shutil.copyfile(os.path.join(blog_image_dir,file), os.path.join(static_blog_images,os.path.basename(blog_image_dir),file))

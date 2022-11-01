@@ -11,13 +11,14 @@ import numpy as np
 import pandas as pd
 from app_package.dashboard.utilsChart import make_oura_df, make_user_loc_day_df, \
     make_weather_hist_df, make_chart, buttons_dict_util, buttons_dict_update_util
-from app_package.dashboard.utilsSteps import apple_hist_steps, oura_hist_util, \
-    make_steps_chart_util, df_utils
+from app_package.dashboard.utilsSteps import make_steps_chart_util, df_utils
+from app_package.users.utilsDf import create_df_files
 import json
 import os
 import time
 import logging
 from logging.handlers import RotatingFileHandler
+
 
 
 logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
@@ -221,15 +222,16 @@ def dashboard():
 @dash.route('/dashboard_steps', methods=['GET', 'POST'])
 @login_required
 def dash_steps():
-    logger_dash.info(f'--- Entered dashboard_steps ---')
+    logger_dash.info(f'- Entered dashboard_steps -')
     page_name = "Steps Dashboard"
-    if request.referrer == request.base_url:
-        same_page = True
-    else:
-        same_page = False
+    data_item_list = ['steps', 'sleep', 'temp', 'cloudcover']
+    # if request.referrer == request.base_url:
+    #     same_page = True
+    # else:
+    #     same_page = False
 
-    print('request.referrer::: ', request.referrer)
-    print('current url: ', request.base_url)
+    # print('request.referrer::: ', request.referrer)
+    # print('current url: ', request.base_url)
 
     USER_ID = current_user.id if current_user.id !=2 else 1
 
@@ -245,17 +247,31 @@ def dash_steps():
     user_btn_json_name = f'user{current_user.id}_buttons_dict.json'
     if request.method == 'POST':
         formDict = request.form.to_dict()
-
-        buttons_dict = buttons_dict_util(formDict, step_dash_btns_dir, buttons_dict, user_btn_json_name)
+        print('formDict: ', formDict)
+        if formDict.get('refresh_data'):
+            print('let us just refersh the data')
+            create_df_files(USER_ID, data_item_list)
+        else:
+            buttons_dict = buttons_dict_util(formDict, step_dash_btns_dir, buttons_dict, user_btn_json_name)
         return redirect(url_for('dash.dash_steps'))
 
     if os.path.exists(os.path.join(step_dash_btns_dir,user_btn_json_name)):
         buttons_dict = buttons_dict_update_util(step_dash_btns_dir, user_btn_json_name)
 
     # Get raw df's with all the exisiting data
-    df_dict = df_utils(USER_ID, step_dash_btns_dir, same_page)
+    # df_dict = df_utils(USER_ID, step_dash_btns_dir, same_page)
+    
+    df_dict = df_utils(USER_ID, data_item_list)
+
+    #returns dict {df_name: df}
 
     list_of_user_data = [df_name  for df_name, df in df_dict.items() if not isinstance(df, bool)]
+
+    print('---- Checking Dict for data in dashboard STEPS ----')
+
+    print('len df_dict: ', len(df_dict))
+    print('list_of_user_data: ', list_of_user_data)
+    print(df_dict.get('sleep'))
     
     # if user has no data return empty dashboard page
     if len(list_of_user_data) == 0:
@@ -314,7 +330,7 @@ def dash_steps():
                 corr_dict[df_name] = "Not enough data"
     
 
-    
+
 
 
     return render_template('dashboard_steps.html', page_name=page_name,

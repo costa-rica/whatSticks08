@@ -546,8 +546,9 @@ section.more_weather{
 
 /* Dashbaord */
 section.dashboard {
-    padding-top: var(--nav-height);
-    padding-bottom: var(--nav-height);
+    // padding-top: var(--nav-height);
+    // padding-bottom: var(--nav-height);
+    padding: var(--nav-height) 1rem var(--nav-height) 1rem;
     .table_and_chart {
         display:flex;
         flex-wrap:wrap;
@@ -556,6 +557,13 @@ section.dashboard {
         align-items: center;
         // background-color: red;
         width:var(--table-chart-width);
+        .table_and_chart_submit_element_right{
+            width:var(--table-chart-width);
+            display:flex;
+            justify-content: end;
+            // background-color: #4CAF50;
+            padding-right: 3rem;
+        }
     }
     
     .table_div_outer{
@@ -637,6 +645,10 @@ section.dashboard {
             justify-content: end;
             padding: 1rem 0 0 0;
         }
+    }
+    .submit_element_right {
+        display:flex;
+        justify-content: end;
     }
 }
 

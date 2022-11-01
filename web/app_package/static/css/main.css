@@ -12007,8 +12007,7 @@ section.more_weather .more_weather_body {
 
 /* Dashbaord */
 section.dashboard {
-  padding-top: var(--nav-height);
-  padding-bottom: var(--nav-height);
+  padding: var(--nav-height) 1rem var(--nav-height) 1rem;
 }
 section.dashboard .table_and_chart {
   display: flex;
@@ -12017,6 +12016,12 @@ section.dashboard .table_and_chart {
   justify-content: center;
   align-items: center;
   width: var(--table-chart-width);
+}
+section.dashboard .table_and_chart .table_and_chart_submit_element_right {
+  width: var(--table-chart-width);
+  display: flex;
+  justify-content: end;
+  padding-right: 3rem;
 }
 section.dashboard .table_div_outer {
   flex: 1;
@@ -12085,6 +12090,10 @@ section.dashboard .custom_apple .submit_element_right {
   display: flex;
   justify-content: end;
   padding: 1rem 0 0 0;
+}
+section.dashboard .submit_element_right {
+  display: flex;
+  justify-content: end;
 }
 
 /* About us */

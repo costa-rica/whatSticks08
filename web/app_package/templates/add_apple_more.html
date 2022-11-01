@@ -33,13 +33,13 @@
             </tr>
           </thead>
           <tbody>
-            {% for key, value in df_dict.items() %}
+            {% for row in df_records_dict %}
             <tr>
               <td>
-                {{ key }}
+                {{ row.type }}
               </td>
               <td class="middleize">
-                {{ "{:,}".format(value) }}
+                {{ "{:,}".format(row.record_count) }}
               </td>
             </tr>
             {% endfor %}

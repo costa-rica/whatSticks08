@@ -19,7 +19,9 @@ from app_package.users.utilsApple import make_dir_util, decompress_and_save_appl
     add_apple_to_db, report_process_time
 from app_package.users.utilsXmlUtility import xml_file_fixer, compress_to_save_util
 
-from app_package.dashboard.utilsSteps import create_raw_df
+# from app_package.dashboard.utilsSteps import create_raw_df
+
+from app_package.users.utilsDf import create_df_files
 
 from sqlalchemy import func
 from datetime import datetime, timedelta
@@ -30,6 +32,7 @@ import os
 import json
 from ws_config01 import ConfigDev, ConfigProd
 import xmltodict
+import pandas as pd
 
 if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
     config = ConfigDev()
@@ -74,6 +77,8 @@ def home():
     if current_user.is_authenticated:
         return redirect(url_for('dash.dashboard'))
 
+
+    make_dir_util(config.DF_FILES_DIR)
 
     latest_post = sess.query(Posts).all()
     if len(latest_post) > 0:
@@ -200,59 +205,10 @@ def account():
         else:
             startTime_post = time.time()
             formDict = request.form.to_dict()
-            # new_token = formDict.get('oura_token')
             new_location = formDict.get('location_text')
             email = formDict.get('email')
-            # user = sess.query(Users).filter_by(id = current_user.id).first()
-            yesterday = datetime.today() - timedelta(days=1)
-            yesterday_formatted =  yesterday.strftime('%Y-%m-%d')
-            # user_loc_days = sess.query(User_location_day).filter_by(user_id=current_user.id).all()
-            # user_loc_days_date_dict = {i.date : i.id for i in user_loc_days}
-            # print(formDict)
-
-
-
-            # #1) User adds Oura_token data
-            # if new_token != existing_oura_token_str:#<-- if new token is different
-            #     print('------ New token detected ------')
-            #     #1-1a) if user has token replace it
-            #     if existing_oura_token:
-            #         existing_oura_token.token = new_token
-            #         sess.commit()
-            #         oura_token_id = existing_oura_token.id
-            #         print('Existing token')
-            #     #1-1b) else add new token
-            #     else:
-            #         print('Completely new token')
-            #         new_oura_token = Oura_token(user_id = current_user.id,
-            #             token = new_token)
-            #         sess.add(new_oura_token)
-            #         sess.commit()
-
-            #         oura_token_id = new_oura_token.id
-
-            #     #1-1b-1) check if user has oura data yesterday
-            #     oura_yesterday = sess.query(Oura_sleep_descriptions).filter_by(
-            #         user_id = current_user.id,
-            #         summary_date = yesterday_formatted).first()
-
-            #     # --> 1-1b-1b) if no data yesterday, call API
-            #     if not oura_yesterday and new_token != '':
-            #         sleep_dict = oura_sleep_call(new_token)
-
-            #         if isinstance(sleep_dict,dict):
-            #             sessions_added = oura_sleep_db_add(sleep_dict, oura_token_id)
-            #             flash(f'Successfully added {str(sessions_added)} sleep sesions and updated user Oura Token', 'info')
-            #         else:
-            #             print(f'** Unable to get data from Oura API becuase {sleep_dict}')
-            #             flash(f'Unable to get data from Oura API becuase {sleep_dict}', 'warning')
-            #     elif not new_token:
-            #         flash('User oura token successfully removed','info')
-            #         print('** removed oura token from user')
-            #     else:
-            #         print('-- date detected yesterday for this user')
-            #         print(oura_yesterday)
-
+            # yesterday = datetime.today() - timedelta(days=1)
+            # yesterday_formatted =  yesterday.strftime('%Y-%m-%d')
 
             #2) User adds location data
             if new_location != existing_coordinates:
@@ -323,34 +279,8 @@ def account():
                     else:
                         flash("Recent weather history updated!", "success")
 
-                #     if weather_api_response.status_code == 200:
-                # #2-1b-2) use response to populate yesterday's history in WEather_history
-                #         logger_users.info('** Adding weather history')
-                #         add_weather_history(weather_api_response, location_id)
-                #         flash('Succesfully added user location', 'info')
-                #     else:
-                #         logger_users.info('** FAILING to adding weather history')
-                #         flash(f"Unable to add weather history - problem communicating with Visual Crossing", 'warning')
-
-                # #Add User_Loc_day
-                #     yesterday = datetime.today() - timedelta(days=1)
-                #     yesterday_formatted =  yesterday.strftime('%Y-%m-%d')
-                #     new_user_loc_day = User_location_day(
-                #         user_id = user.id,
-                #         location_id = location_id,
-                #         local_time = f"{str(datetime.now().hour)}:{str(datetime.now().minute)}",
-                #         date = yesterday_formatted,
-                #         row_type = 'user input'
-                #     )
-                #     sess.add(new_user_loc_day)
-                #     sess.commit()
-
-                #new #2-1b-2) call weather history
-                    # call_weather_api(location_id, today)
-                    # weather_api_response = requests.get(gen_weather_url(location_id, yesterday_formatted))
-                    # logger_users.info(f'weather_api_response status code: {weather_api_response.status_code}')
-
-
+                # TODO: Make DF for user and weather
+                create_df_files(current_user.id, ['temps', 'cloudcover'])
 
 
 
@@ -389,12 +319,20 @@ def account():
 @users.route('/add_apple', methods=["GET", "POST"])
 def add_apple():
 
-
-    existing_records = sess.query(Apple_health_export).filter_by(user_id=current_user.id).all()
-    apple_records = "{:,}".format(len(existing_records))
+    USER_ID = current_user.id if current_user.id !=2 else 1
+    # existing_records = sess.query(Apple_health_export).filter_by(user_id=current_user.id).all()
+    file_name = f'user{USER_ID}_df_browse_apple.pkl'
+    file_path = os.path.join(config.DF_FILES_DIR, file_name)
+    if os.path.exists(file_path):
+        df = pd.read_pickle(file_path)
+        existing_records = df.record_count.sum()
+        apple_records = "{:,}".format(existing_records)
+    else:
+        apple_records = 0
+    # apple_records = "{:,}".format(10000)
 
     # make APPLE_HEALTH_DIR
-    apple_health_dir = current_app.config.get('APPLE_HEALTH_DIR')
+    apple_health_dir = config.APPLE_HEALTH_DIR
     make_dir_util(apple_health_dir)
 
     logger_users.info(f"--- POSTING Apple Health Data (user: {current_user.id}) ---")
@@ -459,12 +397,15 @@ def add_apple():
                     df_uploaded_record_count = add_apple_to_db(xml_dict)
                     logger_users.info('- Successfully added xml to database!')
 
+
+
                 except:
                     logger_users.info('---- Failed to add data to database')
                     return redirect(url_for('users.add_apple'))
+                
                 # Store successful download in compressed version of /databases/apple_health_data/...
-                print(new_file_path)
                 compress_to_save_util(os.path.basename(new_file_path))
+
             else:
                 logger_users.info(f"--- Apple export is large. Send to API. Email user when complete ---")
                 headers = { 'Content-Type': 'application/json'}
@@ -489,6 +430,7 @@ def add_apple():
             # At this point we already know if the file can be used or not
             flash(f"succesfully saved {'{:,}'.format(df_uploaded_record_count)} records from apple export", 'info')
 
+
         elif formDict.get('btn_delete_apple_data'):
             logger_users.info('- delete apple data -')
 
@@ -498,9 +440,13 @@ def add_apple():
             sess.commit()
             flash(f"Removed {'{:,}'.format(rows_deleted)} Apple Health records from What Sticks data storage", 'warning')
 
+        ###########################################################
+        # IF any change to APPLE data: Make DF for user and APPLE #
+        ###########################################################
+        create_df_files(current_user.id, ['steps'])
 
         return redirect(url_for('users.add_apple'))
-    return render_template('add_apple.html', apple_records=apple_records)
+    return render_template('add_apple.html', apple_records=apple_records, isinstance=isinstance, str=str)
 
 
 users.route('/redirect_test', methods=['GET', 'POST'])
@@ -512,20 +458,13 @@ def redirect_test():
 def add_more_apple():
     table_name = 'apple_health_export_'
     USER_ID = current_user.id if current_user.id !=2 else 1
-    df = create_raw_df(USER_ID, Apple_health_export, table_name)
-    print('--- ')
-    # print(df.head())
-    df_type = df[['type']].copy()
-    df_type = df_type.groupby(['type'])['type'].count()
-    # df_type.rename(columns = {list(df_type)[1]: 'record_count'}, inplace = True)
-    # df_type.style.format({"record_count": "{:,.0f}"})
-    print(df_type.head())
-    df_dict = df_type.to_dict()
-    # print(df_dict.keys())
-    # print('------')
-    # print(df_dict)
+    file_name = f'user{USER_ID}_df_browse_apple.pkl'
+    file_path = os.path.join(config.DF_FILES_DIR, file_name)
+    df = pd.read_pickle(file_path)
+    df_records_dict = df.to_dict('records')
 
-    return render_template('add_apple_more.html', df_dict=df_dict)
+
+    return render_template('add_apple_more.html', df_records_dict=df_records_dict)
 
 
 @users.route('/add_oura', methods=["GET", "POST"])
@@ -659,6 +598,13 @@ def add_oura():
             sess.commit()
             logger_users.info('* successful delel;ete ')
             flash(f"Removed {delete_count} records", "warning")
+        
+        
+        ###########################################################
+        # IF any change to OURA data: Make DF for user sleep #
+        ###########################################################
+        create_df_files(current_user.id, ['sleep'])
+        
         return redirect(url_for('users.add_oura'))
 
     return render_template('add_oura.html', oura_sleep_records = oura_sleep_records,

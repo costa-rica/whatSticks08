@@ -210,10 +210,10 @@ def body_fix_looper_util(body_line_list):
     end_time = time.time()
     run_seconds = round(end_time - start_time)
     if run_seconds <60:
-        logger_apple.info(f'{"{:,}".format(row_count)} rows, {"{:,}".format(error_count)} errors --run_time: {str(run_seconds)} seconds')
+        logger_users.info(f'{"{:,}".format(row_count)} rows, {"{:,}".format(error_count)} errors --run_time: {str(run_seconds)} seconds')
     elif run_seconds > 60:
         run_minutes =  round(run_seconds / 60)
-        logger_apple.info(f'{"{:,}".format(row_count)} rows, {"{:,}".format(error_count)} errors -- run_time: {str(run_minutes)} mins and {str(run_seconds % 60)} seconds')
+        logger_users.info(f'{"{:,}".format(row_count)} rows, {"{:,}".format(error_count)} errors -- run_time: {str(run_minutes)} mins and {str(run_seconds % 60)} seconds')
 
     return body_string_fixed
 
@@ -245,7 +245,7 @@ def xml_file_fixer(xml_path):
     try:
         header_string = data[:data.find('\n]>')+3]
         body_string = data[data.find('\n]>')+3:]
-        print('-- successfully found header_string and body_string --')
+        logger_users.info('-- successfully found header_string and body_string --')
     except:
         logger_users.info(f"--- xml_util: never found end of header or beginning of body strings ---")
         return "XML file never found end of header"

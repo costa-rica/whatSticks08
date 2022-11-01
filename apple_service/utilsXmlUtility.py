@@ -330,7 +330,7 @@ def add_apple_to_db(xml_dict, user_id):
     base_query = sess.query(Apple_health_export).filter_by(user_id = 1)
     df_existing = pd.read_sql(str(base_query)[:-1] + str(user_id), sess.bind)
 
-    print(f'current user has {len(df_existing)} rows')
+    logger_apple.info(f'current user has {len(df_existing)} rows')
     #rename columns
 
     table_name = 'apple_health_export_'
@@ -346,7 +346,7 @@ def add_apple_to_db(xml_dict, user_id):
     logger_apple.info('Removed Exiisting rows from new dataset')
     logger_apple.info(f"{len(df)} new records added")
 
-    logger_apple.info('Adding new data')
+    logger_apple.info('Processing: adding new data to db')
     #add to database
     df.to_sql('apple_health_export', con=engine, if_exists='append', index=False)
 
