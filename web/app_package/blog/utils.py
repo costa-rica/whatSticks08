@@ -31,7 +31,8 @@ def word_docs_dir_util():
     if os.path.exists(db_blog_images_dir):
         print(' ***** db_blog_images_dir exists and we have no problem !!! :)')
         stuff_in_dir_list = os.listdir(db_blog_images_dir)
-        stuff_in_dir_list.remove('.DS_Store')
+        if '.DS_Store' in stuff_in_dir_list:
+            stuff_in_dir_list.remove('.DS_Store')
         db_blog_images_dir_list = [os.path.join(blog_word_docs_database_folder,'blog_images', blog_image_dir) for blog_image_dir in stuff_in_dir_list]
         for blog_image_dir in db_blog_images_dir_list:# <-- loop through all blog folders in db_blog_images
 
