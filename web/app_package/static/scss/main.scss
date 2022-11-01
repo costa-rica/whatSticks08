@@ -24,6 +24,7 @@ body {
     border-radius: 3em;
     min-width: 75px;
     background-color: var(--bs-secondary);
+    
 }
 .common_primary_div {
     border: 1px solid var(--bs-primary);
@@ -224,7 +225,7 @@ section.register {
                 flex-wrap: wrap;
                 padding: .3rem .5rem 0 0;
                 input {
-                    font-size: 1.5em;
+                    font-size: 1.25em;
                     margin-top: .5rem;
                     margin-left: 10%;
                 }
@@ -586,21 +587,26 @@ section.dashboard {
         grid-template-columns: 1fr 1fr;
         gap:1rem;
     }
-    .header{border-bottom: .5rem solid black;}
+    // .header{border-bottom: .5rem solid black;}
     .header_corr{
         display:flex;
         justify-content: center;
         // align-items: center;
+        border-bottom: .5rem solid black;
+        font-size:1.5rem;
     }
     .row_value{
         display:flex;
         justify-content: center;
+        align-items: center;
+        font-size: 1.5rem;
     }
     .row_header{
 
         button {
-            width: 90%;
-            font-size: 1rem;           
+            width: 100%;
+            font-size: 1.25rem;  
+            padding:1rem;
         }
     }
     
@@ -774,6 +780,7 @@ section.youtube {
                         padding-top: 3rem;
                         .btn_custom01{margin-left:40%;}
                         .btn_custom02{margin-left:40%;}
+                        
                     }
                 }
             }
@@ -806,13 +813,29 @@ section.youtube {
             max-width:90rem;
             justify-content: center;
             align-items: center;
+            .register_form{
+                .element_right{
+                .element_right_sub{
+                    input{
+                        font-size:2rem;
+                        // color:red;
+                    }
+                }
+            }
+            }
+
 
         }
     }
 
     section.dashboard {
+        .header_corr{
+            font-size:2rem;
+        }
+        .row_value{
+            font-size: 2rem;
+        }
         .row_header{
-
             button {
                 width: 90%;
                 font-size: 2rem;           

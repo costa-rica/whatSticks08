@@ -13,42 +13,34 @@
                 <form method="POST">
                 <div class="table_div">
                     <div class="header header_var">
-                        Sleep Score
+                        
                     </div>
                 
                     <div class="header header_corr">
-                        Correlation
+                        Impact Index
                     </div>
                 
-                
+                    {% for key, _ in corr_dict.items() %}
                     <div class="row_header">
-                        {% if buttons_dict['avg_temp']!=1 %}
-                        <button type="submit" name="avg_temp" value="1" class="btn btn-primary btn_header">Avg Daily Temperature</button>
+                        {% if buttons_dict[key]!=1 %}
+                        <button type="submit" name="temp" value="1" class="btn btn-primary btn_header">{{ btn_names_dict[key] }}</button>
                         {% else %}
-                        <button type="submit" name="avg_temp" value="1" class="btn btn-outline-primary btn_header">Avg Daily Temperature</button>
+                        <button type="submit" name="temp" value="1" class="btn btn-outline-primary btn_header">{{ btn_names_dict[key]  }}</button>
                         {% endif %}
                     </div>
                     <div class="row_value">
-                        {% if buttons_dict['avg_temp']!=1 %}
-                        {{ corr_dict['avg_temp'] }}
+                        {% if buttons_dict[key]!=1 %}
+                        {{ corr_dict[key] }}
                       {% else %}
                         Off
                       {% endif %}
                     </div>
-                    <div class="row_header">
-                        {% if buttons_dict['cloudiness']!=1 %}
-                        <button type="submit" value="1" name="cloudiness" class="btn btn-primary btn_header">Cloud Cover</button>
-                        {% else %}
-                        <button type="submit" value="1" name="cloudiness" class="btn btn-outline-primary btn_header " >Cloud Cover</button>
-                        {% endif %}
-                    </div>
-                    <div class="row_value">
-                    {% if buttons_dict['cloudiness']!=1 %}
-                        {{ corr_dict['cloudiness'] }}
-                    {% else %}
-                        Off
-                    {% endif %}
-                    </div>
+                    {% endfor %}
+
+
+
+
+
                 </div>
             </form>
             </div>
@@ -62,6 +54,26 @@
 
     </div>
 
+    <form method="POST">
+        <div class="table_and_chart">
+            {% if dash_dependent_var == 'steps' %}
+            <div class="common_primary_div custom_apple">
+                See what else is in my Apple Health Data
+                <div class="submit_element_right">
+                <a class="btn btn-light btn_custom01" href="{{ url_for('users.add_more_apple') }}">Go to Table</a>
+                </div>
+            </div>
+            {% endif %}
+        
+            <div class="table_and_chart_submit_element_right">
+                <input type="submit" value="Refresh Data" name="refresh_data" class="btn btn-secondary btn_custom01">
+            </div>
+        
+
+
+
+        </div>
+    </form>
 
 
 </section>

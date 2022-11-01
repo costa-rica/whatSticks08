@@ -60,71 +60,71 @@ def make_weather_hist_df():
     return df_weath_hist
 
 
-# def make_chart(dates_list, temp_data_list, sleep_data_list):
-def make_chart(lists_tuple, buttons_dict):
-    dates_list, sleep_data_list, temp_data_list, cloud_list = lists_tuple
+# # def make_chart(dates_list, temp_data_list, sleep_data_list):
+# def make_chart(lists_tuple, buttons_dict):
+#     dates_list, sleep_data_list, temp_data_list, cloud_list = lists_tuple
 
-    date_start = max(dates_list) - timedelta(days=8.5)
-    date_end = max(dates_list) + timedelta(days=1)
-    print('waht is hte last date:', dates_list[-1])
-    fig1=figure(toolbar_location=None,tools='xwheel_zoom,xpan',active_scroll='xwheel_zoom',
-            x_range=(date_start,date_end),
-            y_range=(-10,130),sizing_mode='stretch_width', height=600)
+#     date_start = max(dates_list) - timedelta(days=8.5)
+#     date_end = max(dates_list) + timedelta(days=1)
+#     print('waht is hte last date:', dates_list[-1])
+#     fig1=figure(toolbar_location=None,tools='xwheel_zoom,xpan',active_scroll='xwheel_zoom',
+#             x_range=(date_start,date_end),
+#             y_range=(-10,130),sizing_mode='stretch_width', height=300)
 
 
-    if temp_data_list != 'is empty':
-        print('** STEP 2:  temp NOT empty ')
-#Temperature
-        if buttons_dict.get('avg_temp') !=1:
-            fig1.circle(dates_list,temp_data_list, 
-                legend_label="Temperature (F)", 
-                fill_color='#c77711', 
-                line_color=None,
-                size=30)
+#     if temp_data_list != 'is empty':
+#         print('** STEP 2:  temp NOT empty ')
+# #Temperature
+#         if buttons_dict.get('avg_temp') !=1:
+#             fig1.circle(dates_list,temp_data_list, 
+#                 legend_label="Temperature (F)", 
+#                 fill_color='#c77711', 
+#                 line_color=None,
+#                 size=30)
 
-            source1 = ColumnDataSource(dict(x=dates_list, y=temp_data_list, text=temp_data_list)) # data
-            glyph1 = Text(text="text",text_font_size={'value': '1.3rem'},x_offset=-10, y_offset=10) # Image
-            fig1.add_glyph(source1, glyph1)
+#             source1 = ColumnDataSource(dict(x=dates_list, y=temp_data_list, text=temp_data_list)) # data
+#             glyph1 = Text(text="text",text_font_size={'value': '1.3rem'},x_offset=-10, y_offset=10) # Image
+#             fig1.add_glyph(source1, glyph1)
 
-#cloud cover
-        if buttons_dict.get('cloudiness') !=1:
-            fig1.circle(dates_list,cloud_list, 
-                legend_label="Cloudcover", 
-                fill_color='#6cacc3', 
-                line_color="#3288bd",
-                size=30, line_width=3)
+# #cloud cover
+#         if buttons_dict.get('cloudiness') !=1:
+#             fig1.circle(dates_list,cloud_list, 
+#                 legend_label="Cloudcover", 
+#                 fill_color='#6cacc3', 
+#                 line_color="#3288bd",
+#                 size=30, line_width=3)
 
-            source1_cloud = ColumnDataSource(dict(x=dates_list, y=cloud_list, text=cloud_list)) # data
-            glyph1_cloud = Text(text="text",text_font_size={'value': '1.3rem'},x_offset=-10, y_offset=10) # Image
-            fig1.add_glyph(source1_cloud, glyph1_cloud)
+#             source1_cloud = ColumnDataSource(dict(x=dates_list, y=cloud_list, text=cloud_list)) # data
+#             glyph1_cloud = Text(text="text",text_font_size={'value': '1.3rem'},x_offset=-10, y_offset=10) # Image
+#             fig1.add_glyph(source1_cloud, glyph1_cloud)
 
-#sleep rectangle label
-    if sleep_data_list != 'is empty':
-        fig1.square(dates_list, sleep_data_list, legend_label = 'Oura Sleep Score', size=30, color="olive", alpha=0.5)
+# #sleep rectangle label
+#     if sleep_data_list != 'is empty':
+#         fig1.square(dates_list, sleep_data_list, legend_label = 'Oura Sleep Score', size=30, color="olive", alpha=0.5)
         
-        source4 = ColumnDataSource(dict(x=dates_list, y=sleep_data_list,
-            text=sleep_data_list))
-        glyph4 = Text(text="text",text_font_size={'value': '1.3rem'},x_offset=-10, y_offset=10)
-        fig1.add_glyph(source4, glyph4)
+#         source4 = ColumnDataSource(dict(x=dates_list, y=sleep_data_list,
+#             text=sleep_data_list))
+#         glyph4 = Text(text="text",text_font_size={'value': '1.3rem'},x_offset=-10, y_offset=10)
+#         fig1.add_glyph(source4, glyph4)
 
-    fig1.ygrid.grid_line_color = None
-    fig1.yaxis.major_label_text_color = None
-    fig1.yaxis.major_tick_line_color = None
-    fig1.yaxis.minor_tick_line_color = None
+#     fig1.ygrid.grid_line_color = None
+#     fig1.yaxis.major_label_text_color = None
+#     fig1.yaxis.major_tick_line_color = None
+#     fig1.yaxis.minor_tick_line_color = None
 
-    fig1.legend.background_fill_color = "#578582"
-    fig1.legend.background_fill_alpha = 0.2
-    fig1.legend.border_line_color = None
-    fig1.legend.label_text_font_size ='1.3rem'
-    fig1.xaxis.major_label_text_font_size = '1.3rem'
-    # fig1.xaxis.axis_label = 'whatever'
-    theme_1=curdoc().theme = Theme(filename=os.path.join(current_app.static_folder, 'chart_theme_2.yml'))
+#     fig1.legend.background_fill_color = "#578582"
+#     fig1.legend.background_fill_alpha = 0.2
+#     fig1.legend.border_line_color = None
+#     fig1.legend.label_text_font_size ='1.3rem'
+#     fig1.xaxis.major_label_text_font_size = '1.3rem'
+#     # fig1.xaxis.axis_label = 'whatever'
+#     theme_1=curdoc().theme = Theme(filename=os.path.join(current_app.static_folder, 'chart_theme_2.yml'))
 
-    script1, div1 = components(fig1, theme=theme_1)
+#     script1, div1 = components(fig1, theme=theme_1)
 
-    cdn_js=CDN.js_files
+#     cdn_js=CDN.js_files
 
-    return script1, div1, cdn_js
+#     return script1, div1, cdn_js
 
 
 

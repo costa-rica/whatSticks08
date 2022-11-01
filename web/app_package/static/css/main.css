@@ -11715,7 +11715,7 @@ section.register .register_form .element_right .element_right_sub {
   padding: 0.3rem 0.5rem 0 0;
 }
 section.register .register_form .element_right .element_right_sub input {
-  font-size: 1.5em;
+  font-size: 1.25em;
   margin-top: 0.5rem;
   margin-left: 10%;
 }
@@ -12041,20 +12041,22 @@ section.dashboard .table_div {
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
-section.dashboard .header {
-  border-bottom: 0.5rem solid black;
-}
 section.dashboard .header_corr {
   display: flex;
   justify-content: center;
+  border-bottom: 0.5rem solid black;
+  font-size: 1.5rem;
 }
 section.dashboard .row_value {
   display: flex;
   justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
 }
 section.dashboard .row_header button {
-  width: 90%;
-  font-size: 1rem;
+  width: 100%;
+  font-size: 1.25rem;
+  padding: 1rem;
 }
 section.dashboard .bokeh_div {
   flex: 1.5;
@@ -12231,6 +12233,15 @@ section.youtube .div_writing .indent {
     max-width: 90rem;
     justify-content: center;
     align-items: center;
+  }
+  section.register .register_body .register_form .element_right .element_right_sub input {
+    font-size: 2rem;
+  }
+  section.dashboard .header_corr {
+    font-size: 2rem;
+  }
+  section.dashboard .row_value {
+    font-size: 2rem;
   }
   section.dashboard .row_header button {
     width: 90%;

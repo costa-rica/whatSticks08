@@ -58,12 +58,11 @@
                     <a href="#" class="nav-link dropdown-toggle " id="navbarDropdown2"role="button"
                         data-bs-toggle="dropdown"aria-expanded="false">Dashboards</a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown2">
-                        <a class="dropdown-item dropdown-item_custom" href="{{ url_for('dash.dashboard') }}">Sleep</a>
-                        <a class="dropdown-item dropdown-item_custom" href="{{ url_for('dash.dash_steps') }}">Steps</a>
+                        <a class="dropdown-item dropdown-item_custom" href="{{ url_for('dash.dashboard', dash_dependent_var='sleep') }}">Sleep</a>
+                        <a class="dropdown-item dropdown-item_custom" href="{{ url_for('dash.dashboard', dash_dependent_var='steps') }}">Steps</a>
                     </div>
                 </li>
-                <!-- <li class="nav-item li_primary"><a class="" href="{{ url_for('dash.dashboard') }}">Sleep</a></li>
-                <li class="nav-item li_primary"><a class="" href="{{ url_for('dash.dash_steps') }}">Steps</a></li> -->
+
                 
                 <br><br>
                 <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('users.logout') }}">Logout</a></li>
@@ -74,17 +73,7 @@
                 <!-- <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('users.youtube_request') }}">YouTube Request</a></li> -->
                 {% else %}
 
-                <!-- <li class="nav-item dropdown li_primary">
-                    <a href="#" class="nav-link dropdown-toggle" id="navbarDropdown2"role="button"
-                        data-bs-toggle="dropdown"aria-expanded="false">About</a>
 
-                    <div class="dropdown-menu wsh_items_alignment" aria-labelledby="navbarDropdown2">
-                        <a class="dropdown-item" href="{{ url_for('users.about_us') }}">About</a>
-                        <a class="dropdown-item" href="{{ url_for('users.privacy') }}">Privacy</a>
-                        
-
-                    </div>
-                </li> -->
 
                 <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('users.login') }}">Login</a></li>
                 <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('users.home') }}">Home</a></li>
