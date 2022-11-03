@@ -90,7 +90,13 @@ def add_apple(xml_file_name, user_id):
         message = "Failed to store xml into database"
         return message
 
+    logger_apple.info(f"**** Logger should send create_df_files next -- was not doign this earlier")
     create_df_files(user_id, ['steps'])
+
+    ############################
+    # process on speedy100: not sending email or zipping file
+    # possible >> create_df_files << has errror that seems to only occur in speedy100
+    ###########################################
 
     message = "Successfully added xml to database!"
     ws_email_api_response = email_user(user_id, message, df_uploaded_record_count)

@@ -36,7 +36,7 @@ logger_apple.setLevel(logging.DEBUG)
 # logger_terminal.setLevel(logging.DEBUG)
 
 #where do we store logging information
-file_handler = RotatingFileHandler(os.path.join(logs_dir,'utilities.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler = RotatingFileHandler(os.path.join(logs_dir,'apple_service.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
 file_handler.setFormatter(formatter)
 
 #where the stream_handler will print
@@ -103,7 +103,9 @@ def store_apple_health():
 
 
     else:
-        return jsonify({"message": "Need credentials buddy..."})
+        return make_response('Could not verify',
+            401, 
+            {'WWW-Authenticate' : 'Basic realm="Login required!"'})
 
 
 

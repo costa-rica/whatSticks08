@@ -217,6 +217,10 @@ def account():
                     user.lon = None
                     sess.commit()
                     flash('User coordinates removed succesfully','info')
+                    
+                    #remove current user's history
+                    sess.query(User_location_day).filter_by(user_id=current_user.id).delete()
+                    sess.commit()
 
                 else:                                           #<-- User is updating their location
                     # add lat/lon to users table
@@ -243,9 +247,12 @@ def account():
 
                     for day in today_list:
                         user_loc_day_hist = sess.query(User_location_day).filter_by(user_id=current_user.id, date=day).first()
-                        if user_loc_day_hist:
-                            sess.query(User_location_day).filter_by(user_id = current_user.id , date=day).delete()
-                            sess.commit()
+                        #11/2/2022 commented out delete possible history because:
+                        # - when user clears out locaiton they also remove user_loc_day for themselves
+                        # - adding funcionality for user to get weather data as far back as they have steps or sleep.
+                        # if user_loc_day_hist:
+                        #     sess.query(User_location_day).filter_by(user_id = current_user.id , date=day).delete()
+                        #     sess.commit()
 
                         new_user_loc_day = User_location_day(user_id=current_user.id,
                             location_id = location_id,
@@ -280,7 +287,7 @@ def account():
                         flash("Recent weather history updated!", "success")
 
                 # TODO: Make DF for user and weather
-                create_df_files(current_user.id, ['temps', 'cloudcover'])
+                create_df_files(current_user.id, ['temp', 'cloudcover'])
 
 
 
@@ -418,7 +425,7 @@ def add_apple():
                 logger_users.info(f'-- Sent api file processing request. Response status code: {r_store_apple.status_code}')
                 
         ##### TODO: intentional ERROR so the javascript flag is warning that the user will be emailed ***
-                return redirect(url_for('user.add_apple'))
+                return redirect(url_for('users.add_apple'))
                 
             logger_users.info(report_process_time(start_post_time))
 

@@ -20,7 +20,6 @@ else:
     config.app_dir = r"/home/nick/applications/apple_service/"
     logs_dir = config.app_dir
 
-logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
 
 #Setting up Logger
 formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
