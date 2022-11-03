@@ -141,6 +141,7 @@ def dashboard(dash_dependent_var):
     for df_name in data_items_of_interest_list:
         corr_dict[df_name] = round(df_interest[df_name].corr(df_interest[dash_dependent_var]),2)
 
+
         if corr_dict[df_name] != corr_dict[df_name]:# Pythonic way for checking for nan
             corr_dict_na[df_name] = "Not enough data"
             del corr_dict[df_name]
@@ -152,6 +153,9 @@ def dashboard(dash_dependent_var):
     if len(corr_dict) > 0:
         df_corr = pd.DataFrame.from_dict(corr_dict, orient='index')
         df_corr.rename(columns={list(df_corr)[0]:'correlation'}, inplace=True)
+        print('--- df_corr ___ ')
+        print(df_corr)
+        df_corr['abs_corr'] = df_corr['correlation'].abs()
         df_corr = df_corr.sort_values('abs_corr', ascending=False)
         corr_dict = df_corr.to_dict().get('correlation')
         corr_dict = {key: '{:,.0%}'.format(value) for key,value in corr_dict.items() }
