@@ -524,7 +524,7 @@ section.oura{
 }
 
 
-/* Add Oura */
+/* Add More WEATHER */
 section.more_weather{
     padding-top: var(--nav-height);
     padding-bottom: var(--nav-height);
@@ -540,6 +540,19 @@ section.more_weather{
         flex-wrap: wrap;
         font-size: 1.5em;
         gap:1rem;
+    }
+    // .submit_element_right{
+    //     display: flex;
+    //     justify-content: end;
+    // }
+    .add_weather_div {
+        width: 95%;
+
+        .submit_element_right{
+            display:flex;
+            justify-content: end;
+            padding: 1rem 0 0 0;
+        }
     }
 }
 

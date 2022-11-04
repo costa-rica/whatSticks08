@@ -6,6 +6,7 @@ import os
 from ws_config01 import ConfigDev, ConfigProd
 import logging
 from logging.handlers import RotatingFileHandler
+import pandas as pd
 
 
 if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':

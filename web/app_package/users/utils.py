@@ -140,9 +140,8 @@ def add_new_location(location_api_response):
 
 def add_weather_history(weather_api_response, location_id):
 
+    
     upload_dict ={ key: value for key, value in weather_api_response.json().get('days')[0].items()}
-    # del upload_dict['stations']
-    # del upload_dict['source']
     upload_dict['location_id'] = location_id
     upload_dict['date_time'] = upload_dict['datetime']
 
@@ -162,6 +161,30 @@ def add_weather_history(weather_api_response, location_id):
     except:
         return "failed to add weather history"
 
+
+def add_weather_history_more(weather_api_response, location_id):
+    upload_success_count = 0
+    upload_fail_count = 0
+    for day_forecast in weather_api_response.json().get('days'):
+        upload_dict ={ key: value for key, value in day_forecast.items()}
+        upload_dict['location_id'] = location_id
+        upload_dict['date_time'] = upload_dict['datetime']
+
+        upload_dict_keys = list(upload_dict.keys())
+        for key in upload_dict_keys:
+            if isinstance(upload_dict[key], list):# <--- There have been some values that have return lists but most are text or float
+                upload_dict[key] = upload_dict[key][0]
+            if key not in Weather_history.__table__.columns.keys():# <--- keys are strange names, this removes any unexpected
+                del upload_dict[key]
+
+        try:
+            new_data = Weather_history(**upload_dict)
+            sess.add(new_data)
+            sess.commit()
+            upload_success_count += 1
+        except:
+            upload_fail_count += 1
+    return upload_success_count
 
 def oura_sleep_call(new_token):
     logger_users.info(f"--- making Oura API call ---")

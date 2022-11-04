@@ -11986,7 +11986,7 @@ section.oura .oura_body .delete_instructions .submit_element_right {
   justify-content: center;
 }
 
-/* Add Oura */
+/* Add More WEATHER */
 section.more_weather {
   padding-top: var(--nav-height);
   padding-bottom: var(--nav-height);
@@ -12003,6 +12003,14 @@ section.more_weather .more_weather_body {
   flex-wrap: wrap;
   font-size: 1.5em;
   gap: 1rem;
+}
+section.more_weather .add_weather_div {
+  width: 95%;
+}
+section.more_weather .add_weather_div .submit_element_right {
+  display: flex;
+  justify-content: end;
+  padding: 1rem 0 0 0;
 }
 
 /* Dashbaord */

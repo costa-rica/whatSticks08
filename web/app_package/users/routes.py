@@ -18,10 +18,12 @@ from app_package.users.utils import send_reset_email
 from app_package.users.utilsApple import make_dir_util, decompress_and_save_apple_health, \
     add_apple_to_db, report_process_time
 from app_package.users.utilsXmlUtility import xml_file_fixer, compress_to_save_util
-
-# from app_package.dashboard.utilsSteps import create_raw_df
-
 from app_package.users.utilsDf import create_df_files
+#More Weather
+from app_package.users.utilsMoreWeather import user_oldest_day_util, add_user_loc_days, \
+    get_missing_weather_dates_from_hist
+from app_package.users.utils import add_weather_history_more
+
 
 from sqlalchemy import func
 from datetime import datetime, timedelta
@@ -79,6 +81,7 @@ def home():
 
 
     make_dir_util(config.DF_FILES_DIR)
+
 
     latest_post = sess.query(Posts).all()
     if len(latest_post) > 0:
@@ -246,7 +249,7 @@ def account():
                     # Add/update user_loc_day for all in list
 
                     for day in today_list:
-                        user_loc_day_hist = sess.query(User_location_day).filter_by(user_id=current_user.id, date=day).first()
+                        # user_loc_day_hist = sess.query(User_location_day).filter_by(user_id=current_user.id, date=day).first()
                         #11/2/2022 commented out delete possible history because:
                         # - when user clears out locaiton they also remove user_loc_day for themselves
                         # - adding funcionality for user to get weather data as far back as they have steps or sleep.
@@ -621,6 +624,53 @@ def add_oura():
 
 @users.route('/add_more_weather', methods=["GET","POST"])
 def add_more_weather():
+    
+    USER_ID = current_user.id if current_user.id !=2 else 1
+    oldest_date_str = user_oldest_day_util(USER_ID)
+    print('USErs oldest_date_str: ', oldest_date_str)
+    
+    if request.method == 'POST':
+        logger_users.info(f"- POST request in add_more_weather -")
+        user = sess.query(Users).get(USER_ID)
+        loc_id = location_exists(user)
+
+        oldest_date_str = user_oldest_day_util(USER_ID)
+
+        add_user_loc_days(oldest_date_str, USER_ID, loc_id)
+        dates_call_dict = get_missing_weather_dates_from_hist(oldest_date_str, loc_id)
+
+        # make similar add_user_loc_days but looping through historical weather for loc_id=loc_id
+        ### This get dates_call_dict
+
+        logger_users.info(f"- WS finds that the user could add the following dates to complement their existing WS data -")
+        logger_users.info(f"{dates_call_dict}")
+
+        call_list = []
+        call_response = []
+
+        for period in dates_call_dict.items():
+            loc = sess.query(Locations).get(loc_id)
+            location_coords = f"{loc.lat}, {loc.lon}"
+            weather_call_url =f"{config.VISUAL_CROSSING_BASE_URL}{location_coords}/{str(period[1].get('start'))}/{str(period[1].get('end'))}?key={config.VISUAL_CROSSING_TOKEN}&include=current"
+            r_history = requests.get(weather_call_url)
+            logger_users.info(f"--- Visual Crossing ApI call response: {r_history.status_code} ---")
+            upload_success_count = add_weather_history_more(r_history, loc_id)
+            logger_users.info(f"--- Successfully added {upload_success_count} ---")
+            call_list.append(weather_call_url)
+            call_response.append(r_history.status_code)
+        
+
+        #This just to record my calls
+        df=pd.DataFrame(zip(call_list,call_response),columns=(["weather_call_url", "response"]))
+        df.to_csv(os.path.join(logs_dir,'weather_call_urls.csv'))
+
+
+        if len(dates_call_dict)>0:
+            flash(f"Successfully added more historical weather", 'info')
+        else:
+            flash(f"No additional weather needed to complement the data you have already submitted", "info")
+        return redirect(url_for('users.add_more_weather'))
+
     return render_template('add_more_weather.html')
 
 
