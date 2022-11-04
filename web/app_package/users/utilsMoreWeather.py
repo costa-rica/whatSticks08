@@ -62,18 +62,21 @@ def get_df_for_dash(USER_ID, data_item):
 def user_oldest_day_util(USER_ID):
     data_item_list = ['steps', 'sleep', 'temp', 'cloudcover']
     df_dict = {key:get_df_for_dash(USER_ID,key) for key in data_item_list}
+    logger_users.info(f"- df_dict steps: {df_dict.get('steps').head()}")
+    logger_users.info(f"- df_dict temp: {df_dict.get('temp').head()}")
     oldest_date_list = []
     for i in data_item_list:
         if not isinstance(df_dict.get(i), bool):
             if isinstance(df_dict.get(i).iloc[0].date, str):
                 oldest_date_list.append(datetime.strptime(df_dict.get(i).iloc[0].date,'%Y-%m-%d'))
+    logger_users.info(f'- oldest_date_list: {oldest_date_list}')
     oldest_date_str = min(oldest_date_list).strftime("%Y-%m-%d")
     return oldest_date_str
 
 
 def add_user_loc_days(oldest_date_str, USER_ID, loc_id):
     # dates_call_dict = {}
-    call_period = 1
+    # call_period = 1
     end_date_str = datetime.now().strftime("%Y-%m-%d")
     end_date = datetime.strptime(end_date_str,"%Y-%m-%d")
     oldest_day = datetime.strptime(oldest_date_str,"%Y-%m-%d")

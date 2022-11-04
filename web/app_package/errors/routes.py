@@ -34,9 +34,11 @@ if config_dict['production']==True:
     @errors.app_errorhandler(AttributeError)
     def error_attribute(AttributeError):
         error_message = f"If you're logged in already or think something else is wrong email {current_app.config['MAIL_USERNAME']}."
-        return render_template('errors.html', error_number="Did you login?", error_message=error_message)
+        return render_template('errors.html', error_number="Did you login?", error_message=error_message, 
+        error_message_2 = AttributeError)
 
     @errors.app_errorhandler(KeyError)
     def error_key(KeyError):
         error_message = f"Something is wrong with the site. Send a screen shot or the address you tried to access to {current_app.config['MAIL_USERNAME']}. Thank you"
-        return render_template('errors.html', error_number="Did you login?", error_message=error_message)
+        return render_template('errors.html', error_number="Did you login?", error_message=error_message,
+        error_message_2 = KeyError)
