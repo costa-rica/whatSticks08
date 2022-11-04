@@ -124,16 +124,19 @@ def get_missing_weather_dates_from_hist(oldest_date_str, loc_id):
     oldest_day = datetime.strptime(oldest_date_str,"%Y-%m-%d")
     end_date_flag = True
     # previous_day = end_date
+    logger_users.info(f'oldest_date_str: {oldest_date_str}')
+    temp_start=''
 
     while end_date >= oldest_day:
         end_date_str = end_date.strftime("%Y-%m-%d")
         search_day = sess.query(Weather_history).filter_by(location_id=loc_id, date_time=end_date_str).first()
-        print(end_date_str)
+        logger_users.info(f'end_date_str: {end_date_str}')
         if end_date == oldest_day:
+            logger_users.info('--- in if end_date == oldest_day ---')
             if temp_end != dates_call_dict[call_period-1].get('end'):
                 dates_call_dict[call_period] = {"start": temp_start, "end":temp_end}
                 call_period += 1
-                print('- fire last -')
+                logger_users.info('- fire last -')
         elif not search_day and end_date_flag:
             temp_end = end_date.strftime("%Y-%m-%d")
             temp_start = temp_end
@@ -142,12 +145,13 @@ def get_missing_weather_dates_from_hist(oldest_date_str, loc_id):
         elif not search_day and not end_date_flag:
             temp_start = end_date.strftime("%Y-%m-%d")
     #         print('temp_start: ', temp_start)
-        elif search_day:
+        elif search_day and temp_start != '':
             #if end_date+timedelta(1) != previous_day:# what is logic here
+
             if len(dates_call_dict) ==0:
                 dates_call_dict[call_period] = {"start": temp_start, "end":temp_end}
                 call_period += 1
-                print('- added to dict len=0 - ')
+                logger_users.info('- added to dict len=0 - ')
 
             elif len(dates_call_dict) >0:
                 if temp_end != dates_call_dict[call_period-1].get('end'):
@@ -155,7 +159,7 @@ def get_missing_weather_dates_from_hist(oldest_date_str, loc_id):
     #                 print(f'dates_call_dict[{call_period}]: {dates_call_dict[call_period]}')
         #             date
                     call_period += 1
-                    print('- added to dict len>0 - ')
+                    logger_users.info('- added to dict len>0 - ')
             end_date_flag =True
             # previous_day = end_date
 

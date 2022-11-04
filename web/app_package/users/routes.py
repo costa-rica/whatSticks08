@@ -675,7 +675,9 @@ def add_more_weather():
 
 
 
-
+@users.route('/admin', methods=["GET", "POST"])
+def admin():
+    return render_template('admin.html')
 
 
 

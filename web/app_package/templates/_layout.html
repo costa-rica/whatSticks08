@@ -68,6 +68,7 @@
                 <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('users.logout') }}">Logout</a></li>
                     {% if current_user.id ==1 %}
                         <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('blog.blog_user_home') }}">Admin Blog</a></li>
+                        <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('users.admin') }}">Admin</a></li>
                     {% endif %}
                 
                 <!-- <li class="nav-item li_primary"><a class="nav-link" href="{{ url_for('users.youtube_request') }}">YouTube Request</a></li> -->
