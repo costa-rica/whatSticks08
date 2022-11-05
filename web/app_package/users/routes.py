@@ -21,7 +21,7 @@ from app_package.users.utilsXmlUtility import xml_file_fixer, compress_to_save_u
 from app_package.users.utilsDf import create_df_files
 #More Weather
 from app_package.users.utilsMoreWeather import user_oldest_day_util, add_user_loc_days, \
-    get_missing_weather_dates_from_hist
+    search_weather_dict_list_util
 from app_package.users.utils import add_weather_history_more
 
 
@@ -626,49 +626,72 @@ def add_oura():
 def add_more_weather():
     
     USER_ID = current_user.id if current_user.id !=2 else 1
-    oldest_date_str = user_oldest_day_util(USER_ID)
+    file_path = config.DF_FILES_DIR
+    oldest_date_str = user_oldest_day_util(USER_ID, file_path)
     print('USErs oldest_date_str: ', oldest_date_str)
+
+    #Make a store visual crossing api weather call folder to store calls in case I
+    # make a call that doesn't get stored
+    vc_api_calls_dir = os.path.join(logs_dir, "vc_api_call_responses")
+    make_dir_util(vc_api_calls_dir)
     
     if request.method == 'POST':
         logger_users.info(f"- POST request in add_more_weather -")
         user = sess.query(Users).get(USER_ID)
         loc_id = location_exists(user)
 
-        oldest_date_str = user_oldest_day_util(USER_ID)
 
+        # Add row for user to have user_loc_days
         add_user_loc_days(oldest_date_str, USER_ID, loc_id)
-        dates_call_dict = get_missing_weather_dates_from_hist(oldest_date_str, loc_id)
+
+        # This is list of dict {"start":date,"end":date} for each gap of weather hist since oldest_date_str
+        search_weather_dates_dict_list = search_weather_dict_list_util(oldest_date_str, loc_id)
 
         # make similar add_user_loc_days but looping through historical weather for loc_id=loc_id
         ### This get dates_call_dict
 
         logger_users.info(f"- WS finds that the user could add the following dates to complement their existing WS data -")
-        logger_users.info(f"{dates_call_dict}")
+        logger_users.info(f"{search_weather_dates_dict_list}")
 
         call_list = []
         call_response = []
+        call_file =[]
 
-        for period in dates_call_dict.items():
+        for gap in search_weather_dates_dict_list:
             loc = sess.query(Locations).get(loc_id)
             location_coords = f"{loc.lat}, {loc.lon}"
-            weather_call_url =f"{config.VISUAL_CROSSING_BASE_URL}{location_coords}/{str(period[1].get('start'))}/{str(period[1].get('end'))}?key={config.VISUAL_CROSSING_TOKEN}&include=current"
-            r_history = requests.get(weather_call_url)
-            logger_users.info(f"--- Visual Crossing ApI call response: {r_history.status_code} ---")
-            upload_success_count = add_weather_history_more(r_history, loc_id)
-            logger_users.info(f"--- Successfully added {upload_success_count} ---")
-            call_list.append(weather_call_url)
-            call_response.append(r_history.status_code)
+            weather_call_url =f"{config.VISUAL_CROSSING_BASE_URL}{location_coords}/{str(gap.get('start'))}/{str(gap.get('end'))}?key={config.VISUAL_CROSSING_TOKEN}&include=current"
+            print(gap)
+            print(weather_call_url)
+            # r_history = requests.get(weather_call_url)
+            # logger_users.info(f"--- Visual Crossing ApI call response: {r_history.status_code} ---")
+            # if r_history.status_code == 200:
+            #     upload_success_count = add_weather_history_more(r_history, loc_id)
+            #     logger_users.info(f"--- Successfully added {upload_success_count} ---")
+                
+            #     save_vc_response_file_name = f"vc_response{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            #     with open(os.path.join(vc_api_calls_dir, save_vc_response_file_name), 'w') as fp:
+            #         json.dump(r_history.json(), fp)
+                
+
+            # else:
+            #     logger_users.info(f"--- Unable to get Visual Crossing date. VC respose: {r_history.content} ---")
+            #     save_vc_response_file_name = r_history.content.decode("utf-8") 
+                
+            # call_list.append(weather_call_url)
+            # call_response.append(r_history.status_code)
+            # call_file.append(save_vc_response_file_name)
         
 
-        #This just to record my calls
-        df=pd.DataFrame(zip(call_list,call_response),columns=(["weather_call_url", "response"]))
-        df.to_csv(os.path.join(logs_dir,'weather_call_urls.csv'))
+        # #This just to record my calls
+        # df=pd.DataFrame(zip(call_list,call_response,call_file),columns=(["weather_call_url", "response","file_name / content"]))
+        # df.to_csv(os.path.join(logs_dir,'add_weather_VC_api_call_tracker.csv'))
 
 
-        if len(dates_call_dict)>0:
-            flash(f"Successfully added more historical weather", 'info')
-        else:
-            flash(f"No additional weather needed to complement the data you have already submitted", "info")
+        # if len(dates_call_dict)>0:
+        #     flash(f"Successfully added more historical weather", 'info')
+        # else:
+        #     flash(f"No additional weather needed to complement the data you have already submitted", "info")
         return redirect(url_for('users.add_more_weather'))
 
     return render_template('add_more_weather.html')
