@@ -12009,8 +12009,23 @@ section.more_weather .add_weather_div {
 }
 section.more_weather .add_weather_div .submit_element_right {
   display: flex;
+  justify-content: center;
+  padding: 1rem 1rem 0 0;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+section.more_weather .add_weather_div .submit_element_right .date_div {
+  display: flex;
   justify-content: end;
-  padding: 1rem 0 0 0;
+}
+section.more_weather .text_black {
+  color: white;
+}
+section.more_weather .text_white {
+  color: var(--bs-gray-200);
+}
+section.more_weather .date_font_size {
+  font-size: 1.5rem;
 }
 
 /* Dashbaord */

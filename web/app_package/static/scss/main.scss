@@ -550,9 +550,27 @@ section.more_weather{
 
         .submit_element_right{
             display:flex;
-            justify-content: end;
-            padding: 1rem 0 0 0;
+            justify-content: center;
+            padding: 1rem 1rem 0 0;
+            flex-wrap: wrap;
+            gap:2rem;
+            .date_div {
+                // width: 100%;
+                display:flex;
+                justify-content: end;
+            }
         }
+    }
+    .text_black{
+        // color: var(--bs-gray-900);
+        color: white;
+    }
+
+    .text_white {
+        color: var(--bs-gray-200)
+    }
+    .date_font_size {
+        font-size: 1.5rem;
     }
 }
 

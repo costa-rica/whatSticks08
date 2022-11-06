@@ -5,22 +5,47 @@
 <section class="more_weather">
   
   <div class="title">
-    More Weather
+    Add More Weather History
   </div>
   <form method="POST">
   <div class="more_weather_body">
     
+
+    <div class="common_primary_div add_weather_div">
+      
+      <h2 class="text_white">Why add more weather data?</h2>
+      The what sticks impact index measures how closely correlated your data are to one another. 
+      Just for adding your location WS includes 14 days of past weather history to match with your other data. 
+      <br><br>
+      If you would like to have a more meaningful correlation it would be best to have as many days as your have been in the same city. 
+      <br><br>
+      If you have <b class="text_black">lived in the same city</b> since <b class="text_black">{{ oldest_date }}</b>, you could get a more meaningful Impact Index by including weather history from 2016.
+      <br><br>
+      However, if you moved around a lot since then, it would be better to limit how much data you add.
+
+
+    </div>
+
     <div class="common_primary_div add_weather_div">
       
 
-        This will add weather history up to the date of the earliest data point existing in your WS account.
-        <div class="submit_element_right">
-          <button type="submit" name="btn_add_more_weather" value=True class="btn btn-light btn_custom01">
-            Add historical weather data
-          </button>
+Add weather from my current location starting:
+
+      <div class="submit_element_right">
+        <div class="date_div">
+          <input type="date" id="start" name="get_data_from_date" value="{{ oldest_date_str }}" class="form-control date_font_size">
+
         </div>
+        <button type="submit" name="btn_add_more_weather" value=True class="btn btn-light btn_custom01">
+          Add weather 
+        </button>
+      </div>
 
     </div>
+
+
+
+
 
     </div>
   </form>

@@ -459,9 +459,9 @@ def add_apple():
     return render_template('add_apple.html', apple_records=apple_records, isinstance=isinstance, str=str)
 
 
-users.route('/redirect_test', methods=['GET', 'POST'])
-def redirect_test():
-    return redirect(url_for('users.add_apple', test_var='Stop sending'))
+# users.route('/redirect_test', methods=['GET', 'POST'])
+# def redirect_test():
+#     return redirect(url_for('users.add_apple', test_var='Stop sending'))
 
 
 @users.route('/add_more_apple', methods=['GET', 'POST'])
@@ -637,9 +637,13 @@ def add_more_weather():
     
     if request.method == 'POST':
         logger_users.info(f"- POST request in add_more_weather -")
+        formDict = request.form.to_dict()
+        oldest_date_str = formDict.get('get_data_from_date')
+
         user = sess.query(Users).get(USER_ID)
         loc_id = location_exists(user)
-
+        print('- formDcit =')
+        print(formDict)
 
         # Add row for user to have user_loc_days
         add_user_loc_days(oldest_date_str, USER_ID, loc_id)
@@ -694,8 +698,9 @@ def add_more_weather():
         else:
             flash(f"No additional weather needed to complement the data you have already submitted", "info")
         return redirect(url_for('users.add_more_weather'))
-
-    return render_template('add_more_weather.html')
+    oldest_date = datetime.strptime(oldest_date_str,"%Y-%m-%d").strftime("%b %d, %Y")
+    # oldest_date_str = datetime.strptime(oldest_date_str,"%Y-%m-%d").strftime("%m/%d/%Y")
+    return render_template('add_more_weather.html', oldest_date = oldest_date, oldest_date_str=oldest_date_str)
 
 
 
