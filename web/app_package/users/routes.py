@@ -321,6 +321,7 @@ def account():
             return redirect(url_for('users.account'))
 
 
+    print('existing_coordinates: ', existing_coordinates)
     return render_template('accounts.html', page_name = page_name, email=email,
         location_coords = existing_coordinates, city_name = city_name)
 
@@ -624,7 +625,9 @@ def add_oura():
 
 @users.route('/add_more_weather', methods=["GET","POST"])
 def add_more_weather():
-    
+    if current_user.lat == None:
+        flash("Must add location before adding more weather data", "warning")
+        return redirect(url_for('users.account'))
     USER_ID = current_user.id if current_user.id !=2 else 1
     file_path = config.DF_FILES_DIR
     oldest_date_str = user_oldest_day_util(USER_ID, file_path)
@@ -700,7 +703,12 @@ def add_more_weather():
         return redirect(url_for('users.add_more_weather'))
     oldest_date = datetime.strptime(oldest_date_str,"%Y-%m-%d").strftime("%b %d, %Y")
     # oldest_date_str = datetime.strptime(oldest_date_str,"%Y-%m-%d").strftime("%m/%d/%Y")
-    return render_template('add_more_weather.html', oldest_date = oldest_date, oldest_date_str=oldest_date_str)
+
+    one_month_ago = datetime.now()-timedelta(days=30)
+    one_month_ago_str = one_month_ago.strftime("%Y-%m-%d")
+
+
+    return render_template('add_more_weather.html', oldest_date = oldest_date, oldest_date_str=one_month_ago_str)
 
 
 
