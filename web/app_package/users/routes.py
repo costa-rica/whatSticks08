@@ -234,7 +234,10 @@ def account():
                     user.lon = formDict.get('location_text').split(',')[1]
 
                     #edit user weather date
-                    user_notes_dict = edit_user_items_dict_util(user.notes)
+                    if isinstance(user.notes,str):
+                        user_notes_dict = edit_user_items_dict_util(user.notes)
+                    else:
+                        user_notes_dict ={}
                     if not user_notes_dict.get('weather_hist_date'):
                         four_weeks_ago_date = datetime.now() - timedelta(28)
                         four_weeks_ago_date_str = four_weeks_ago_date.strftime("%Y-%m-%d")

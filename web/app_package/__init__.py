@@ -89,6 +89,7 @@ def create_app():
     login_manager.init_app(app)
     mail.init_app(app)
     logger_init.info(f"--- Running DEBUG: {app.config.get('DEBUG')}")
+    logger_init.info(f"--- PROPAGATE_EXCEPTIONS: {app.config.get('PROPAGATE_EXCEPTIONS')}")
 
     from app_package.users.routes import users
     from app_package.dashboard.routes import dash

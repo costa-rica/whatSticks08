@@ -39,6 +39,12 @@ if config_dict['production']==True:
 
     @errors.app_errorhandler(KeyError)
     def error_key(KeyError):
-        error_message = f"Something is wrong with the site. Send a screen shot or the address you tried to access to {current_app.config['MAIL_USERNAME']}. Thank you"
+        error_message = f"Something is wrong with the site. Send a message to {current_app.config['MAIL_USERNAME']}. Thank you"
+        return render_template('errors.html', error_number="Did you login?", error_message=error_message,
+        error_message_2 = KeyError)
+
+    @errors.app_errorhandler(TypeError)
+    def error_key(KeyError):
+        error_message = f"Something is wrong with the site. Send a message to {current_app.config['MAIL_USERNAME']}. Thank you"
         return render_template('errors.html', error_number="Did you login?", error_message=error_message,
         error_message_2 = KeyError)
