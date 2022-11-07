@@ -16,6 +16,7 @@ import shutil
 import logging
 from logging.handlers import RotatingFileHandler
 import re
+import pandas as pd
 
 # config = ConfigDev()
 if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
@@ -305,10 +306,30 @@ def edit_user_items_dict_util(user_notes):
         items_dict[item[:item.find(':')]] = item[item.find(':')+1:]
     return items_dict
 
-# def edit_user_notes(data_item_name, data_item_value):
-#     entry = data_item_name + ":" + data_item_value + ";"
-#     return entry
+def get_apple_health_count(USER_ID):
+    # table_name = 'apple_health_export_'
+    # USER_ID = current_user.id if current_user.id !=2 else 1
+    file_name = f'user{USER_ID}_df_browse_apple.pkl'
+    file_path = os.path.join(config.DF_FILES_DIR, file_name)
+    if os.path.exists(file_path):
+        df = pd.read_pickle(file_path)
+        count = "{:,}".format(df.record_count.sum())
+    else:
+        count = 0
+    return count
+    # df_records_dict = df.to_dict('records')
 
-    notes_string = ''
-    for key, value in edit_user_items_dict.items():
-        notes_string = notes_string + key +":" + value+";"
+def get_user_df_count(USER_ID, data_item):
+    # table_name = 'apple_health_export_'
+    # USER_ID = current_user.id if current_user.id !=2 else 1
+    file_name = f'user{USER_ID}_df_{data_item}.pkl'
+    file_path = os.path.join(config.DF_FILES_DIR, file_name)
+    print('file_path:::')
+    print(file_path)
+    if os.path.exists(file_path):
+        df = pd.read_pickle(file_path)
+        count = "{:,}".format(len(df))
+    else:
+        count = 0
+    return count
+    # df_records_dict = df.to_dict('records')

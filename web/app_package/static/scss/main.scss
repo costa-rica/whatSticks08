@@ -755,19 +755,28 @@ section.admin{
     //     border-collapse: initial;
     //     border:1px solid var(--bs-primary);
     // }
+    table th {
+        font-size: 1rem;
+        padding:0;
+        margin:0;
+        width:min-content;//This 
+    }
     .no_input {
         display:none;
-        // border: none;
-        // display: inline;
-        // padding: 0;
-        // background-color: inherit;
-        // width: 2rem;
-      }
-    // .submit_element_right{
-    //     display:flex;
-    //     justify-content: end;
-    //     padding-right: 1rem;
-    // }
+    }
+    .textbox_admin_small {
+        width: 5rem;
+        padding:.2rem;
+        margin:0;
+    }
+    .dash_id_button:hover{
+        background: #E54E4E;
+        background-size: contain;
+        padding: 3px 7px 5px;
+        top: -5px;
+        right: -5px;
+    }
+
 }
 
 

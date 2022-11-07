@@ -4,7 +4,8 @@ from flask import render_template, url_for, redirect, flash, request, \
     abort, session, Response, current_app, send_from_directory, make_response
 import bcrypt
 from ws_models01 import sess, Users, login_manager, Oura_token, Locations, \
-    Weather_history, User_location_day, Oura_sleep_descriptions, Posts, Apple_health_export
+    Weather_history, User_location_day, Oura_sleep_descriptions, Posts, \
+    Apple_health_export, User_notes
 from flask_login import login_required, login_user, logout_user, current_user
 import requests
 #Oura
@@ -24,7 +25,8 @@ from app_package.users.utilsMoreWeather import user_oldest_day_util, add_user_lo
     search_weather_dict_list_util
 from app_package.users.utils import add_weather_history_more
 #Admin
-from app_package.users.utils import make_user_item_list, edit_user_items_dict_util
+from app_package.users.utils import make_user_item_list, edit_user_items_dict_util, \
+    get_apple_health_count, get_user_df_count
 
 
 
@@ -749,53 +751,60 @@ def admin():
         return redirect(url_for('users.login'))
     list_of_users = sess.query(Users).all()
     list_of_notes = [user.notes for user in list_of_users]
-    # list_of_notes = list_of_users[0].notes
-
-    # list_of_forms = ['form_'+str(i) for i in range(1,len(list_of_users)+1)]
     list_of_forms = ['form_'+str(i) for i in range(1,len(list_of_users)+1)]
+    #Add form for delete modal
+    list_of_forms = list_of_forms +[f'form_{len(list_of_forms)+1}']
+    list_of_apple_count = [get_apple_health_count(u.id) for u in list_of_users]
+    list_of_oura_sleep = [get_user_df_count(u.id, 'sleep') for u in list_of_users]
 
-
+    # For User notes
     oura_bad_token_list = make_user_item_list('oura_token:', list_of_notes)
     weather_hist_status_list = make_user_item_list('weather_hist_status:', list_of_notes)
     weather_hist_dates_list = make_user_item_list('weather_hist_date:', list_of_notes)
 
-
     users_list = zip(list_of_users, list_of_forms, oura_bad_token_list,weather_hist_status_list,
-        weather_hist_dates_list)
+        weather_hist_dates_list, list_of_apple_count,list_of_oura_sleep)
 
     if request.method == 'POST':
         formDict = request.form.to_dict()
         print('formDict: ', formDict)
-        edit_user_id = formDict.get('user_id')
-        edit_user = sess.query(Users).get(int(edit_user_id))
-        print(edit_user)
 
-        # # check if user has notes
-        # if isinstance(edit_user.notes, str):
-        #     print('-- editing user notes --')
-        #     # if user has notes convert notes to dict
-        #     edit_user_items_dict = edit_user_items_dict_util(edit_user.notes)
-        # else:
-        #     edit_user_items_dict = {}
+        if formDict.get('user_id'):
+            edit_user_id = formDict.get('user_id')
+            edit_user = sess.query(Users).get(int(edit_user_id))
+            print(edit_user)
 
-        del formDict['user_id']
+            del formDict['user_id']
 
-        # update all user notes with what is found in formDict
-        notes_string = ''
-        for data_item_name, data_item_value in formDict.items():
-            notes_string = notes_string +  data_item_name + ":" + data_item_value + ";"
-            # entry = create_entry(data_item_name, data_item_value)
-            # notes_string = notes_string + entry
-            # edit_user_items_dict[data_item_name] = data_item
-    
-        # Convert back to nickformat (key:value;)
-        # notes_string = ''
-        # for key, value in edit_user_items_dict.items():
-        #     notes_string = notes_string + key +":" + value+";"
+            # update all user notes with what is found in formDict
+            notes_string = ''
+            for data_item_name, data_item_value in formDict.items():
+                notes_string = notes_string +  data_item_name + ":" + data_item_value + ";"
 
-        # update notes in db
-        edit_user.notes = notes_string
-        sess.commit()
+
+            # update notes in db
+            edit_user.notes = notes_string
+            sess.commit()
+
+        elif formDict.get('delete_user_id'):
+            delete_user_id = int(formDict.get('delete_user_id'))
+            if delete_user_id in [1, 2]:
+                flash('Not deleteing users 1 or 2. Must go into /admin route.', 'warning')
+                print(f'-- not delting user {delete_user_id}')
+                return redirect(url_for('users.admin'))
+            logger_users.info(f"--- Deleteing user {delete_user_id}---")
+            
+            
+            # Delete User_location_day
+            sess.query(User_location_day).filter_by(user_id = delete_user_id).delete()
+            sess.query(Apple_health_export).filter_by(user_id = delete_user_id).delete()
+            sess.query(Oura_sleep_descriptions).filter_by(user_id = delete_user_id).delete()
+            sess.query(Oura_token).filter_by(user_id = delete_user_id).delete()
+            sess.query(User_notes).filter_by(user_id = delete_user_id).delete()
+            sess.query(Users).filter_by(id = delete_user_id).delete()
+            sess.commit()
+
+            logger_users.info('- User deleted successfully -')
         
 
         return redirect(url_for('users.admin'))

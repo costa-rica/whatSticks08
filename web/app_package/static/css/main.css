@@ -12180,8 +12180,26 @@ section.admin .admin_body {
   font-size: 1.5em;
   gap: 1rem;
 }
+section.admin table th {
+  font-size: 1rem;
+  padding: 0;
+  margin: 0;
+  width: min-content;
+}
 section.admin .no_input {
   display: none;
+}
+section.admin .textbox_admin_small {
+  width: 5rem;
+  padding: 0.2rem;
+  margin: 0;
+}
+section.admin .dash_id_button:hover {
+  background: #E54E4E;
+  background-size: contain;
+  padding: 3px 7px 5px;
+  top: -5px;
+  right: -5px;
 }
 
 /* About us */
