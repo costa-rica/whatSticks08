@@ -482,6 +482,7 @@ def add_apple():
 
 
 @users.route('/add_more_apple', methods=['GET', 'POST'])
+@login_required
 def add_more_apple():
     table_name = 'apple_health_export_'
     USER_ID = current_user.id if current_user.id !=2 else 1
@@ -495,6 +496,7 @@ def add_more_apple():
 
 
 @users.route('/add_oura', methods=["GET", "POST"])
+@login_required
 def add_oura():
     logger_users.info(f"--- Add Oura route ---")
     existing_records = sess.query(Oura_sleep_descriptions).filter_by(user_id=current_user.id).all()
@@ -640,6 +642,7 @@ def add_oura():
 
 
 @users.route('/add_more_weather', methods=["GET","POST"])
+@login_required
 def add_more_weather():
     if current_user.lat == None:
         flash("Must add location before adding more weather data", "warning")
@@ -737,8 +740,10 @@ def add_more_weather():
 
 
 @users.route('/admin', methods=["GET", "POST"])
+@login_required
 def admin():
-
+    if current_user.id != 1:
+        return redirect(url_for('users.login'))
     list_of_users = sess.query(Users).all()
     list_of_notes = [user.notes for user in list_of_users]
     # list_of_notes = list_of_users[0].notes
@@ -747,7 +752,7 @@ def admin():
     list_of_forms = ['form_'+str(i) for i in range(1,len(list_of_users)+1)]
 
 
-    oura_bad_token_list = make_user_item_list('oura:', list_of_notes)
+    oura_bad_token_list = make_user_item_list('oura_token:', list_of_notes)
     weather_hist_status_list = make_user_item_list('weather_hist_status:', list_of_notes)
     weather_hist_dates_list = make_user_item_list('weather_hist_date:', list_of_notes)
 
