@@ -10,7 +10,7 @@
   <form method="POST">
   <div class="more_weather_body">
     
-
+    {% if hist_limit_date== '' %}
     <div class="common_primary_div add_weather_div">
       
       <h2 class="text_white">Why add more weather data?</h2>
@@ -26,6 +26,18 @@
 
 
     </div>
+    {% else %}
+    <div class="common_primary_div add_weather_div">
+      
+      <h2 class="text_white">Why add more weather data?</h2>
+      The what sticks impact index measures how closely correlated your data are to one another. 
+      Just for adding your location WS includes 14 days of past weather history to match with your other data. 
+      <br><br>
+      You are currntly limited to go back to <b class="text_black">{{ oldest_date }}</b>
+
+
+    </div>
+    {% endif %}
 
     <div class="common_primary_div add_weather_div">
       
@@ -34,7 +46,11 @@ Add weather from my current location going back to:
 
       <div class="submit_element_right">
         <div class="date_div">
+          {% if hist_limit_date== '' %}
           <input type="date" id="start" name="get_data_from_date" value="{{ oldest_date_str }}" class="form-control date_font_size">
+          {% else %}
+          <input type="date" id="start" name="get_data_from_date" value="{{ hist_limit_date }}" min="{{hist_limit_date}}" class="form-control date_font_size">
+          {% endif %}
 
         </div>
         <button type="submit" name="btn_add_more_weather" value=True class="btn btn-light btn_custom01">

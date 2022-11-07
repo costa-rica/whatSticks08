@@ -11014,7 +11014,10 @@ section.navbar_section .navbar_custom .nav_left a {
   padding-top: 0;
   margin-top: 0;
 }
-section.navbar_section .navbar_custom .nav_left .dandd_logo {
+section.navbar_section .navbar_custom .nav_left .ws_logo_big {
+  display: none;
+}
+section.navbar_section .navbar_custom .nav_left .ws_logo_small {
   height: 4rem;
   margin-top: -0.5rem;
 }
@@ -11102,8 +11105,12 @@ section.navbar_section .navbar_custom nav .dropdown:hover {
   section.navbar_section .navbar_custom .left_and_middle .nav_left {
     flex: 1;
   }
-  section.navbar_section .navbar_custom .left_and_middle .nav_left .dandd_logo {
+  section.navbar_section .navbar_custom .left_and_middle .nav_left .ws_logo_big {
     height: 7rem;
+    display: inline;
+  }
+  section.navbar_section .navbar_custom .left_and_middle .nav_left .ws_logo_small {
+    display: none;
   }
   section.navbar_section .navbar_custom .left_and_middle .middle_nav_div {
     flex: 5;
@@ -11520,8 +11527,9 @@ section.blog_edit .id_button_hide {
   --table-chart-width: 100%;
 }
 
-body {
+html, body {
   background-color: var(--bs-gray-400);
+  height: 100%;
 }
 
 .title {
@@ -12152,6 +12160,28 @@ section.Error .error_body {
 }
 section.Error .error_body h3 {
   padding: 25px 0 0 50px;
+}
+
+/* Add Admin */
+section.admin {
+  padding-top: var(--nav-height);
+  padding-bottom: var(--nav-height);
+}
+section.admin .title {
+  padding: 1rem 0 0 0.5rem;
+  width: 100%;
+  font-size: 2rem;
+}
+section.admin .admin_body {
+  padding: 1rem 0 0 0;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: 1.5em;
+  gap: 1rem;
+}
+section.admin .no_input {
+  display: none;
 }
 
 /* About us */

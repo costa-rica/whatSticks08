@@ -37,7 +37,14 @@ section.navbar_section {
                 padding-top: 0;
                 margin-top:0;
             }
-            .dandd_logo{
+            // .dandd_logo{
+            //     height:4rem;
+            //     margin-top: -.5rem;
+            // }
+            .ws_logo_big{
+                display:none
+            }
+            .ws_logo_small {
                 height:4rem;
                 margin-top: -.5rem;
             }
@@ -114,12 +121,17 @@ section.navbar_section {
 .footer{
     padding: 1rem 3rem var(--nav-height) 3rem;
     background-color: var(--bs-gray-200);
+    // height: auto !important;
+    // height:auto;
+    // flex-grow: 2;
+    // min-height: 100%;
     .footer_right{
         // display:flex;
         // justify-content: end;
         // flex-wrap:wrap;
         .footer_link_item{
             width: 100%;
+            
             display:flex;
             justify-content: end;
             padding-right: 3rem;
@@ -139,8 +151,12 @@ section.navbar_section {
                 width: 80%;
                 .nav_left{
                     flex:1;
-                    .dandd_logo{
+                    .ws_logo_big{
                         height:7rem;
+                        display:inline;
+                    }
+                    .ws_logo_small {
+                        display:none;
                     }
                 }
                 .middle_nav_div {

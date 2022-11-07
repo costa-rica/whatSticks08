@@ -229,7 +229,7 @@ def oura_tokens():
     request_data = request.get_json()
     if request_data.get('password') == config.WSH_API_PASSWORD:
         #2) get all users in db
-        users = sess.query(Users).filter((~Users.notes.contains("oura:bad_token")) | (Users.notes==None)).all()
+        users = sess.query(Users).filter((~Users.notes.contains("oura_token:bad_token")) | (Users.notes==None)).all()
         #3) search OUra_token table to get all user ora tokens
         oura_tokens_dict = {}
         
@@ -305,7 +305,7 @@ def receive_oura_data():
             else:
                 wsh_oura_add_response_dict[user_id] = f'No data added due to {oura_response.get("No Oura data reason")}'
                 user = sess.query(Users).get(user_id)
-                user.notes = user.notes + "; oura:bad_token" if isinstance(user.notes,str) else "oura:bad_token"
+                user.notes = user.notes + ";oura_token:bad_token;" if isinstance(user.notes,str) else "oura_token:bad_token;"
                 sess.commit()
         if counter_user == 0:
             wsh_oura_add_response_dict[user_id] = 'No new sleep sessions availible'

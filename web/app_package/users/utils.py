@@ -15,6 +15,7 @@ import zipfile
 import shutil
 import logging
 from logging.handlers import RotatingFileHandler
+import re
 
 # config = ConfigDev()
 if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
@@ -270,3 +271,44 @@ def location_exists(user):
     # returns location_id = 0 if there is no location less than sum of .1 degrees
     return location_id
 
+
+def make_user_item_list(data_item_key,list_of_notes) :
+    data_item_list = []
+    for note in list_of_notes:
+
+        if isinstance(note,str):
+            if note.find(data_item_key)>-1:
+                data_item_start = note[note.find(data_item_key):]
+                data_item_str = data_item_start[len(data_item_key):data_item_start.find(';')]
+            else:
+                data_item_str = ''
+        else:
+            data_item_str = ''
+        data_item_list.append(data_item_str)
+    
+    return data_item_list
+
+
+def edit_user_items_dict_util(user_notes):
+    items_end_pos_list  = [m.start() for m in re.finditer(';', user_notes)]           
+    counter = 0
+    user_items_list = []
+    for item_end_pos in items_end_pos_list:
+        if counter==0:
+            user_items_list.append(user_notes[:item_end_pos])
+        else:
+            user_items_list.append(user_notes[items_end_pos_list[counter-1]+1:item_end_pos])
+        counter+=1
+
+    items_dict = {}
+    for item in user_items_list:
+        items_dict[item[:item.find(':')]] = item[item.find(':')+1:]
+    return items_dict
+
+# def edit_user_notes(data_item_name, data_item_value):
+#     entry = data_item_name + ":" + data_item_value + ";"
+#     return entry
+
+    notes_string = ''
+    for key, value in edit_user_items_dict.items():
+        notes_string = notes_string + key +":" + value+";"

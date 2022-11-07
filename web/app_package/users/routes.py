@@ -23,6 +23,9 @@ from app_package.users.utilsDf import create_df_files
 from app_package.users.utilsMoreWeather import user_oldest_day_util, add_user_loc_days, \
     search_weather_dict_list_util
 from app_package.users.utils import add_weather_history_more
+#Admin
+from app_package.users.utils import make_user_item_list, edit_user_items_dict_util
+
 
 
 from sqlalchemy import func
@@ -229,6 +232,19 @@ def account():
                     # add lat/lon to users table
                     user.lat = formDict.get('location_text').split(',')[0]
                     user.lon = formDict.get('location_text').split(',')[1]
+
+                    #edit user weather date
+                    user_notes_dict = edit_user_items_dict_util(user.notes)
+                    if not user_notes_dict.get('weather_hist_date'):
+                        four_weeks_ago_date = datetime.now() - timedelta(28)
+                        four_weeks_ago_date_str = four_weeks_ago_date.strftime("%Y-%m-%d")
+                        user_notes_dict['weather_hist_date'] = four_weeks_ago_date_str
+                        notes_string = ''
+                        for data_item_name,data_item_value in user_notes_dict.items():
+                            notes_string = notes_string + data_item_name + ":" + data_item_value + ";"
+
+                        user.notes = notes_string
+
                     sess.commit()
                     logger_users.info('---- Added new coordinates for user ----')
 
@@ -633,6 +649,13 @@ def add_more_weather():
     oldest_date_str = user_oldest_day_util(USER_ID, file_path)
     print('USErs oldest_date_str: ', oldest_date_str)
 
+    user_notes_dict = edit_user_items_dict_util(current_user.notes)
+    if user_notes_dict.get('weather_hist_date'):
+        hist_limit_date = user_notes_dict.get('weather_hist_date')
+        oldest_date_str = hist_limit_date
+    else:
+        hist_limit_date=''
+
     #Make a store visual crossing api weather call folder to store calls in case I
     # make a call that doesn't get stored
     vc_api_calls_dir = os.path.join(logs_dir, "vc_api_call_responses")
@@ -708,13 +731,68 @@ def add_more_weather():
     one_month_ago_str = one_month_ago.strftime("%Y-%m-%d")
 
 
-    return render_template('add_more_weather.html', oldest_date = oldest_date, oldest_date_str=one_month_ago_str)
+    return render_template('add_more_weather.html', oldest_date = oldest_date, oldest_date_str=one_month_ago_str,
+        hist_limit_date=hist_limit_date)
 
 
 
 @users.route('/admin', methods=["GET", "POST"])
 def admin():
-    return render_template('admin.html')
+
+    list_of_users = sess.query(Users).all()
+    list_of_notes = [user.notes for user in list_of_users]
+    # list_of_notes = list_of_users[0].notes
+
+    # list_of_forms = ['form_'+str(i) for i in range(1,len(list_of_users)+1)]
+    list_of_forms = ['form_'+str(i) for i in range(1,len(list_of_users)+1)]
+
+
+    oura_bad_token_list = make_user_item_list('oura:', list_of_notes)
+    weather_hist_status_list = make_user_item_list('weather_hist_status:', list_of_notes)
+    weather_hist_dates_list = make_user_item_list('weather_hist_date:', list_of_notes)
+
+
+    users_list = zip(list_of_users, list_of_forms, oura_bad_token_list,weather_hist_status_list,
+        weather_hist_dates_list)
+
+    if request.method == 'POST':
+        formDict = request.form.to_dict()
+        print('formDict: ', formDict)
+        edit_user_id = formDict.get('user_id')
+        edit_user = sess.query(Users).get(int(edit_user_id))
+        print(edit_user)
+
+        # # check if user has notes
+        # if isinstance(edit_user.notes, str):
+        #     print('-- editing user notes --')
+        #     # if user has notes convert notes to dict
+        #     edit_user_items_dict = edit_user_items_dict_util(edit_user.notes)
+        # else:
+        #     edit_user_items_dict = {}
+
+        del formDict['user_id']
+
+        # update all user notes with what is found in formDict
+        notes_string = ''
+        for data_item_name, data_item_value in formDict.items():
+            notes_string = notes_string +  data_item_name + ":" + data_item_value + ";"
+            # entry = create_entry(data_item_name, data_item_value)
+            # notes_string = notes_string + entry
+            # edit_user_items_dict[data_item_name] = data_item
+    
+        # Convert back to nickformat (key:value;)
+        # notes_string = ''
+        # for key, value in edit_user_items_dict.items():
+        #     notes_string = notes_string + key +":" + value+";"
+
+        # update notes in db
+        edit_user.notes = notes_string
+        sess.commit()
+        
+
+        return redirect(url_for('users.admin'))
+
+    return render_template('admin.html', users_list = users_list, list_of_forms=list_of_forms)
 
 
 

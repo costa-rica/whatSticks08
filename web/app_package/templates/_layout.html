@@ -16,12 +16,12 @@
     <link rel="stylesheet" type="text/css" href="../static/datatables/jquery.dataTables.min_dashAndData.css">
     <!-- /static/datatables/ was added by Nick -->
     
-    
+
 
 
     <title>whatsticks</title>
 </head>
-<body>
+<body >
     <section class="navbar_section">
 
 
@@ -31,7 +31,8 @@
             <div class="nav_left">
                 <a href="{{ url_for('users.home') }}" >
                     <div class="logo">
-                      <img class="dandd_logo" src="../static/images/wshLogo300px.png" >
+                      <img class="ws_logo_big" src="../static/images/wshLogo300px.png" >
+                      <img class="ws_logo_small" src="../static/images/wshLogo_300px_doodle02.png" >
                     </div>
                 </a>
             </div>
@@ -113,13 +114,13 @@
 
     {% block main %}{% endblock %}
 
-    <footer class="footer">
+    <footer class="footer" id="footer_custom">
 
         <div class=footer_right>
             <a class="footer_link_item" href="{{ url_for('users.about_us') }}">About</a>
             <a class="footer_link_item" href="{{ url_for('users.privacy') }}">Privacy</a>
         </div>
-      </footer>
+    </footer>
 
 
 <script>

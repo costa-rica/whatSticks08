@@ -9,10 +9,15 @@
     --table-chart-width: 100%;
   }
 
-body {
+html,body {
     background-color: var(--bs-gray-400);
-
+    height: 100%;
+    // display: flex;
+    // flex-direction: column;
 }
+// body > * {
+//     flex-shrink: 0;
+// }
 .title {
     font-size: 3em;
 }
@@ -728,6 +733,44 @@ section.Error {
         h3{padding: 25px 0 0 50px;}
     }
 }
+
+/* Add Admin */
+section.admin{
+    padding-top: var(--nav-height);
+    padding-bottom: var(--nav-height);
+    .title{
+        padding:1rem 0 0 .5rem;
+        width:100%;
+        font-size: 2rem;
+    }
+    .admin_body{
+        padding: 1rem 0 0 0;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        font-size: 1.5em;
+        gap:1rem;
+    }
+    // table.dataTable {
+    //     border-collapse: initial;
+    //     border:1px solid var(--bs-primary);
+    // }
+    .no_input {
+        display:none;
+        // border: none;
+        // display: inline;
+        // padding: 0;
+        // background-color: inherit;
+        // width: 2rem;
+      }
+    // .submit_element_right{
+    //     display:flex;
+    //     justify-content: end;
+    //     padding-right: 1rem;
+    // }
+}
+
+
 
 
 /* About us */

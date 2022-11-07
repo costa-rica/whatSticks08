@@ -126,7 +126,7 @@ def make_steps_chart_util(series_lists_dict, buttons_dict):
     print('- buttons_dict -')
     plot_font_size = "1rem"
     dates_list = series_lists_dict.get('date')
-    date_start = max(dates_list) - timedelta(days=8.5)
+    date_start = max(dates_list) - timedelta(days=2.5)
     date_end = max(dates_list) + timedelta(days=1)
     print('waht is hte last date:', dates_list[-1])
     fig1=figure(toolbar_location=None,tools='xwheel_zoom,xpan',active_scroll='xwheel_zoom',
