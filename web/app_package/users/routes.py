@@ -3,7 +3,7 @@ from flask import Blueprint
 from flask import render_template, url_for, redirect, flash, request, \
     abort, session, Response, current_app, send_from_directory, make_response
 import bcrypt
-from ws_models01 import sess, Users, login_manager, Oura_token, Locations, \
+from ws_models01 import sess, Base, Users, login_manager, Oura_token, Locations, \
     Weather_history, User_location_day, Oura_sleep_descriptions, Posts, \
     Apple_health_export, User_notes
 from flask_login import login_required, login_user, logout_user, current_user
@@ -86,6 +86,7 @@ def home():
 
 
     make_dir_util(config.DF_FILES_DIR)
+    make_dir_util(config.DB_DOWNLOADS)
 
 
     latest_post = sess.query(Posts).all()
@@ -481,10 +482,6 @@ def add_apple():
     return render_template('add_apple.html', apple_records=apple_records, isinstance=isinstance, str=str)
 
 
-# users.route('/redirect_test', methods=['GET', 'POST'])
-# def redirect_test():
-#     return redirect(url_for('users.add_apple', test_var='Stop sending'))
-
 
 @users.route('/add_more_apple', methods=['GET', 'POST'])
 @login_required
@@ -729,6 +726,10 @@ def add_more_weather():
 
         if len(search_weather_dates_dict_list)>0:
             flash(f"Successfully added more historical weather", 'info')
+            ###########################################################
+            # IF any change to WEATHER data: Make DF for user weather #
+            ###########################################################
+            create_df_files(current_user.id, ['temp', 'cloudcover'])
         else:
             flash(f"No additional weather needed to complement the data you have already submitted", "info")
         return redirect(url_for('users.add_more_weather'))
@@ -781,7 +782,6 @@ def admin():
             for data_item_name, data_item_value in formDict.items():
                 notes_string = notes_string +  data_item_name + ":" + data_item_value + ";"
 
-
             # update notes in db
             edit_user.notes = notes_string
             sess.commit()
@@ -794,7 +794,6 @@ def admin():
                 return redirect(url_for('users.admin'))
             logger_users.info(f"--- Deleteing user {delete_user_id}---")
             
-            
             # Delete User_location_day
             sess.query(User_location_day).filter_by(user_id = delete_user_id).delete()
             sess.query(Apple_health_export).filter_by(user_id = delete_user_id).delete()
@@ -806,12 +805,57 @@ def admin():
 
             logger_users.info('- User deleted successfully -')
         
-
         return redirect(url_for('users.admin'))
 
     return render_template('admin.html', users_list = users_list, list_of_forms=list_of_forms)
 
 
+@users.route('/admin_db', methods=["GET", "POST"])
+@login_required
+def admin_db():
+
+    list_of_tables = list(Base.metadata.tables.keys())
+    make_dir_util(config.DB_DOWNLOADS)
+
+    if request.method == 'POST':
+        formDict = request.form.to_dict()
+        print(formDict)
+        if formDict.get('download_table'):
+            print('--- accessed download table --- ')
+
+            table_name_str = formDict.get('download_table')
+            print('')
+
+            sql_table = Base.metadata.tables[table_name_str]
+            # base_query = sess.query(table).filter_by(user_id = 1)
+            # df_oura = pd.read_sql(str(base_query)[:-1] + str(USER_ID), sess.bind)
+            base_query = sess.query(sql_table)
+            df = pd.read_sql(str(base_query), sess.bind)
+            file_name = f"db_{table_name_str}.csv"
+            df.to_csv(os.path.join(config.DB_DOWNLOADS, file_name))
+            return send_from_directory(os.path.abspath(config.DB_DOWNLOADS), file_name, as_attachment=True)
+            # return redirect(url_for('users.download_db_workbook', file_name=file_name))
+        elif formDict.get('csv_table_upload'):
+            print('-- receiving csv file --')
+
+
+    return render_template('admin_db.html', list_of_tables=list_of_tables)
+
+
+# @users.route("/download_db_workbook", methods=["GET","POST"])
+# @login_required
+# def download_db_workbook():
+#     print('--- In download_db_workbook ---')
+#     file_name = request.args.get('file_name')
+#     print(file_name)
+#     # workbook_name=request.args.get('workbook_name')
+#     # workbook_name = os.listdir(current_app.config['FILES_DATABASE'])[0]
+#     # print('file:::', os.path.join(current_app.root_path, 'static','files_database'),workbook_name)
+#     # file_path = r'D:\OneDrive\Documents\professional\20210610kmDashboard2.0\fileShareApp\static\files_database\\'
+#     print(config.DB_DOWNLOADS)
+#     print(os.path.abspath(config.DB_DOWNLOADS))
+#     path = r"/Users/nick/Documents/_databases/ws08/db_downloads"
+#     return send_from_directory(path, file_name, as_attachment=True)
 
 
 @users.route('/reset_password', methods = ["GET", "POST"])

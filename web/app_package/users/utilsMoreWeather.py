@@ -1,5 +1,5 @@
 from app_package.users.utils import gen_weather_url, add_new_location, add_weather_history
-from app_package.dashboard.utilsSteps import make_steps_chart_util, df_utils
+from app_package.dashboard.utils import df_utils
 from app_package.users.utils import location_exists
 import requests;import json
 from ws_models01 import sess, Oura_sleep_descriptions, Users, Oura_token, Weather_history, Locations, User_location_day, \
@@ -9,7 +9,6 @@ from ws_config01 import ConfigDev
 from datetime import datetime, timedelta
 import time
 import pandas as pd
-
 
 
 from ws_config01 import ConfigDev, ConfigProd
@@ -22,7 +21,6 @@ if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERN
     config = ConfigDev()
 else:
     config = ConfigProd()
-
 
 
 logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))

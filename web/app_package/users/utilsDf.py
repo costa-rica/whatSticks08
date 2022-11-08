@@ -43,14 +43,13 @@ stream_handler.setFormatter(formatter_terminal)
 logger_dash.addHandler(file_handler)
 logger_dash.addHandler(stream_handler)
 
-
+#This function is the same as in dashboard/utilsChart
 def create_raw_df(USER_ID, table, table_name):
-    # print('*** In create_raw_df **')
+
     if table_name != "weather_history_":
         base_query = sess.query(table).filter_by(user_id = 1)
         df = pd.read_sql(str(base_query)[:-1] + str(USER_ID), sess.bind)
     else:
-        # print('*** step 5 **')
         base_query = sess.query(table)
         df = pd.read_sql(str(base_query), sess.bind)
     if len(df) == 0:
@@ -91,9 +90,6 @@ def browse_apple_data(USER_ID):
 
     df = create_raw_df(USER_ID, Apple_health_export, table_name)
     if not isinstance(df, bool):
-        # df = create_raw_df(USER_ID, Apple_health_export, table_name)
-        # print('--- ')
-        # print(df.head())
         series_type = df[['type']].copy()
         series_type = series_type.groupby(['type'])['type'].count()
 
@@ -102,10 +98,9 @@ def browse_apple_data(USER_ID):
         df_type.reset_index(inplace=True)
 
         df_type.to_pickle(file_path)
-    
-    #TODO: return count of all recrods
-    
-    # return df_type
+        count = "{:,}".format(df_type.record_count.sum())
+        return count_of_apple_records
+    return False
 
 
 def oura_hist_util(USER_ID):
@@ -177,38 +172,27 @@ def create_df_files(USER_ID, data_item_list):
         if os.path.exists(f):
             os.remove(f)
 
-
     df_dict = {}
-    # print('data_item_list: ', data_item_list)
-    # print('* looping through data_tiems to make to_pickle files')
     # Make DF for each in database/df_files/
     for data_item, file_path in file_dict.items():
         if not os.path.exists(file_path):
             # print('data_item: ', data_item)
             if data_item == 'steps':
                 df_dict[data_item] = apple_hist_steps(USER_ID)
-                # if not isinstance(df_dict['steps'], bool): df_dict['steps'].to_json(file_path)
                 if not isinstance(df_dict['steps'], bool): df_dict['steps'].to_pickle(file_path)
                 #create brows_data_df
                 browse_apple_data(USER_ID)
             elif data_item == 'sleep':
                 df_dict[data_item] = oura_hist_util(USER_ID)
-                # if not isinstance(df_dict['sleep'], bool): df_dict['sleep'].to_json(file_path)
                 if not isinstance(df_dict['sleep'], bool): df_dict['sleep'].to_pickle(file_path)
             if data_item =='temp':
-                # print('* Fire temp to create temp pkl file')
                 df_dict['temp'], _ = user_loc_day_util(USER_ID)
-                # if not isinstance(df_dict['temp'] , bool): df_dict['temp'] .to_json(file_path)
                 if not isinstance(df_dict['temp'] , bool): df_dict['temp'] .to_pickle(file_path)
             elif data_item == 'cloudcover':
-                # print('* Fire cloudcover to create cloudcover pkl file')
                 _, df_dict['cloudcover'] = user_loc_day_util(USER_ID)
-                # if not isinstance(df_dict['cloudcover'] , bool): df_dict['cloudcover'] .to_json(file_path)
                 if not isinstance(df_dict['cloudcover'] , bool): df_dict['cloudcover'] .to_pickle(file_path)
         else:
-            # df_dict[data_item] = pd.read_json(file_path)
             df_dict[data_item] = pd.read_pickle(file_path)
-            logger_dash.info(f'--- Does this DF every get made ???? ---')
-
+            logger_dash.info(f'- catchall for future data_item(s) -')
 
     return df_dict

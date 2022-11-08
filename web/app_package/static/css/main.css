@@ -12201,6 +12201,56 @@ section.admin .dash_id_button:hover {
   top: -5px;
   right: -5px;
 }
+section.admin .div_databases_btn {
+  width: 80%;
+  display: flex;
+  justify-content: end;
+  padding-top: 4rem;
+}
+section.admin .div_databases_btn .btn_custom {
+  font-size: 1.5rem;
+}
+
+/* Add Admin */
+section.admin_db {
+  padding-top: var(--nav-height);
+  padding-bottom: var(--nav-height);
+}
+section.admin_db .title {
+  padding: 1rem 0 0 0.5rem;
+  width: 100%;
+  font-size: 2rem;
+}
+section.admin_db .admin_db_body {
+  padding: 1rem 0 0 0;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: 1.5em;
+  gap: 1rem;
+}
+section.admin_db .title_sub {
+  width: 70%;
+}
+section.admin_db .div_list_of_tables {
+  width: 70%;
+}
+section.admin_db .btn_custom {
+  background: #ccc;
+  cursor: pointer;
+  border-top: solid 2px #eaeaea;
+  border-left: solid 2px #eaeaea;
+  border-bottom: solid 2px #777;
+  border-right: solid 2px #777;
+  padding: 5px 5px;
+}
+section.admin_db .btn_custom.down {
+  background: #bbb;
+  border-top: solid 2px #777;
+  border-left: solid 2px #777;
+  border-bottom: solid 2px #eaeaea;
+  border-right: solid 2px #eaeaea;
+}
 
 /* About us */
 section.youtube {

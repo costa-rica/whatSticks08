@@ -247,7 +247,6 @@ def oura_sleep_db_add(sleep_dict, oura_token_id):
     return sessions_added
 
 
-
 def location_exists(user):
     
     min_loc_distance_difference = 1000

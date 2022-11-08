@@ -776,10 +776,58 @@ section.admin{
         top: -5px;
         right: -5px;
     }
+    .div_databases_btn{
+        width:80%;
+        display:flex;
+        justify-content:end;
+        padding-top: 4rem;
+        .btn_custom{font-size:1.5rem}
+    }
 
 }
 
+/* Add Admin */
+section.admin_db{
+    padding-top: var(--nav-height);
+    padding-bottom: var(--nav-height);
+    .title{
+        padding:1rem 0 0 .5rem;
+        width:100%;
+        font-size: 2rem;
+    }
+    .admin_db_body{
+        padding: 1rem 0 0 0;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        font-size: 1.5em;
+        gap:1rem;
+    }
+    .title_sub{
+        width:70%
+    }
+    .div_list_of_tables{
+        width:70%
+    }
+    .btn_custom {
+        background: #ccc;
+        cursor: pointer;
+        border-top: solid 2px #eaeaea;
+        border-left: solid 2px #eaeaea;
+        border-bottom: solid 2px #777;
+        border-right: solid 2px #777;
+        padding: 5px 5px;
+      }
+      
+    .btn_custom.down {
+        background: #bbb;
+        border-top: solid 2px #777;
+        border-left: solid 2px #777;
+        border-bottom: solid 2px #eaeaea;
+        border-right: solid 2px #eaeaea;
+      }
 
+}
 
 
 /* About us */

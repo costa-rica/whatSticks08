@@ -9,8 +9,8 @@ from flask_login import login_required, login_user, logout_user, current_user
 from datetime import datetime
 import numpy as np
 import pandas as pd
-from app_package.dashboard.utilsChart import buttons_dict_util, buttons_dict_update_util
-from app_package.dashboard.utilsSteps import make_steps_chart_util, df_utils
+from app_package.dashboard.utils import buttons_dict_util, buttons_dict_update_util, \
+    make_chart_util, df_utils, create_raw_df
 from app_package.users.utilsDf import create_df_files
 import json
 import os
@@ -74,7 +74,9 @@ def dashboard(dash_dependent_var):
         logger_dash.info('formDict: ', formDict)
         if formDict.get('refresh_data'):
             logger_dash.info('- Refresh data button pressed -')
-            create_df_files(USER_ID, data_item_list)
+            #remove steps because unnecessary and potentially takes a long time
+            data_item_sub_list = ['sleep', 'temp', 'cloudcover']
+            create_df_files(USER_ID, data_item_sub_list)
         else:
             buttons_dict = buttons_dict_util(formDict, dash_dependent_var_dash_btns_dir, buttons_dict, user_btn_json_name)
         return redirect(url_for('dash.dashboard', dash_dependent_var=dash_dependent_var))
@@ -127,7 +129,7 @@ def dashboard(dash_dependent_var):
     logger_dash.info(buttons_dict)
 
     # send to chart making
-    script_b, div_b, cdn_js_b = make_steps_chart_util(series_lists_dict, buttons_dict)
+    script_b, div_b, cdn_js_b = make_chart_util(series_lists_dict, buttons_dict)
     
     # --- calcualute CORRELATIONS ---
 
