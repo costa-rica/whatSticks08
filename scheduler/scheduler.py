@@ -83,7 +83,7 @@ def harmless():
     headers = { 'Content-Type': 'application/json'}
     payload = {}
 
-# are_we_running endpoint
+    # are_we_running endpoint
     logger_init.info(f'---> Sending call to wsh06 api are_we_running')
     response_oura_tokens = requests.request('GET',base_url + '/are_we_running', headers = headers)
     
