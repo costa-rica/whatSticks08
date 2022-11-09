@@ -11638,6 +11638,14 @@ section.home .div_writing .writing_content {
 section.home .div_writing .writing_content a {
   color: var(--bs-gray-200);
 }
+section.home .div_writing .writing_content ul {
+  list-style-type: disc;
+  padding-left: 2rem;
+}
+section.home .div_writing .writing_content li {
+  margin: 0;
+  padding: 0 0 0 0.5rem;
+}
 section.home .div_writing h2 {
   width: 100%;
   margin-bottom: 1rem;
