@@ -56,9 +56,9 @@ def scheduler_funct():
 
     scheduler = BackgroundScheduler()
 
-    job_call_get_locations = scheduler.add_job(get_locations, 'cron', [date_formatted], day='*', hour='23', minute='01', second='05')#Production
-    # job_call_get_locations = scheduler.add_job(get_locations, 'cron', [date_formatted], hour='*', minute='01', second='05')#Testing
-    # job_call_harmless = scheduler.add_job(harmless, 'cron',  hour='*', minute='59', second='15')#Testing
+    # job_call_get_locations = scheduler.add_job(get_locations, 'cron', [date_formatted], day='*', hour='23', minute='01', second='05')#Production
+    job_call_get_locations = scheduler.add_job(get_locations, 'cron', [date_formatted], hour='*', minute='07', second='05')#Testing
+    # job_call_harmless = scheduler.add_job(harmless, 'cron',  hour='*', minute='57', second='15')#Testing
 
     scheduler.start()
 
@@ -109,7 +109,9 @@ def harmless():
 #1) send call to wsh06 api to get locations
 def get_locations(date_formatted):
     # print('sending wsh call for all locations')
-    logger_init.info(f'---> Sending call to wsh06 api for locations.')
+    logger_init.info(f'---> Sending call to ws08 api for locations.')
+    logger_init.info(f'---> calling for data for {date_formatted}.')
+
     # base_url = 'http://localhost:5000'#TODO: put this address in config
     base_url = config.WSH_API_URL_BASE#TODO: put this address in config
     headers = { 'Content-Type': 'application/json'}
@@ -152,17 +154,17 @@ def call_weather_api(date_formatted):
         locations_dict = json.loads(json.load(json_file))
         #locatinos_dict = {loc_id: [lat, lon]}
 
+    today_str = datetime.now().strftime("%Y-%m-%d")
+
     weather_dict = {}
     call_list = []
     call_response = []
+    date_of_call_list = []
     #1) Loop through dictionary
     for loc_id, coords in locations_dict.items():
         location_coords = f"{coords[0]},{coords[1]}"
 
-        # yesterday = datetime.today() - timedelta(days=1)
-        # yesterday_formatted = yesterday.strftime('%Y-%m-%d')
-
-        date_time = datetime.strptime(date_formatted + " 13:00:00", "%Y-%m-%d %H:%M:%S").isoformat()
+        date_time = datetime.strptime(date_formatted + " 00:01:00", "%Y-%m-%d %H:%M:%S").isoformat()
 
         weather_call_url =f"{config.VISUAL_CROSSING_BASE_URL}{location_coords}/{str(date_time)}?key={config.VISUAL_CROSSING_TOKEN}&include=current"
         call_list.append(weather_call_url)
@@ -170,6 +172,7 @@ def call_weather_api(date_formatted):
         try:
             r_history = requests.get(weather_call_url)
             call_response.append(r_history.status_code)#tracking weather_call_urls
+            date_of_call_list.append(today_str)
             
             if r_history.status_code == 200:
             
@@ -180,10 +183,11 @@ def call_weather_api(date_formatted):
         except:
             weather_dict[loc_id] = 'Error making call to Weather API. No response.'
             call_response.append("Error making this call")#tracking weather_call_urls
+            date_of_call_list.append(today_str)
     
     #This just to record my calls
-    df=pd.DataFrame(zip(call_list,call_response),columns=(["weather_call_url", "response"]))
-    df.to_csv(os.path.join(config.json_utils_dir,'weather_call_urls.csv'))
+    df=pd.DataFrame(zip(date_of_call_list, call_list,call_response),columns=(["date_of_call","weather_call_url", "response"]))
+    df.to_csv(os.path.join(config.json_utils_dir,'weather_call_urls.csv'), mode='a')
 
     #3) put response in  a json
     weather_dict_json = json.dumps(weather_dict)
@@ -252,6 +256,8 @@ def call_oura_api():
         oura_tokens_dict = json.loads(json.load(json_file))
     
     oura_response_dict = {}
+    date_of_call = []
+    today_str = datetime.now().strftime("%Y-%m-%d")
     oura_call_list = []
     oura_user_id_list = []
     oura_call_response = []
@@ -262,6 +268,7 @@ def call_oura_api():
             response_sleep = requests.get(url_sleep, headers={"Authorization": "Bearer " + oura_token_list[1]})
             # print('--> response_sleep.status_code: ', response_sleep.status_code)
             logger_init.info(f'--> response_sleep.status_code: {response_sleep.status_code}')
+            date_of_call.append(today_str)
             oura_call_list.append(url_sleep)
             oura_user_id_list.append(user_id)
             oura_call_response.append(response_sleep.status_code)
@@ -280,8 +287,9 @@ def call_oura_api():
         oura_response_dict[user_id] = sleep_dict
     
     #This just to record my calls
-    df=pd.DataFrame(zip(oura_user_id_list,oura_call_list, oura_call_response),columns=(["user_id","weather_call_url", "response"]))
-    df.to_csv(os.path.join(config.json_utils_dir,'oura_call_urls.csv'))
+    df=pd.DataFrame(zip(date_of_call,oura_user_id_list,oura_call_list, oura_call_response),
+        columns=(["date_of_call","user_id","oura_call_url", "response"]))
+    df.to_csv(os.path.join(config.json_utils_dir,'oura_call_urls.csv'), mode='a')
 
     oura_sleep_json = json.dumps(oura_response_dict)
     with open(os.path.join(config.json_utils_dir, '_oura2_call_oura_api.json'), 'w') as outfile:
