@@ -11923,11 +11923,19 @@ section.apple_more .apple_more_body .more_apple_description {
   padding: 1rem;
   width: 90%;
 }
-section.apple_more .apple_more_body .table_background_sub {
-  width: 90%;
-}
 section.apple_more .apple_more_body .table_background_sub .middleize {
   text-align: center;
+}
+section.apple_more .apple_more_body .table_background_sub .textbox_admin_small {
+  width: 5rem;
+  padding: 0.2rem;
+  margin: 0;
+}
+section.apple_more .apple_more_body .table_background_sub #table_id_length, section.apple_more .apple_more_body .table_background_sub #table_id_filter, section.apple_more .apple_more_body .table_background_sub #table_id_info, section.apple_more .apple_more_body .table_background_sub #table_id_paginate {
+  font-size: 1rem;
+}
+section.apple_more .apple_more_body .table_background_sub #table_id_filter input {
+  width: 10rem;
 }
 
 /* Add Oura */

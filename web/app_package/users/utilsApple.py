@@ -12,6 +12,7 @@ import shutil
 import pandas as pd
 import logging
 from logging.handlers import RotatingFileHandler
+import re
 
 if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
     config = ConfigDev()
@@ -133,3 +134,16 @@ def add_apple_to_db(xml_dict):
     df.to_sql('apple_health_export', con=engine, if_exists='append', index=False)
 
     return len(df)
+
+
+def format_item_name(list_of_strings, data_item_name):
+    if any(i in data_item_name for i in list_of_strings):
+        for i in list_of_strings:
+            if i in data_item_name:
+                length_of_string = len(i)
+                new_name = data_item_name[length_of_string:]
+        return re.sub(r"(\w)([A-Z])", r"\1 \2", new_name)
+    else:
+        return data_item_name
+
+

@@ -17,7 +17,7 @@ from app_package.users.utils import call_location_api, location_exists, \
 from app_package.users.utils import send_reset_email
 #Apple
 from app_package.users.utilsApple import make_dir_util, decompress_and_save_apple_health, \
-    add_apple_to_db, report_process_time
+    add_apple_to_db, report_process_time, format_item_name
 from app_package.users.utilsXmlUtility import xml_file_fixer, compress_to_save_util
 from app_package.users.utilsDf import create_df_files
 #More Weather
@@ -491,7 +491,16 @@ def add_more_apple():
     file_name = f'user{USER_ID}_df_browse_apple.pkl'
     file_path = os.path.join(config.DF_FILES_DIR, file_name)
     df = pd.read_pickle(file_path)
+    list_of_strings = ['HKCategoryTypeIdentifier','HKDataType','HKQuantityTypeIdentifier']
+    df['type'] = df['type'].map(lambda cell_value: format_item_name(list_of_strings, cell_value) )
+
+    
+    
+    
+    
     df_records_dict = df.to_dict('records')
+
+
 
 
     return render_template('add_apple_more.html', df_records_dict=df_records_dict)

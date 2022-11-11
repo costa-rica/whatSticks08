@@ -35,10 +35,10 @@
           <tbody>
             {% for row in df_records_dict %}
             <tr>
-              <td>
+              <td class="textbox_admin_small">
                 {{ row.type }}
               </td>
-              <td class="middleize">
+              <td class="middleize textbox_admin_small">
                 {{ "{:,}".format(row.record_count) }}
               </td>
             </tr>
