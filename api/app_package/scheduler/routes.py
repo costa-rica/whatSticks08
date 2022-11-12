@@ -7,6 +7,7 @@ from datetime import date, datetime, timedelta
 import logging
 from logging.handlers import RotatingFileHandler
 import os
+from app_package.scheduler.utilsDf import create_df_files
 
 
 if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
@@ -186,13 +187,10 @@ def add_user_loc_day():
             else:
                 logger_sched.info(f"*** user_location_row Already EXISTS for user_id: {user.id}, date: {yesterday_formatted}, time: 00:01")
  
+            # Update user pickle DF files with new data
+            logger_sched.info(f'- Refreshing pickle dfs for user_id: {user.id} -')
+            create_df_files(user.id, ['cloudcover','temp'])
 
-    #1) get their user_id
-    #2) locatoin_id
-    #3) yesterday's date - convert to '2022-09-13'
-    #4) yesterday's weather -string
-    #5) score
-    #) row_type = 'scheduler'
 
 def location_exists(user):
     logger_sched.info('-- In location_exists function --')
@@ -302,17 +300,29 @@ def receive_oura_data():
                             wsh_oura_add_response_dict[user_id] = 'Failed to add data'
                             logger_sched.info(f'---> * FAILED (only User_loc_day) * to added session : {temp_bedtime_end} for user id: {user_id}')
   
+
+
             else:
                 wsh_oura_add_response_dict[user_id] = f'No data added due to {oura_response.get("No Oura data reason")}'
                 user = sess.query(Users).get(user_id)
                 user.notes = user.notes + ";oura_token:bad_token;" if isinstance(user.notes,str) else "oura_token:bad_token;"
                 sess.commit()
-        if counter_user == 0:
-            wsh_oura_add_response_dict[user_id] = 'No new sleep sessions availible'
-            
+
+
+
+            if counter_user == 0:
+                wsh_oura_add_response_dict[user_id] = 'No new sleep sessions availible'
+                
+
+            else:
+                logger_sched.info(f'- Refreshing pickle dfs for user_id: {user_id} -')
+                create_df_files(user_id, ['sleep'])
         
         logger_sched.info(f"added {counter_all} rows to Oura_sleep_descriptions")
         logger_sched.info(f"****** Successfully finished routine!!! *****")
+
+
+
         return wsh_oura_add_response_dict
     logger_sched.info(f"Error 401: could not verify")
     return make_response('Could not verify',
