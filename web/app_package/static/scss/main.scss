@@ -445,38 +445,33 @@ section.apple_more{
             width: 90%;
         }
         .table_background_sub{
-        
+            .no_input {
+                display:none;
+            }
             // width: 90%;
             .middleize{
                 text-align: center;
             }
-            // table th {
-            //     font-size: 1rem;
-            //     padding:0;
-            //     margin:0;
-            //     width:min-content;//This 
-            // }
+
             .textbox_admin_small {
                 width: 5rem;
                 padding:.2rem;
                 margin:0;
             }
-            // #table_id_length {
-            //     font-size:1rem;
-            // }
-            // #table_id_filter {
-            //     font-size: 1rem;
-            // }
+
             #table_id_length, #table_id_filter,#table_id_info, #table_id_paginate {font-size:1rem;}
             #table_id_filter input {
                 width:10rem;
-                // display:flex;
-                // flex-wrap: wrap;
+
+            }
+            .btn_apple_exists{
+                background-color: var(--bs-info);
             }
         }
 
     }
-
+    .hide_textbox{display:none}
+    .flex_right{display:flex;justify-content: end;}
 }
 /* Add Oura */
 section.oura{

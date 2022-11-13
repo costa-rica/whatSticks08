@@ -17,7 +17,13 @@ import os
 import time
 import logging
 from logging.handlers import RotatingFileHandler
+from ws_config01 import ConfigDev, ConfigProd
 
+
+if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
+    config = ConfigDev()
+else:
+    config = ConfigProd()
 
 
 logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
@@ -54,7 +60,28 @@ def dashboard(dash_dependent_var):
     logger_dash.info(f'- Entered dashboard: {dash_dependent_var.upper()} -')
     page_name = f"{dash_dependent_var[0].upper() + dash_dependent_var[1:]} Dashboard"
     # dash_dependent_var = 'sleep'
-    data_item_list = ['steps', 'sleep', 'temp', 'cloudcover']
+
+
+    # search df_files dir for all user[id]_.pkl
+
+    list_of_data = os.listdir(config.DF_FILES_DIR)
+
+    file_name_start = f'user{current_user.id}_df_'
+    start_length = len(file_name_start)
+    list_of_data = [i for i in list_of_data if i[:start_length] == file_name_start]
+    print('-- list_of _data =-==')
+    print(list_of_data)
+
+    data_item_list = [i[start_length:i.find('.')] for i in list_of_data]
+    try:
+        data_item_list.remove('browse_apple')
+    except:
+        print('no browse_apple')
+
+    print('-- data_itme_list_+new --')
+    print(data_item_list)
+
+    # data_item_list = ['steps', 'sleep', 'temp', 'cloudcover']
  
     USER_ID = current_user.id if current_user.id !=2 else 1
 
@@ -164,13 +191,16 @@ def dashboard(dash_dependent_var):
     if len(corr_dict_na)>0:# Add back in any vars with "Not enough data" for correlation
         corr_dict = corr_dict | corr_dict_na
 
-    btn_names_dict = {}
-    btn_names_dict['cloudcover'] = "Cloud cover"
-    btn_names_dict['temp'] = "Average outdoor temperature"
-    btn_names_dict['sleep'] = "Sleep score"
-    btn_names_dict['steps'] = "Daily step count"
+
+    print('--- corr_dict --')
+    print(corr_dict)
+    # btn_names_dict = {}
+    # btn_names_dict['cloudcover'] = "Cloud cover"
+    # btn_names_dict['temp'] = "Average outdoor temperature"
+    # btn_names_dict['sleep'] = "Sleep score"
+    # btn_names_dict['steps'] = "Daily step count"
 
     return render_template('dashboard.html', page_name=page_name,
         script_b = script_b, div_b = div_b, cdn_js_b = cdn_js_b, corr_dict=corr_dict, 
-        buttons_dict=buttons_dict, dash_dependent_var = dash_dependent_var, btn_names_dict= btn_names_dict)
+        buttons_dict=buttons_dict, dash_dependent_var = dash_dependent_var)
 

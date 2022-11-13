@@ -136,14 +136,16 @@ def add_apple_to_db(xml_dict):
     return len(df)
 
 
-def format_item_name(list_of_strings, data_item_name):
-    if any(i in data_item_name for i in list_of_strings):
-        for i in list_of_strings:
-            if i in data_item_name:
-                length_of_string = len(i)
-                new_name = data_item_name[length_of_string:]
-        return re.sub(r"(\w)([A-Z])", r"\1 \2", new_name)
-    else:
-        return data_item_name
+# def format_item_name(data_item_name):
+#     #Accetps funky apple health name and returns something with spaces and capital letters
+#     list_of_strings = ['HKCategoryTypeIdentifier','HKDataType','HKQuantityTypeIdentifier']
+#     if any(i in data_item_name for i in list_of_strings):
+#         for i in list_of_strings:
+#             if i in data_item_name:
+#                 length_of_string = len(i)
+#                 new_name = data_item_name[length_of_string:]
+#         return re.sub(r"(\w)([A-Z])", r"\1 \2", new_name)
+#     else:
+#         return data_item_name
 
 

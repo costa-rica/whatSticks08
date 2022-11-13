@@ -8,6 +8,12 @@
     More Apple Health Data (iPhone Export)
   </div>
 
+  
+  <form method="POST" id="form_1"></form>
+  
+
+
+
   <div class="apple_more_body">
 
     <div class="common_primary_div more_apple_description">
@@ -33,10 +39,23 @@
             </tr>
           </thead>
           <tbody>
-            {% for row in df_records_dict %}
+            {% for row in df_records_list %}
             <tr>
+                <!-- Not shown but necessary -->
+                <!-- <input class="no_input" type="text" name="user_id" value="{{ row.type }}" form="form_{{ row.index }}" > -->
+
               <td class="textbox_admin_small">
-                {{ row.type }}
+                
+                {% if row.df_file_existing == 'true' %}
+                  <button type="button" class="btn_apple_exists" data-bs-target="#deleteModal" 
+                    data-bs-toggle="modal" data-bs-whatever="{{ row.index  }}:{{ row.type_formatted }}">
+                    {{ row.type_formatted }}</button>
+                {% else %}
+                  <button type="button" class="dash_id_button" data-bs-target="#addDataModal" 
+                    data-bs-toggle="modal" data-bs-whatever="{{ row.index  }}:{{ row.type_formatted }}">
+                    {{ row.type_formatted }}</button>
+                {% endif %}
+
               </td>
               <td class="middleize textbox_admin_small">
                 {{ "{:,}".format(row.record_count) }}
@@ -53,6 +72,73 @@
 
 
   </div>
+
+  
+
+  <!-- Add Data Modal -->
+  <div class="modal fade" id="addDataModal" tabindex="-1" aria-labelledby="addDataModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header ">
+          <h5 class="modal-title" id="addDataModalLabel">This doesn't show up when working correctly - add javascript to bottom</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+
+          <fieldset>
+            <legend>Select method of aggregation:</legend>
+        
+            <div>
+              <input type="radio" id="sum" name="agg_method" value="sum" form="form_1"
+                      checked>
+              <label for="sum">Sum</label>
+            </div>
+        
+            <div>
+              <input type="radio" id="average" name="agg_method" value="average" form="form_1">
+              <label for="average">Average</label>
+            </div>
+
+        </fieldset>
+          <div class="flex_right">
+            <button type="submit" class="btn btn-primary " 
+            name="btn_add" value='true' form="form_1">Yes, Add</button>
+          </div>
+
+
+          <input type="text" class="form-control hide_textbox input_addAppleData" 
+          id="input_addAppleData" name="data_item_index" form="form_1" readonly>
+        
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Delete Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header ">
+          <h5 class="modal-title" id="deleteModalLabel">This doesn't show up when working correctly - add javascript to bottom</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body flex_right">
+          
+          <button type="submit" class="btn btn-dark delete_button" 
+          name="btn_delete" value='true' form="form_1">Yes, delete</button>
+
+          <input type="text" class="form-control hide_textbox input_deleteAppleData" 
+          id="input_deleteAppleData" name="delete_data_item_index" form="form_1" readonly>
+        
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+
 </section>
 
 
@@ -70,4 +156,57 @@
 
   } );
 </script>
+
+
+<!--Add data modal read record id-->
+<script>
+  var addDataModal = document.getElementById('addDataModal')
+  addDataModal.addEventListener('show.bs.modal', function (event) {
+    // Button that triggered the modal
+    var button = event.relatedTarget
+    // Extract info from data-bs-* attributes
+    var recipient = button.getAttribute('data-bs-whatever').split(":")
+    // If necessary, you could initiate an AJAX request here
+    // and then do the updating in a callback.
+    //
+    // Update the modal's content.
+    var modalTitle = addDataModal.querySelector('.modal-title')
+    // var modalBodyInput = addDataModal.querySelector('.modal-body input')
+    var modalBodyInput = addDataModal.querySelector('.input_addAppleData')
+    // var test = JSON.parse("{{ df_records_list_dict|safe }}".replaceAll("'",'"'));
+  
+    modalTitle.textContent = 'Add data item: ' + recipient[1]
+    modalBodyInput.value = recipient[0];
+
+    // console.log(test);
+  
+  });
+  </script>
+
+
+<!-- Delete modal read record id-->
+<script>
+  var deleteModal = document.getElementById('deleteModal')
+  deleteModal.addEventListener('show.bs.modal', function (event) {
+    // Button that triggered the modal
+    var button = event.relatedTarget
+    // Extract info from data-bs-* attributes
+    var recipient = button.getAttribute('data-bs-whatever').split(":")
+    // If necessary, you could initiate an AJAX request here
+    // and then do the updating in a callback.
+    //
+    // Update the modal's content.
+    var modalTitle = deleteModal.querySelector('.modal-title')
+    // var modalBodyInput = addDataModal.querySelector('.modal-body input')
+    var modalBodyInput = deleteModal.querySelector('.input_deleteAppleData')
+    // var test = JSON.parse("{{ df_records_list_dict|safe }}".replaceAll("'",'"'));
+  
+    modalTitle.textContent = 'Delete data item: ' + recipient[1]
+    modalBodyInput.value = recipient[0];
+
+    // console.log(test);
+  
+  });
+  </script>
+
 {% endblock %}

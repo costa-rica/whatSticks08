@@ -23,9 +23,9 @@
                     {% for key, _ in corr_dict.items() %}
                     <div class="row_header">
                         {% if buttons_dict[key]!=1 %}
-                        <button type="submit" name="{{ key }}" value="1" class="btn btn-primary btn_header">{{ btn_names_dict[key] }}</button>
+                        <button type="submit" name="{{ key }}" value="1" class="btn btn-primary btn_header">{{ key }}</button>
                         {% else %}
-                        <button type="submit" name="{{ key }}" value="1" class="btn btn-outline-primary btn_header">{{ btn_names_dict[key]  }}</button>
+                        <button type="submit" name="{{ key }}" value="1" class="btn btn-outline-primary btn_header">{{ key  }}</button>
                         {% endif %}
                     </div>
                     <div class="row_value">

@@ -76,8 +76,8 @@ If you did not make this request, ignore email and there will be no change
 
 
 def send_confirm_email(email):
-    msg = Message('Registration Confirmation',
-        sender=current_app.config['MAIL_USERNAME'],
+    msg = Message('Welcome to What Sticks!',
+        sender=config.MAIL_USERNAME,
         recipients=[email])
     msg.body = 'You have succesfully been registered to What-Sticks.'
     mail.send(msg)

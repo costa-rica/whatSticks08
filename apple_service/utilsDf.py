@@ -11,6 +11,7 @@ import numpy as np
 import logging
 from logging.handlers import RotatingFileHandler
 from ws_config01 import ConfigDev, ConfigProd
+import re
 
 if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
     config = ConfigDev()
@@ -81,6 +82,28 @@ def apple_hist_steps(USER_ID):
     
     return df
 
+# def browse_apple_data(USER_ID):
+#     table_name = 'apple_health_export_'
+#     file_name = f'user{USER_ID}_df_browse_apple.pkl'
+#     file_path = os.path.join(config.DF_FILES_DIR, file_name)
+
+#     if os.path.exists(file_path):
+#         os.remove(file_path)
+
+#     df = create_raw_df(USER_ID, Apple_health_export, table_name)
+#     if not isinstance(df, bool):
+#         # df = create_raw_df(USER_ID, Apple_health_export, table_name)
+#         print('--- ')
+#         print(df.head())
+#         series_type = df[['type']].copy()
+#         series_type = series_type.groupby(['type'])['type'].count()
+
+#         df_type = series_type.to_frame()
+#         df_type.rename(columns = {list(df_type)[0]:'record_count'}, inplace=True)
+#         df_type.reset_index(inplace=True)
+
+#         df_type.to_pickle(file_path)
+
 def browse_apple_data(USER_ID):
     table_name = 'apple_health_export_'
     file_name = f'user{USER_ID}_df_browse_apple.pkl'
@@ -91,17 +114,45 @@ def browse_apple_data(USER_ID):
 
     df = create_raw_df(USER_ID, Apple_health_export, table_name)
     if not isinstance(df, bool):
-        # df = create_raw_df(USER_ID, Apple_health_export, table_name)
-        print('--- ')
-        print(df.head())
         series_type = df[['type']].copy()
         series_type = series_type.groupby(['type'])['type'].count()
 
         df_type = series_type.to_frame()
         df_type.rename(columns = {list(df_type)[0]:'record_count'}, inplace=True)
-        df_type.reset_index(inplace=True)
+        count_of_apple_records = "{:,}".format(df_type.record_count.sum())
 
+        # Try add new columns 
+        df_type['index'] = range(1,len(df_type)+1)
+        df_type.reset_index(inplace=True)
+        df_type.set_index('index', inplace=True)
+        df_type['type_formatted'] = df_type['type'].map(lambda cell_value: format_item_name(cell_value) )
+
+        df_type['df_file_created']=''
         df_type.to_pickle(file_path)
+        
+        return count_of_apple_records
+    return False
+
+
+def format_item_name(data_item_name):
+    #Accetps funky apple health name and returns something with spaces and capital letters
+    # list_of_strings = ['HKCategoryTypeIdentifier','HKDataType','HKQuantityTypeIdentifier']
+    
+    # Get list of generic apple health cateogry names for removal in formatted names
+    with open(os.path.join(config.APPLE_HEALTH_DIR, 'appleHealthCatNames.txt')) as f:
+        lines = f.readlines()
+    print('--- list of strings --')
+    print(lines)
+    list_of_strings = [i.strip() for i in lines]
+    
+    if any(i in data_item_name for i in list_of_strings):
+        for i in list_of_strings:
+            if i in data_item_name:
+                length_of_string = len(i)
+                new_name = data_item_name[length_of_string:]
+        return re.sub(r"(\w)([A-Z])", r"\1 \2", new_name)
+    else:
+        return data_item_name
 
 
 def oura_hist_util(USER_ID):

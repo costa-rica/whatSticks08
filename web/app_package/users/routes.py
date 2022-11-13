@@ -17,17 +17,16 @@ from app_package.users.utils import call_location_api, location_exists, \
 from app_package.users.utils import send_reset_email
 #Apple
 from app_package.users.utilsApple import make_dir_util, decompress_and_save_apple_health, \
-    add_apple_to_db, report_process_time, format_item_name
+    add_apple_to_db, report_process_time
 from app_package.users.utilsXmlUtility import xml_file_fixer, compress_to_save_util
-from app_package.users.utilsDf import create_df_files
+from app_package.users.utilsDf import create_df_files, remove_df_pkl
 #More Weather
 from app_package.users.utilsMoreWeather import user_oldest_day_util, add_user_loc_days, \
     search_weather_dict_list_util
 from app_package.users.utils import add_weather_history_more
 #Admin
-from app_package.users.utils import make_user_item_list, edit_user_items_dict_util, \
-    get_apple_health_count, get_user_df_count
-
+from app_package.users.utils import send_confirm_email, make_user_item_list, \
+    edit_user_items_dict_util, get_apple_health_count, get_user_df_count
 
 
 from sqlalchemy import func
@@ -43,10 +42,10 @@ import pandas as pd
 
 if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
     config = ConfigDev()
-    testing = True
+    testing_oura = True
 else:
     config = ConfigProd()
-    testing = False
+    testing_oura = False
 
 
 logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
@@ -175,7 +174,16 @@ def register():
         new_user = Users(email = new_email, password = hash_pw)
         sess.add(new_user)
         sess.commit()
-        flash(f'Succesfully registerd: {new_email}', 'info')
+
+
+        # Send email confirming succesfull registration
+        send_confirm_email(new_email)
+
+        #log user in
+        print('--- new_user ---')
+        print(new_user)
+        login_user(new_user)
+        flash(f'Succesfully registered: {new_email}', 'info')
         return redirect(url_for('users.login'))
 
     return render_template('register.html', page_name = page_name)
@@ -348,7 +356,6 @@ def account():
         location_coords = existing_coordinates, city_name = city_name)
 
 
-
 @users.route('/add_apple', methods=["GET", "POST"])
 def add_apple():
 
@@ -378,16 +385,11 @@ def add_apple():
         filesDict = request.files
         apple_health_data = filesDict.get('apple_health_data')
 
-        # logger_users.info('---- filesDict ----')
-        # logger_users.info(filesDict)
-        # logger_users.info('---- file name ----')
+
         if filesDict.get('apple_health_data'):
             logger_users.info(filesDict.get('apple_health_data').filename)
 
-
         formDict = request.form.to_dict()
-        # logger_users.info('- formDict -')
-        # logger_users.info(formDict)
 
 
         #4) Apple health data
@@ -486,24 +488,108 @@ def add_apple():
 @users.route('/add_more_apple', methods=['GET', 'POST'])
 @login_required
 def add_more_apple():
-    table_name = 'apple_health_export_'
+    # table_name = 'apple_health_export_'
     USER_ID = current_user.id if current_user.id !=2 else 1
     file_name = f'user{USER_ID}_df_browse_apple.pkl'
     file_path = os.path.join(config.DF_FILES_DIR, file_name)
     df = pd.read_pickle(file_path)
-    list_of_strings = ['HKCategoryTypeIdentifier','HKDataType','HKQuantityTypeIdentifier']
-    df['type'] = df['type'].map(lambda cell_value: format_item_name(list_of_strings, cell_value) )
 
+    list_of_forms = ['form_'+str(i) for i in range(1,len(df)+1)]
     
+    df.reset_index(inplace=True)
+    df_records_list = df.to_dict('records')
+    df_records_list_dict =[json.dumps(i) for i in df_records_list]
+    df.set_index('index', inplace=True)
+
+    print(df)
     
-    
-    
-    df_records_dict = df.to_dict('records')
+
+    if request.method == 'POST':
+
+        if current_user.id ==2:
+            flash("Guest cannot change data. Register and then add data.", "info")
+            return redirect(url_for('users.add_apple'))
+
+
+        formDict = request.form.to_dict()
+        print(formDict)
 
 
 
 
-    return render_template('add_apple_more.html', df_records_dict=df_records_dict)
+        if formDict.get('btn_add') == 'true':
+
+            # index value assigned at creation of browse_apple df
+            data_item_id = int(formDict.get('data_item_index'))
+            
+            # Apple data name with spaces and capital letters
+            data_item_name_show = df.at[data_item_id,'type_formatted'] 
+            
+            # Apple data name lowercases no spaces for df headings, pkl file names, dict key names
+            data_item_list = [df.at[data_item_id,'type_formatted'] .replace(" ", "_").lower()]
+            
+            # Apple data name from XML file
+            data_item_apple_type_name = df.at[data_item_id,'type'] 
+            agg_method = formDict.get('agg_method')
+            
+
+            print('-- POST new data hist apple data  --')
+            print(data_item_id)
+            print(data_item_list)
+            print(data_item_name_show)
+            # if formDict.get('agg_method'):
+                # get formatted name
+            create_df_files(USER_ID, data_item_list , data_item_name_show=data_item_name_show,
+                method=agg_method, data_item_apple_type_name = data_item_apple_type_name)
+
+
+            #TODO: Checks for df to actually have numeric non-zero data
+            ### --> check len(df) > 0
+
+            ### --> check column of interest has numeric values
+
+            # If fails either return flash('No usable data in these records', 'warning')
+
+
+            # update browse df 
+            df.at[data_item_id,'df_file_existing'] = 'true'
+            df.to_pickle(file_path)
+            
+            print(f'-- wrote to {file_path}')
+
+            #Add note to user with new data specs
+            user = sess.query(Users).get(current_user.id)
+            user.notes = f"{user.notes};apple_health_data:{data_item_apple_type_name}_{agg_method};"
+            sess.commit()
+
+            flash(f'Successfully added {data_item_name_show}', 'info')
+        elif formDict.get('btn_delete') == 'true':
+            print(f'delete data item: {formDict.get("delete_data_item_index")}')
+
+            # index value assigned at creation of browse_apple df
+            data_item_id = int(formDict.get('delete_data_item_index'))
+            
+            # Apple data name with spaces and capital letters
+            data_item_name_show = df.at[data_item_id,'type_formatted'] 
+            
+            # Apple data name lowercases no spaces for df headings, pkl file names, dict key names
+            data_item_list = [df.at[data_item_id,'type_formatted'] .replace(" ", "_").lower()]
+            
+            # Apple data name from XML file
+            data_item_apple_type_name = df.at[data_item_id,'type'] 
+            # delete df_pkl file
+            remove_df_pkl(USER_ID, data_item_list[0])
+
+            # delte true from existing column in df
+            df.at[data_item_id,'df_file_existing'] = ''
+            df.to_pickle(file_path)
+            flash(f'Successfully removed {data_item_name_show} from dashboards', 'info')
+
+        return redirect(url_for('users.add_more_apple'))
+
+    return render_template('add_apple_more.html', df_records_list=df_records_list,
+    df_records_list_dict=df_records_list_dict,
+        list_of_forms=list_of_forms)
 
 
 @users.route('/add_oura', methods=["GET", "POST"])
@@ -582,7 +668,7 @@ def add_oura():
                 # --> 1-1b-1b) if no data yesterday, call API
                 if not oura_yesterday and new_token != '':
 
-                    if testing:# use local json file
+                    if testing_oura:# use local json file
                         json_utils_dir = r"/Users/nick/Documents/_testData/json_utils_dir_FromScheduler"
                         with open(os.path.join(json_utils_dir, '_oura2_call_oura_api.json')) as json_file:
                             sleep_dict = json.loads(json.load(json_file))
@@ -612,7 +698,7 @@ def add_oura():
         elif formDict.get('recall_api'):
             if not existing_oura_token_str in ["", None]:
                 logger_users.info('--- recall_api')
-                if testing:# use local json file
+                if testing_oura:# use local json file
                     json_utils_dir = r"/Users/nick/Documents/_testData/json_utils_dir_FromScheduler"
                     with open(os.path.join(json_utils_dir, '_oura2_call_oura_api.json')) as json_file:
                         sleep_dict = json.loads(json.load(json_file))
@@ -811,8 +897,18 @@ def admin():
             sess.query(User_notes).filter_by(user_id = delete_user_id).delete()
             sess.query(Users).filter_by(id = delete_user_id).delete()
             sess.commit()
+            logger_users.info('-- removed user from db tables --')
 
-            logger_users.info('- User deleted successfully -')
+            # Delete user df_files
+            pickle_files_list = os.listdir(config.DF_FILES_DIR)
+            for pickle_file in pickle_files_list:
+                if pickle_file.find(f'user{delete_user_id}_df_') > -1:
+                    os.remove(os.path.join(config.DF_FILES_DIR, pickle_file))
+            logger_users.info('-- removed user df_files --')
+
+
+            logger_users.info(f'- {delete_user_id} User deleted successfully -')
+            flash(f'Successfully removed user {delete_user_id} from What Sticks', 'info')
         
         return redirect(url_for('users.admin'))
 

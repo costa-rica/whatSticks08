@@ -47,50 +47,6 @@ logger_dash.addHandler(file_handler)
 logger_dash.addHandler(stream_handler)
 
 
-# def make_oura_df():
-#     # STEP 1: OURA
-#     #get all summary_dates and scores from oura
-#     USER_ID = current_user.id if current_user.id !=2 else 1
-
-#     base_query = sess.query(Oura_sleep_descriptions).filter_by(user_id = 1)
-#     df_oura = pd.read_sql(str(base_query)[:-1] + str(USER_ID), sess.bind)
-#     table_name = 'oura_sleep_descriptions_'
-#     cols = list(df_oura.columns)
-#     for col in cols: df_oura = df_oura.rename(columns=({col: col[len(table_name):]}))
-        
-#     # if len(summary_dates) > 0:
-#     if len(df_oura) > 0:
-#     # - make df_oura = dates, scores
-#         df_oura_scores = df_oura[['id', 'summary_date', 'score']]
-#     #     Remove duplicates keeping the last entryget latest date
-#         df_oura_scores = df_oura_scores.drop_duplicates(subset='summary_date', keep='last')
-#         df_oura_scores.rename(columns=({'summary_date':'date'}), inplace= True)
-#         return df_oura_scores
-#     else:
-#         df_oura
-
-
-# def make_user_loc_day_df():
-#     USER_ID = current_user.id if current_user.id !=2 else 1
-#     users_loc_da_base = sess.query(User_location_day).filter_by(user_id=1)
-#     df_loc_da = pd.read_sql(str(users_loc_da_base)[:-1] + str(USER_ID), sess.bind)
-#     table_name = 'user_location_day_'
-#     cols = list(df_loc_da.columns)
-#     for col in cols: df_loc_da = df_loc_da.rename(columns=({col: col[len(table_name):]}))
-#     df_loc_da = df_loc_da[['id', 'date', 'location_id']]
-#     df_loc_da = df_loc_da.drop_duplicates(subset='date', keep='last')
-#     return df_loc_da
-
-# def make_weather_hist_df():
-#     weather_base = sess.query(Weather_history)
-#     df_weath_hist = pd.read_sql(str(weather_base), sess.bind)
-#     table_name = 'weather_history_'
-#     cols = list(df_weath_hist.columns)
-#     for col in cols: df_weath_hist = df_weath_hist.rename(columns=({col: col[len(table_name):]}))
-#     df_weath_hist = df_weath_hist[['date_time','temp','location_id', 'cloudcover']]
-#     df_weath_hist = df_weath_hist.rename(columns=({'date_time': 'date'}))
-#     return df_weath_hist
-
 
 def buttons_dict_util(formDict, dashboard_routes_dir, buttons_dict, user_btn_json_name):
     if formDict.get('same_page'):
@@ -153,6 +109,11 @@ def get_df_for_dash(USER_ID, data_item):
 
 def make_chart_util(series_lists_dict, buttons_dict):
     logger_dash.info('-- make_chart_util --')
+    logger_dash.info(f'-- {series_lists_dict.keys()} --')
+
+    list_of_items = [i for i in series_lists_dict.keys() if i.find('-ln') == -1 ]
+    list_of_items.remove('date')
+    logger_dash.info(list_of_items)
 
     plot_font_size = "1rem"
     dates_list = series_lists_dict.get('date')
@@ -164,59 +125,89 @@ def make_chart_util(series_lists_dict, buttons_dict):
             x_range=(date_start,date_end),
             y_range=(-5,12),sizing_mode='stretch_width', height=400)
 
-    #Temperature
-    if series_lists_dict.get('temp'):
-        temp_list = series_lists_dict.get('temp')
-        temp_ln_list = series_lists_dict.get('temp-ln')
-        if buttons_dict.get('temp') !=1:
-            fig1.circle(dates_list,temp_ln_list, 
-                legend_label="Temperature (F)", 
-                fill_color='#c77711', 
+
+    item_units_dict = {"temp":"Temperature (F)"}
+
+    color_list = ['#c77711', '#6cacc3', "olive", "gray", 'red']
+
+    source_dict = {}
+    glyph_dict = {}
+    counter = 0
+
+    # Loop tover list o0f items
+    for item in list_of_items:
+        print(f'-- working on {item} ---')
+        item_list = series_lists_dict.get(item)
+        item_ln_list = series_lists_dict.get(item + '-ln')
+        if buttons_dict.get(item) !=1:
+            fig1.circle(dates_list,item_ln_list, 
+                legend_label=item, 
+                fill_color=color_list[counter % len(color_list)], 
                 line_color=None,
                 size=30)
 
-            source1 = ColumnDataSource(dict(x=dates_list, y=temp_ln_list, text=temp_list)) # data
-            glyph1 = Text(text="text",text_font_size={'value': plot_font_size},x_offset=-10, y_offset=10) # Image
-            fig1.add_glyph(source1, glyph1)
+            source_dict[item] = ColumnDataSource(dict(x=dates_list, y=item_ln_list, text=item_list)) # data
+            glyph_dict[item] = Text(text="text",text_font_size={'value': plot_font_size},x_offset=-10, y_offset=10) # Image
+            fig1.add_glyph(source_dict[item], glyph_dict[item])
+        
+        counter += 1
 
-    #cloud cover
-    if series_lists_dict.get('cloudcover'):
-        cloud_list = series_lists_dict.get('cloudcover')
-        cloud_ln_list = series_lists_dict.get('cloudcover-ln')
-        if buttons_dict.get('cloudcover') !=1:
-            fig1.circle(dates_list,cloud_ln_list, 
-                legend_label="Cloudcover", 
-                fill_color='#6cacc3', 
-                line_color="#3288bd",
-                size=30, line_width=3)
 
-            source1_cloud = ColumnDataSource(dict(x=dates_list, y=cloud_ln_list, text=cloud_list)) # data
-            glyph1_cloud = Text(text="text",text_font_size={'value': plot_font_size},x_offset=-10, y_offset=10) # Image
-            fig1.add_glyph(source1_cloud, glyph1_cloud)
 
-    #sleep rectangle label
-    if series_lists_dict.get('sleep'):
-        sleep_list = series_lists_dict.get('sleep')
-        sleep_ln_list = series_lists_dict.get('sleep-ln')
-        if buttons_dict.get('sleep') !=1:
-            fig1.square(dates_list, sleep_ln_list, legend_label = 'Oura Sleep Score', size=30, color="olive", alpha=0.5)
+
+    # #Temperature
+    # if series_lists_dict.get('temp'):
+    #     temp_list = series_lists_dict.get('temp')
+    #     temp_ln_list = series_lists_dict.get('temp-ln')
+    #     if buttons_dict.get('temp') !=1:
+    #         fig1.circle(dates_list,temp_ln_list, 
+    #             legend_label="Temperature (F)", 
+    #             fill_color='#c77711', 
+    #             line_color=None,
+    #             size=30)
+
+    #         source1 = ColumnDataSource(dict(x=dates_list, y=temp_ln_list, text=temp_list)) # data
+    #         glyph1 = Text(text="text",text_font_size={'value': plot_font_size},x_offset=-10, y_offset=10) # Image
+    #         fig1.add_glyph(source1, glyph1)
+
+    # #cloud cover
+    # if series_lists_dict.get('cloudcover'):
+    #     cloud_list = series_lists_dict.get('cloudcover')
+    #     cloud_ln_list = series_lists_dict.get('cloudcover-ln')
+    #     if buttons_dict.get('cloudcover') !=1:
+    #         fig1.circle(dates_list,cloud_ln_list, 
+    #             legend_label="Cloudcover", 
+    #             fill_color='#6cacc3', 
+    #             line_color="#3288bd",
+    #             size=30, line_width=3)
+
+    #         source1_cloud = ColumnDataSource(dict(x=dates_list, y=cloud_ln_list, text=cloud_list)) # data
+    #         glyph1_cloud = Text(text="text",text_font_size={'value': plot_font_size},x_offset=-10, y_offset=10) # Image
+    #         fig1.add_glyph(source1_cloud, glyph1_cloud)
+
+    # #sleep rectangle label
+    # if series_lists_dict.get('sleep'):
+    #     sleep_list = series_lists_dict.get('sleep')
+    #     sleep_ln_list = series_lists_dict.get('sleep-ln')
+    #     if buttons_dict.get('sleep') !=1:
+    #         fig1.square(dates_list, sleep_ln_list, legend_label = 'Oura Sleep Score', size=30, color="olive", alpha=0.5)
             
-            source4 = ColumnDataSource(dict(x=dates_list, y=sleep_ln_list,
-                text=sleep_list))
-            glyph4 = Text(text="text",text_font_size={'value': plot_font_size},x_offset=-10, y_offset=10)
-            fig1.add_glyph(source4, glyph4)
+    #         source4 = ColumnDataSource(dict(x=dates_list, y=sleep_ln_list,
+    #             text=sleep_list))
+    #         glyph4 = Text(text="text",text_font_size={'value': plot_font_size},x_offset=-10, y_offset=10)
+    #         fig1.add_glyph(source4, glyph4)
 
-    #steps rectangle label
-    if series_lists_dict.get('steps'):
-        steps_list = series_lists_dict.get('steps')
-        steps_ln_list = series_lists_dict.get('steps-ln')
-        if buttons_dict.get('steps') !=1:
-            fig1.square(dates_list, steps_ln_list, legend_label = 'Daily Steps', size=30, color="gray", alpha=0.5)
+    # #steps rectangle label
+    # if series_lists_dict.get('steps'):
+    #     steps_list = series_lists_dict.get('steps')
+    #     steps_ln_list = series_lists_dict.get('steps-ln')
+    #     if buttons_dict.get('steps') !=1:
+    #         fig1.square(dates_list, steps_ln_list, legend_label = 'Daily Steps', size=30, color="gray", alpha=0.5)
             
-            source4 = ColumnDataSource(dict(x=dates_list, y=steps_ln_list,
-                text=steps_list))
-            glyph4 = Text(text="text",text_font_size={'value': plot_font_size},x_offset=-10, y_offset=10)
-            fig1.add_glyph(source4, glyph4)
+    #         source4 = ColumnDataSource(dict(x=dates_list, y=steps_ln_list,
+    #             text=steps_list))
+    #         glyph4 = Text(text="text",text_font_size={'value': plot_font_size},x_offset=-10, y_offset=10)
+    #         fig1.add_glyph(source4, glyph4)
 
 
     fig1.ygrid.grid_line_color = None

@@ -11923,6 +11923,9 @@ section.apple_more .apple_more_body .more_apple_description {
   padding: 1rem;
   width: 90%;
 }
+section.apple_more .apple_more_body .table_background_sub .no_input {
+  display: none;
+}
 section.apple_more .apple_more_body .table_background_sub .middleize {
   text-align: center;
 }
@@ -11936,6 +11939,16 @@ section.apple_more .apple_more_body .table_background_sub #table_id_length, sect
 }
 section.apple_more .apple_more_body .table_background_sub #table_id_filter input {
   width: 10rem;
+}
+section.apple_more .apple_more_body .table_background_sub .btn_apple_exists {
+  background-color: var(--bs-info);
+}
+section.apple_more .hide_textbox {
+  display: none;
+}
+section.apple_more .flex_right {
+  display: flex;
+  justify-content: end;
 }
 
 /* Add Oura */
