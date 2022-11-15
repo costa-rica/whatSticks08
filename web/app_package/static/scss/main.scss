@@ -445,6 +445,7 @@ section.apple_more{
             width: 90%;
         }
         .table_background_sub{
+
             .no_input {
                 display:none;
             }
@@ -466,13 +467,137 @@ section.apple_more{
             }
             .btn_apple_exists{
                 background-color: var(--bs-info);
+                color: var(--bs-gray-200)
             }
         }
 
     }
     .hide_textbox{display:none}
     .flex_right{display:flex;justify-content: end;}
+    .add_apple_options{
+        display: flex;
+        justify-content: center;
+        flex-wrap:wrap;
+        gap: 1rem;
+        button{ width: 100%}
+        .btn_to_a_link{
+            background: none!important;
+            border: none;
+            padding: 0!important;
+            /*optional*/
+            font-family: arial, sans-serif;
+            /*input has OS specific font-family*/
+            color: #069;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    }
 }
+
+
+/* Apple CLOSER Look */
+section.apple_closer_look{
+    padding-top: var(--nav-height);
+    padding-bottom: var(--nav-height);
+    .title{
+        padding:1rem 0 0 .5rem;
+        width:100%;
+        font-size: 2rem;
+    }
+    .apple_closer_look_body{
+        padding: 1rem 0 0 0;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        font-size: 1.5em;
+        gap:1rem;
+        .more_apple_description{
+            padding: 1rem;
+            // margin: 2rem;
+            width: 90%;
+        }
+    }
+    .table_background_sub{width:90%}
+    .table_background{
+        background-color: var(--bs-gray-200);
+        padding:1rem;
+        border-radius: 1rem;
+    }
+    table {background-color: white;}
+    // #table_id_wrapper {
+    //     // background-color: var(--bs-gray-200);
+    // }
+    .flex_to_right{
+        display:flex;
+        justify-content: end;
+        padding-right: 2rem;
+    }
+    .use_data_div_sub{
+        padding:1rem;
+        width:90%;
+        display:flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        color: var(--bs-gray-200);
+        h3 {
+            width:100%;
+            color: var(--bs-gray-200);
+        }
+    }
+    .use_data_div{
+        width: 90%;
+        // background-color: var(--bs-gray-200);
+        button{font-size: 2rem;}
+    }
+    .white_oval{
+        margin-left: 2rem;
+        background-color: var(--bs-gray-200);
+        border-radius: 3rem;
+        color: var(--bs-gray-700);
+        padding: 1rem 3rem 1rem 3rem;
+        width:fit-content;
+    }
+    .use_data_div_child{
+        display: flex;
+        gap:3rem;
+        // justify-content: space-between;
+    }
+    .look_like_a{
+        background: none!important;
+        border: none;
+        padding: 0!important;
+        /*optional*/
+        font-family: arial, sans-serif;
+        /*input has OS specific font-family*/
+        color: var(--bs-gray-200);
+        text-decoration: underline;
+        cursor: pointer;
+    }
+    .div_check_all{
+        margin-left: 2rem;
+        background-color: var(--bs-gray-200);
+        border-radius: 3rem;
+        color: var(--bs-gray-700);
+        padding: 1rem 3rem 1rem 3rem;
+        // input {color:red;}
+        button{color:var(--bs-primary)}
+    }
+    .grid-wrapper {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(9%, 24%));
+        // grid-template-columns: repeat(auto-fit, minmax(25%, 50%));
+        // grid-template-columns: repeat(auto-fill, 40px);
+        grid-gap: 0.5rem;
+        // height: 100vh;
+        margin:0;
+
+    }
+      
+    //   .grid-item {
+    //     background-color: red;
+    //   }
+}
+
 /* Add Oura */
 section.oura{
     padding-top: var(--nav-height);

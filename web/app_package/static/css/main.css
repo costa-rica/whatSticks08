@@ -11942,6 +11942,7 @@ section.apple_more .apple_more_body .table_background_sub #table_id_filter input
 }
 section.apple_more .apple_more_body .table_background_sub .btn_apple_exists {
   background-color: var(--bs-info);
+  color: var(--bs-gray-200);
 }
 section.apple_more .hide_textbox {
   display: none;
@@ -11949,6 +11950,122 @@ section.apple_more .hide_textbox {
 section.apple_more .flex_right {
   display: flex;
   justify-content: end;
+}
+section.apple_more .add_apple_options {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+section.apple_more .add_apple_options button {
+  width: 100%;
+}
+section.apple_more .add_apple_options .btn_to_a_link {
+  background: none !important;
+  border: none;
+  padding: 0 !important;
+  /*optional*/
+  font-family: arial, sans-serif;
+  /*input has OS specific font-family*/
+  color: #069;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Apple CLOSER Look */
+section.apple_closer_look {
+  padding-top: var(--nav-height);
+  padding-bottom: var(--nav-height);
+}
+section.apple_closer_look .title {
+  padding: 1rem 0 0 0.5rem;
+  width: 100%;
+  font-size: 2rem;
+}
+section.apple_closer_look .apple_closer_look_body {
+  padding: 1rem 0 0 0;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-size: 1.5em;
+  gap: 1rem;
+}
+section.apple_closer_look .apple_closer_look_body .more_apple_description {
+  padding: 1rem;
+  width: 90%;
+}
+section.apple_closer_look .table_background_sub {
+  width: 90%;
+}
+section.apple_closer_look .table_background {
+  background-color: var(--bs-gray-200);
+  padding: 1rem;
+  border-radius: 1rem;
+}
+section.apple_closer_look table {
+  background-color: white;
+}
+section.apple_closer_look .flex_to_right {
+  display: flex;
+  justify-content: end;
+  padding-right: 2rem;
+}
+section.apple_closer_look .use_data_div_sub {
+  padding: 1rem;
+  width: 90%;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  color: var(--bs-gray-200);
+}
+section.apple_closer_look .use_data_div_sub h3 {
+  width: 100%;
+  color: var(--bs-gray-200);
+}
+section.apple_closer_look .use_data_div {
+  width: 90%;
+}
+section.apple_closer_look .use_data_div button {
+  font-size: 2rem;
+}
+section.apple_closer_look .white_oval {
+  margin-left: 2rem;
+  background-color: var(--bs-gray-200);
+  border-radius: 3rem;
+  color: var(--bs-gray-700);
+  padding: 1rem 3rem 1rem 3rem;
+  width: fit-content;
+}
+section.apple_closer_look .use_data_div_child {
+  display: flex;
+  gap: 3rem;
+}
+section.apple_closer_look .look_like_a {
+  background: none !important;
+  border: none;
+  padding: 0 !important;
+  /*optional*/
+  font-family: arial, sans-serif;
+  /*input has OS specific font-family*/
+  color: var(--bs-gray-200);
+  text-decoration: underline;
+  cursor: pointer;
+}
+section.apple_closer_look .div_check_all {
+  margin-left: 2rem;
+  background-color: var(--bs-gray-200);
+  border-radius: 3rem;
+  color: var(--bs-gray-700);
+  padding: 1rem 3rem 1rem 3rem;
+}
+section.apple_closer_look .div_check_all button {
+  color: var(--bs-primary);
+}
+section.apple_closer_look .grid-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9%, 24%));
+  grid-gap: 0.5rem;
+  margin: 0;
 }
 
 /* Add Oura */

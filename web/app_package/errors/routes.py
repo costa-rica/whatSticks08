@@ -24,6 +24,11 @@ def error_400(error):
     error_message = "Bad request"
     return render_template('errors.html', error_number="400", error_message=error_message), 400
 
+@errors.app_errorhandler(403)
+def error_403(error):
+    error_message = "Timed out - try reloading the page."
+    return render_template('errors.html', error_number="403", error_message=error_message), 403
+
 
 @errors.app_errorhandler(500)
 def error_500(error):
