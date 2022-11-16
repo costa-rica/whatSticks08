@@ -19,7 +19,8 @@ from app_package.users.utils import send_reset_email
 from app_package.users.utilsApple import make_dir_util, decompress_and_save_apple_health, \
     add_apple_to_db, report_process_time, clear_df_files
 from app_package.users.utilsXmlUtility import xml_file_fixer, compress_to_save_util
-from app_package.users.utilsDf import create_df_files, remove_df_pkl, create_raw_df
+from app_package.users.utilsDf import create_df_files, remove_df_pkl, create_raw_df, \
+    browse_apple_data
 #More Weather
 from app_package.users.utilsMoreWeather import user_oldest_day_util, add_user_loc_days, \
     search_weather_dict_list_util
@@ -497,6 +498,11 @@ def add_more_apple():
     USER_ID = current_user.id if current_user.id !=2 else 1
     file_name = f'user{USER_ID}_df_browse_apple.pkl'
     file_path = os.path.join(config.DF_FILES_DIR, file_name)
+    
+    # check browse_apple.pkl file exists and if not create it
+    if not os.path.exists(file_path):
+        browse_apple_data(USER_ID)
+
     df = pd.read_pickle(file_path)
 
     list_of_forms = ['form_'+str(i) for i in range(1,len(df)+1)]
