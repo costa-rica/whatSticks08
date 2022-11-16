@@ -158,6 +158,18 @@ def dashboard(dash_dependent_var):
     # send to chart making
     script_b, div_b, cdn_js_b = make_chart_util(series_lists_dict, buttons_dict)
     
+
+    # Create names dict to show formatted names in Buttons
+    formatted_names_dict = {'temp':'Temperature', 'cloudcover':'Cloud Cover', 'sleep': 'Oura Sleep', 'steps': 'Apple Step Count'}
+    user_apple_browse_file = f"user{USER_ID}_df_browse_apple.pkl"
+    user_apple_browse_path = os.path.join(config.DF_FILES_DIR, user_apple_browse_file)
+    if os.path.exists(user_apple_browse_path):
+        print(user_apple_browse_path)
+        df_browse = pd.read_pickle(os.path.abspath(user_apple_browse_path))
+        apple_browse_names_dict = {i.replace(" ", "_").lower():i for i in df_browse.type_formatted}
+        formatted_names_dict = formatted_names_dict | apple_browse_names_dict
+
+
     # --- calcualute CORRELATIONS ---
 
     #Filter out rows where the dep vars are null
@@ -172,11 +184,13 @@ def dashboard(dash_dependent_var):
 
 
         if corr_dict[df_name] != corr_dict[df_name]:# Pythonic way for checking for nan
-            corr_dict_na[df_name] = "Not enough data"
+            corr_dict_na[df_name] = ["Not enough data",formatted_names_dict[df_name]]
             del corr_dict[df_name]
             
     # Remove depenedent variable for corrleations list
     del corr_dict[dash_dependent_var]
+    
+
     
     # Sort correlations by most impactful by converting to DF
     if len(corr_dict) > 0:
@@ -187,7 +201,11 @@ def dashboard(dash_dependent_var):
         df_corr['abs_corr'] = df_corr['correlation'].abs()
         df_corr = df_corr.sort_values('abs_corr', ascending=False)
         corr_dict = df_corr.to_dict().get('correlation')
-        corr_dict = {key: '{:,.0%}'.format(value) for key,value in corr_dict.items() }
+
+        
+
+
+        corr_dict = {key: ['{:,.0%}'.format(value), formatted_names_dict[key]] for key,value in corr_dict.items() }
     if len(corr_dict_na)>0:# Add back in any vars with "Not enough data" for correlation
         corr_dict = corr_dict | corr_dict_na
 

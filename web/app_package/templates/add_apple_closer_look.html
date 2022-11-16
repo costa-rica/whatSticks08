@@ -111,6 +111,18 @@
 
 
     </div>
+    <div class="abbrev_df_message_div">
+      {% if abbrev_df_message != '' %}
+      <div class="msg_count">{{ abbrev_df_message }}</div>
+      
+      <br>
+      <div>
+        To see all rows <a href="">download csv</a>.
+      </div>
+    {% endif %}
+
+    </div>
+
     
     <div class="table_background_sub">
       <div class="table_background">
@@ -145,9 +157,7 @@
 
 
 
-    <div>
-      To see all rows <a href="">download csv</a>
-    </div>
+
 
 
   </div>

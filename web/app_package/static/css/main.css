@@ -12067,6 +12067,16 @@ section.apple_closer_look .grid-wrapper {
   grid-gap: 0.5rem;
   margin: 0;
 }
+section.apple_closer_look .abbrev_df_message_div {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+section.apple_closer_look .msg_count {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
 
 /* Add Oura */
 section.oura {

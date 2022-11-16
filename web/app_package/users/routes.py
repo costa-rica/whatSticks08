@@ -17,7 +17,7 @@ from app_package.users.utils import call_location_api, location_exists, \
 from app_package.users.utils import send_reset_email
 #Apple
 from app_package.users.utilsApple import make_dir_util, decompress_and_save_apple_health, \
-    add_apple_to_db, report_process_time
+    add_apple_to_db, report_process_time, clear_df_files
 from app_package.users.utilsXmlUtility import xml_file_fixer, compress_to_save_util
 from app_package.users.utilsDf import create_df_files, remove_df_pkl, create_raw_df
 #More Weather
@@ -432,7 +432,12 @@ def add_apple():
                     df_uploaded_record_count = add_apple_to_db(xml_dict)
                     logger_users.info('- Successfully added xml to database!')
 
-
+                    ###############################################
+                    # if loads successfully check for exisiting 
+                    # user_[id]_df_apple_health_.pkl and delete
+                    ################################################
+                    if os.path.exists(config.DF_FILES_DIR):
+                        clear_df_files(USER_ID)
 
                 except:
                     logger_users.info('---- Failed to add data to database')
@@ -501,15 +506,11 @@ def add_more_apple():
     df_records_list_dict =[json.dumps(i) for i in df_records_list]
     df.set_index('index', inplace=True)
 
-    # print(df)
-    
-
     if request.method == 'POST':
 
         if current_user.id ==2:
             flash("Guest cannot change data. Register and then add data.", "info")
             return redirect(url_for('users.add_apple'))
-
 
         formDict = request.form.to_dict()
         print(formDict)
@@ -521,7 +522,7 @@ def add_more_apple():
         data_item_name_show = df.at[data_item_id,'type_formatted'] 
         
         # Apple data name lowercases no spaces for df headings, pkl file names, dict key names
-        data_item_list = [df.at[data_item_id,'type_formatted'] .replace(" ", "_").lower()]
+        data_item_list = [df.at[data_item_id,'type_formatted'].replace(" ", "_").lower()]
         
         # Apple data name from XML file
         data_item_apple_type_name = df.at[data_item_id,'type'] 
@@ -535,20 +536,14 @@ def add_more_apple():
             agg_method = 'sum'
             
 
-            # print('-- POST new data hist apple data  --')
-            # print(data_item_id)
-            # print(data_item_list)
-            # print(data_item_name_show)
-
-            create_df_files(USER_ID, data_item_list , data_item_name_show=data_item_name_show,
+            df_dict = create_df_files(USER_ID, data_item_list , data_item_name_show=data_item_name_show,
                 method=agg_method, data_item_apple_type_name = data_item_apple_type_name)
 
-            ###############################
-            #TODO: Checks for df to actually have numeric non-zero data
-            ### --> check len(df) > 0
-
-            ### --> check column of interest has numeric values
-
+            ##############################################
+            #Could Do But not hurting anything now
+            #  Checks for df to actually have numeric non-zero data
+            # --> if len(df_dict[data_item_list[0]]) >0:
+            # --> check column of interest has numeric values
             # If fails either return flash('No usable data in these records', 'warning')
             ###################################
 
@@ -577,18 +572,18 @@ def add_more_apple():
             df.to_pickle(file_path)
             flash(f'Successfully removed {data_item_name_show} from dashboards', 'info')
         elif formDict.get('btn_closer_look'):
+            return redirect(url_for('users.under_construction'))
+            #TODO: 
             # make name for this data time file 
             apple_health_export_df_file_name = f'check_user{USER_ID}_df_apple_health_{data_item_apple_type_name}.pkl'
 
-            # create df
-            df = create_raw_df(USER_ID, Apple_health_export, 'apple_health_export_')
-            df = df[df['type']==data_item_apple_type_name]
-            print('--- check the df we created for closer look ---')
-            print('length: ', len(df))
-            print(df.head(2))
-            
-            # to_pickle
-            df.to_pickle(os.path.join(config.DF_FILES_DIR, apple_health_export_df_file_name))
+            # CHECK if request df file exists before searching/createing
+            if not os.path.exists(os.path.join(config.DF_FILES_DIR, apple_health_export_df_file_name)):
+                # create df
+                df = create_raw_df(USER_ID, Apple_health_export, 'apple_health_export_')
+                df = df[df['type']==data_item_apple_type_name]
+                # to_pickle
+                df.to_pickle(os.path.join(config.DF_FILES_DIR, apple_health_export_df_file_name))
 
             return redirect(url_for('users.apple_closer_look', data_item_id= data_item_id))
         return redirect(url_for('users.add_more_apple'))
@@ -597,6 +592,11 @@ def add_more_apple():
     df_records_list_dict=df_records_list_dict,
         list_of_forms=list_of_forms)
 
+
+@users.route('/under_construction')
+@login_required
+def under_construction():
+    return render_template('under_construction.html')
 
 @users.route('/apple_closer_look/<data_item_id>', methods=["GET", "POST"])
 @login_required
@@ -607,58 +607,49 @@ def apple_closer_look(data_item_id):
     browse_file_path = os.path.join(config.DF_FILES_DIR, browse_file_name)
     df = pd.read_pickle(browse_file_path)
 
-    print('--- request.args ---')
-    print(request.args)
+    # print('--- request.args ---')
+    # print(request.args)
 
     check_all = request.args.get('check_all')
-    # if request.args.get('check_all'):
-    #     check_all = True
-    # else:
-    #     check_all = False
-
+    warning = request.args.get('warning')
+ 
     # Apple data name with spaces and capital letters
     data_item_name_show = df.at[int(data_item_id),'type_formatted'] 
     # Apple data name from XML file
     data_item_apple_type_name = df.at[int(data_item_id),'type'] 
 
     # Get apple data filterd on user_id and data_item
-    # base_query = sess.query(Apple_health_export).filter_by(user_id=USER_ID, type=data_item_apple_type_name)
-    # apple_health_export_df_file_name = f'user{USER_ID}_df_apple_health_export.pkl'
     apple_health_export_df_file_name = f'check_user{USER_ID}_df_apple_health_{data_item_apple_type_name}.pkl'
     apple_health_export_df_file_path = os.path.join(config.DF_FILES_DIR, apple_health_export_df_file_name)
 
     # print(apple_health_export_df_file_path)
     # print('* Do we get this far? *')
     flag_df_abbrev = False
+    abbrev_df_message = ''
     if os.path.exists(apple_health_export_df_file_path):
         df = pd.read_pickle(apple_health_export_df_file_path)
+        length = "{:,}".format(len(df))
         if len(df) >1000:
             df_abbrev = df.iloc[:1000]
             flag_df_abbrev = True
+            abbrev_df_message = f'Too many rows to show all. Only loaded 1,000 of {length}. '
         print('-- Reading from Apple Health pickle file --')
     else:
         flash('Something went wrong. Go back delete exisiting data and come back to this page.','warning')
         return redirect(url_for('users.apple_closer_look', data_item_id=data_item_id))
-        # df = create_raw_df(USER_ID, Apple_health_export, 'apple_health_export_')
-        # df.to_pickle(apple_health_export_df_file_path)
-        # df = df[df.type==data_item_apple_type_name]
-        # print('-- Created Apple Health pickle file --')
     
+    # Get unique column values from full dataset
     source_name_list = list(df.sourceName.unique())
     source_version_list = list(df.sourceVersion.unique())
     unit_list = list(df.unit.unique())
 
-
-    
-    # df.reset_index(inplace=True)
+    # Abbreviate dataset if necessary
     if flag_df_abbrev:
         df_records_list = df_abbrev.to_dict('records')
-        flash('Too many rows to show all. Only have 1,000 showing', 'info')
+        # flash('Too many rows to show all. Only have 1,000 showing', 'info')
     else:
         df_records_list = df.to_dict('records')
-    # df_records_list_dict =[json.dumps(i) for i in df_records_list]
-    # df.set_index('index', inplace=True)
-    # print(df_records_list[0])
+
 
     col_names = list(df_records_list[0].keys())
 
@@ -666,22 +657,11 @@ def apple_closer_look(data_item_id):
         formDict = request.form.to_dict()
         print('-- formDict --')
         print(formDict)
-        if formDict.get('btn_check_all')=='true':
-            print('check_all * True * ')
-            check_all=True
-            return redirect(url_for('users.apple_closer_look', data_item_id=data_item_id, check_all=check_all))
-        elif formDict.get('btn_check_all')=='false':
-            print('check_all * False * ')
-            check_all=False
-            return redirect(url_for('users.apple_closer_look', data_item_id=data_item_id, check_all=check_all))
 
         # check formDict has at least one source_name_, source_version_, unit_name_
         check_string_list = ['source_name_','source_version_', 'unit_name_' ]
         check_string_dict = {'source_name_':False,'source_version_':False, 'unit_name_':False}
         keys_list = list(formDict.keys())
-
-        
-        
         
         
         ### Check by check string for unfilled 
@@ -697,8 +677,22 @@ def apple_closer_look(data_item_id):
                 
         if missing != '':
             flash(f'Must pick at least one of: {missing}', 'warning')
-            return redirect(url_for('users.apple_closer_look', data_item_id = data_item_id))
+            return redirect(url_for('users.apple_closer_look', data_item_id = data_item_id, warning=True))
 
+
+
+        if formDict.get('btn_check_all')=='true':
+            print('check_all * True * ')
+            check_all=True
+            # return redirect(url_for('users.apple_closer_look', data_item_id=data_item_id, check_all=check_all))
+        elif formDict.get('btn_check_all')=='false':
+            print('check_all * False * ')
+            check_all=False
+            # return redirect(url_for('users.apple_closer_look', data_item_id=data_item_id, check_all=check_all))
+
+        elif formDict.get('btn_add_data')=='true':
+            print('-- add data --')
+            check_all = False
 
 
         # filter df on source_name_
@@ -708,13 +702,18 @@ def apple_closer_look(data_item_id):
 
         # create pickle file
 
+        return redirect(url_for('users.apple_closer_look', data_item_id=data_item_id, check_all=check_all,
+            abbrev_df_message = abbrev_df_message
+            ))
 
 
-        return redirect(url_for('users.apple_closer_look', data_item_id=data_item_id))
+
+
 
     return render_template('add_apple_closer_look.html', data_item_name_show = data_item_name_show,
         col_names=col_names, df_records_list = df_records_list, source_name_list=source_name_list,
-        source_version_list=source_version_list, unit_list=unit_list, check_all=check_all
+        source_version_list=source_version_list, unit_list=unit_list, check_all=check_all,
+        abbrev_df_message = abbrev_df_message
         )
 
 
