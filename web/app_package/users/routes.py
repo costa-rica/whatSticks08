@@ -178,7 +178,11 @@ def register():
 
 
         # Send email confirming succesfull registration
-        send_confirm_email(new_email)
+        try:
+            send_confirm_email(new_email)
+        except:
+            flash(f'Problem with email: {new_email}', 'warning')
+            return redirect(url_for('users.login'))
 
         #log user in
         print('--- new_user ---')
