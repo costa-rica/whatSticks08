@@ -61,12 +61,12 @@ def dashboard(dash_dependent_var):
     page_name = f"{dash_dependent_var[0].upper() + dash_dependent_var[1:]} Dashboard"
     # dash_dependent_var = 'sleep'
 
+    USER_ID = current_user.id if current_user.id !=2 else 1
 
     # search df_files dir for all user[id]_.pkl
-
     list_of_data = os.listdir(config.DF_FILES_DIR)
 
-    file_name_start = f'user{current_user.id}_df_'
+    file_name_start = f'user{USER_ID}_df_'
     start_length = len(file_name_start)
     list_of_data = [i for i in list_of_data if i[:start_length] == file_name_start]
     print('-- list_of _data =-==')
@@ -83,7 +83,7 @@ def dashboard(dash_dependent_var):
 
     # data_item_list = ['steps', 'sleep', 'temp', 'cloudcover']
  
-    USER_ID = current_user.id if current_user.id !=2 else 1
+
 
     #make static/dashbuttons
     dash_btns_dir = os.path.join(current_app.static_folder,'dash_btns')
@@ -95,7 +95,7 @@ def dashboard(dash_dependent_var):
 
     # Buttons for dashboard table to toggle on/off correlations
     buttons_dict = {}
-    user_btn_json_name = f'user{current_user.id}_buttons_dict.json'
+    user_btn_json_name = f'user{USER_ID}_buttons_dict.json'
     if request.method == 'POST':
         formDict = request.form.to_dict()
         logger_dash.info('formDict: ', formDict)

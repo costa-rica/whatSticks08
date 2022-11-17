@@ -516,7 +516,7 @@ def add_more_apple():
 
         if current_user.id ==2:
             flash("Guest cannot change data. Register and then add data.", "info")
-            return redirect(url_for('users.add_apple'))
+            return redirect(url_for('users.add_more_apple'))
 
         formDict = request.form.to_dict()
         print(formDict)
@@ -533,13 +533,17 @@ def add_more_apple():
         # Apple data name from XML file
         data_item_apple_type_name = df.at[data_item_id,'type'] 
 
-        if formDict.get('btn_add') == 'true':
+        if formDict.get('btn_add') == 'add' or formDict.get('btn_average')=='average':
             print('-- btn_add ', data_item_id)
             # # index value assigned at creation of browse_apple df
             # data_item_id = int(formDict.get('data_item_index'))
             
-            agg_method = formDict.get('agg_method')
-            agg_method = 'sum'
+            if formDict.get('btn_add') == 'add' :
+                agg_method = 'sum'
+            elif formDict.get('btn_average') == 'average':
+                agg_method = 'average'
+            # agg_method = formDict.get('agg_method')
+            # agg_method = 'sum'
             
 
             df_dict = create_df_files(USER_ID, data_item_list , data_item_name_show=data_item_name_show,
@@ -565,6 +569,11 @@ def add_more_apple():
             sess.commit()
 
             flash(f'Successfully added {data_item_name_show}', 'info')
+
+
+
+
+
         elif formDict.get('btn_delete') == 'true':
             # print(f'delete data item: {formDict.get("delete_data_item_index")}')
             print('-- in delete --')
