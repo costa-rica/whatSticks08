@@ -481,6 +481,25 @@ def add_apple():
             sess.commit()
             flash(f"Removed {'{:,}'.format(rows_deleted)} Apple Health records from What Sticks data storage", 'warning')
 
+            ###############
+            # REMOVE user[user_id]_df____.pkl
+            ################
+
+            
+            # Delete user df_files
+            pickle_files_list = os.listdir(config.DF_FILES_DIR)
+            for pickle_file in pickle_files_list:
+                if pickle_file.find(f'user{USER_ID}_df_') > -1:
+                    if pickle_file.find('df_sleep.pkl') == -1 and pickle_file.find('df_temp.pkl')== -1 and \
+                        pickle_file.find('df_cloudcover.pkl') == -1:
+                        os.remove(os.path.join(config.DF_FILES_DIR, pickle_file))
+            logger_users.info('-- removed user df_files --')
+
+
+
+
+
+
         ###########################################################
         # IF any change to APPLE data: Make DF for user and APPLE #
         ###########################################################

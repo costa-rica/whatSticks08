@@ -113,10 +113,16 @@ def dashboard(dash_dependent_var):
         buttons_dict = buttons_dict_update_util(dash_dependent_var_dash_btns_dir, user_btn_json_name)
 
     df_dict = df_utils(USER_ID, data_item_list)
-
+    print('- see df_dict ---')
+    for key, value in df_dict.items():
+        print(f'* df key: {key}')
+        print(value.head())
     ### Checking that the DF have data 
     list_of_user_data = [df_name  for df_name, df in df_dict.items() if not isinstance(df, bool)]
 
+    if dash_dependent_var not in df_dict:
+        message = f"There is no data {dash_dependent_var} attached to your user. Go to accounts and add location and oura information."
+        return render_template('dashboard_empty.html', page_name=page_name, message = message) 
     # if user has no data return empty dashboard page
     if len(list_of_user_data) == 0:
         message = "There is no data attached to your user. Go to accounts and add location and oura information."
@@ -173,6 +179,8 @@ def dashboard(dash_dependent_var):
     # --- calcualute CORRELATIONS ---
 
     #Filter out rows where the dep vars are null
+    print('- df_all -')
+    print(df_all)
     df_interest = df_all[df_all[dash_dependent_var].notnull()]
 
     # Create dictionaries for {data_item: correaltion} (and {data_item: Not enough data})
