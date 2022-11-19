@@ -51,13 +51,13 @@ def scheduler_funct():
         os.makedirs(config.json_utils_dir)
         logger_init.info(f'--- successfully created {config.json_utils_dir} *')
 
-    yesterday = datetime.today() - timedelta(days=1)
-    date_formatted = yesterday.strftime('%Y-%m-%d')
-
+    # yesterday = datetime.today() - timedelta(days=1)
+    # date_formatted = yesterday.strftime('%Y-%m-%d')
+    # logger_init.info(f'- Calling for weather date: {date_formatted}  -')
     scheduler = BackgroundScheduler()
 
-    # job_call_get_locations = scheduler.add_job(get_locations, 'cron', [date_formatted], day='*', hour='23', minute='01', second='05')#Production
-    job_call_get_locations = scheduler.add_job(get_locations, 'cron', [date_formatted], hour='*', minute='07', second='05')#Testing
+    job_call_get_locations = scheduler.add_job(get_locations, 'cron', day='*', hour='23', minute='01', second='05')#Production
+    #job_call_get_locations = scheduler.add_job(get_locations, 'cron', hour='*', minute='07', second='05')#Testing
     # job_call_harmless = scheduler.add_job(harmless, 'cron',  hour='*', minute='57', second='15')#Testing
 
     scheduler.start()
@@ -76,6 +76,11 @@ def scheduler_funct():
 
 def harmless():
     
+    yesterday = datetime.today() - timedelta(days=1)
+    date_formatted = yesterday.strftime('%Y-%m-%d')
+
+    logger_init.info(f'---> harmless: date_formatted: {date_formatted}.')
+
     # base_url = 'http://localhost:5000'#TODO: put this address in config
     base_url = config.WSH_API_URL_BASE#TODO: put this address in config
     # base_url = 'https://api3.what-sticks-health.com'
@@ -107,9 +112,13 @@ def harmless():
 
 
 #1) send call to wsh06 api to get locations
-def get_locations(date_formatted):
+def get_locations():
     # print('sending wsh call for all locations')
     logger_init.info(f'---> Sending call to ws08 api for locations.')
+
+    yesterday = datetime.today() - timedelta(days=1)
+    date_formatted = yesterday.strftime('%Y-%m-%d')
+
     logger_init.info(f'---> calling for data for {date_formatted}.')
 
     # base_url = 'http://localhost:5000'#TODO: put this address in config

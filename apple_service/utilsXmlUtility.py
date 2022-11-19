@@ -353,6 +353,34 @@ def add_apple_to_db(xml_dict, user_id):
     return len(df)
 
 
+def clear_df_files(USER_ID):
+    
+    list_of_df_files = os.listdir(config.DF_FILES_DIR)
+    search_for_string = f"user{USER_ID}_df_apple_health"
+    for file in list_of_df_files:
+        if file.find(search_for_string) > -1:
+            os.remove(os.path.join(config.DF_FILES_DIR, file))
+
+
+    # open user_browse_apple health
+    apple_browse_user_filename = f"user{USER_ID}_df_browse_apple.pkl"
+    if os.path.exists(os.path.join(config.DF_FILES_DIR, apple_browse_user_filename)):
+
+        df_browse = pd.read_pickle(os.path.join(config.DF_FILES_DIR, apple_browse_user_filename))
+
+        #find items that have been created
+        type_formatted_series = df_browse[df_browse['df_file_existing']=='true'].type_formatted
+
+        #delete those
+        for apple_type in type_formatted_series:
+            file_name = f'user{USER_ID}_df_{apple_type.replace(" ", "_").lower()}.pkl'
+            os.remove(os.path.join(config.DF_FILES_DIR, file_name))
+
+        #then delete user_df_browse_apple
+        os.remove(os.path.join(config.DF_FILES_DIR, apple_browse_user_filename))
+
+
+
 
 ##########################
 # Email User #

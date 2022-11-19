@@ -3,7 +3,7 @@ import time
 from ws_config01 import ConfigDev, ConfigProd
 import os
 from utilsXmlUtility import xml_file_fixer, add_apple_to_db, \
-    compress_to_save_util, email_user
+    compress_to_save_util, email_user, clear_df_files
 import xmltodict
 import logging
 from logging.handlers import RotatingFileHandler
@@ -85,18 +85,20 @@ def add_apple(xml_file_name, user_id):
         df_uploaded_record_count = add_apple_to_db(xml_dict, user_id)
         logger_apple.info('- Successfully added xml to database!')
 
+        ###############################################
+        # TODO: if loads successfully check for exisiting 
+        # user_[id]_df_apple_health_.pkl and delete
+        ################################################
+        if os.path.exists(config.DF_FILES_DIR):
+            clear_df_files(user_id)
+
     except:
         logger_apple.info('---- Failed to add data to database')
         message = "Failed to store xml into database"
         return message
 
-    logger_apple.info(f"**** Logger should send create_df_files next -- was not doign this earlier")
-    create_df_files(user_id, ['steps'])
 
-    ############################
-    # process on speedy100: not sending email or zipping file
-    # possible >> create_df_files << has errror that seems to only occur in speedy100
-    ###########################################
+    create_df_files(user_id, ['steps'])
 
     message = "Successfully added xml to database!"
     ws_email_api_response = email_user(user_id, message, df_uploaded_record_count)
