@@ -57,10 +57,12 @@ dash = Blueprint('dash', __name__)
 @dash.route('/dashboard/<dash_dependent_var>', methods=['GET', 'POST'])
 @login_required
 def dashboard(dash_dependent_var):
+
     logger_dash.info(f'- Entered dashboard: {dash_dependent_var.upper()} -')
     page_name = f"{dash_dependent_var[0].upper() + dash_dependent_var[1:]} Dashboard"
-    # dash_dependent_var = 'sleep'
 
+    if dash_dependent_var == 'sleep':
+        dash_dependent_var = 'oura_sleep_tonight'
     USER_ID = current_user.id if current_user.id !=2 else 1
 
     # search df_files dir for all user[id]_.pkl
@@ -69,21 +71,12 @@ def dashboard(dash_dependent_var):
     file_name_start = f'user{USER_ID}_df_'
     start_length = len(file_name_start)
     list_of_data = [i for i in list_of_data if i[:start_length] == file_name_start]
-    print('-- list_of _data =-==')
-    print(list_of_data)
 
     data_item_list = [i[start_length:i.find('.')] for i in list_of_data]
     try:
         data_item_list.remove('browse_apple')
     except:
         print('no browse_apple')
-
-    print('-- data_itme_list_+new --')
-    print(data_item_list)
-
-    # data_item_list = ['steps', 'sleep', 'temp', 'cloudcover']
- 
-
 
     #make static/dashbuttons
     dash_btns_dir = os.path.join(current_app.static_folder,'dash_btns')
@@ -102,7 +95,7 @@ def dashboard(dash_dependent_var):
         if formDict.get('refresh_data'):
             logger_dash.info('- Refresh data button pressed -')
             #remove steps because unnecessary and potentially takes a long time
-            data_item_sub_list = ['sleep', 'temp', 'cloudcover']
+            data_item_sub_list = ['oura_sleep_tonight', 'oura_sleep_last_night', 'temp', 'cloudcover']
             create_df_files(USER_ID, data_item_sub_list)
         else:
             buttons_dict = buttons_dict_util(formDict, dash_dependent_var_dash_btns_dir, buttons_dict, user_btn_json_name)
@@ -117,6 +110,7 @@ def dashboard(dash_dependent_var):
     for key, value in df_dict.items():
         print(f'* df key: {key}')
         print(value.head())
+    
     ### Checking that the DF have data 
     list_of_user_data = [df_name  for df_name, df in df_dict.items() if not isinstance(df, bool)]
 
@@ -164,9 +158,11 @@ def dashboard(dash_dependent_var):
     # send to chart making
     script_b, div_b, cdn_js_b = make_chart_util(series_lists_dict, buttons_dict)
     
-
+    # TODO: oura_sleep name change
     # Create names dict to show formatted names in Buttons
-    formatted_names_dict = {'temp':'Temperature', 'cloudcover':'Cloud Cover', 'sleep': 'Oura Sleep', 'steps': 'Apple Step Count'}
+    formatted_names_dict = {'temp':'Temperature', 'cloudcover':'Cloud Cover',
+        'oura_sleep_tonight': 'Oura Sleep', 'oura_sleep_last_night': 'Oura Sleep Night Before', 
+        'steps': 'Apple Step Count'}
     user_apple_browse_file = f"user{USER_ID}_df_browse_apple.pkl"
     user_apple_browse_path = os.path.join(config.DF_FILES_DIR, user_apple_browse_file)
     if os.path.exists(user_apple_browse_path):
@@ -179,12 +175,20 @@ def dashboard(dash_dependent_var):
     # --- calcualute CORRELATIONS ---
 
     #Filter out rows where the dep vars are null
-    print('- df_all -')
-    print(df_all)
+    # print('- df_all -')
+    # print(df_all)
     df_interest = df_all[df_all[dash_dependent_var].notnull()]
+    print('- df_interest columns -')
+    print(df_interest.columns)
 
     # Create dictionaries for {data_item: correaltion} (and {data_item: Not enough data})
-    data_items_of_interest_list = list(set(data_item_list) & set(df_all.columns))
+    print('- data_item_list -')
+    print(data_item_list)
+    print('- df_all.columns -')
+    print(df_all.columns)
+    data_items_of_interest_list = list(set(data_item_list) & set(df_all.columns)) #intersection of both lists
+    print('- data_items_of_interest_list -')
+    print(data_items_of_interest_list)
     corr_dict={}
     corr_dict_na={}
     for df_name in data_items_of_interest_list:
@@ -210,21 +214,12 @@ def dashboard(dash_dependent_var):
         df_corr = df_corr.sort_values('abs_corr', ascending=False)
         corr_dict = df_corr.to_dict().get('correlation')
 
-        
-
-
         corr_dict = {key: ['{:,.0%}'.format(value), formatted_names_dict[key]] for key,value in corr_dict.items() }
     if len(corr_dict_na)>0:# Add back in any vars with "Not enough data" for correlation
         corr_dict = corr_dict | corr_dict_na
 
-
     print('--- corr_dict --')
     print(corr_dict)
-    # btn_names_dict = {}
-    # btn_names_dict['cloudcover'] = "Cloud cover"
-    # btn_names_dict['temp'] = "Average outdoor temperature"
-    # btn_names_dict['sleep'] = "Sleep score"
-    # btn_names_dict['steps'] = "Daily step count"
 
     return render_template('dashboard.html', page_name=page_name,
         script_b = script_b, div_b = div_b, cdn_js_b = cdn_js_b, corr_dict=corr_dict, 

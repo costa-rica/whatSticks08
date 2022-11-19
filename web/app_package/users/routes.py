@@ -255,9 +255,10 @@ def account():
                     else:
                         user_notes_dict ={}
                     if not user_notes_dict.get('weather_hist_date'):
-                        four_weeks_ago_date = datetime.now() - timedelta(28)
-                        four_weeks_ago_date_str = four_weeks_ago_date.strftime("%Y-%m-%d")
-                        user_notes_dict['weather_hist_date'] = four_weeks_ago_date_str
+                        print('-- config.DAYS_HIST_LIMIT_STD --')
+                        weather_limit_date = datetime.now() - timedelta(config.DAYS_HIST_LIMIT_STD)
+                        weather_limit_date_str = weather_limit_date.strftime("%Y-%m-%d")
+                        user_notes_dict['weather_hist_date'] = weather_limit_date_str
                         notes_string = ''
                         for data_item_name,data_item_value in user_notes_dict.items():
                             notes_string = notes_string + data_item_name + ":" + data_item_value + ";"
@@ -324,7 +325,7 @@ def account():
                     else:
                         flash("Recent weather history updated!", "success")
 
-                # TODO: Make DF for user and weather
+                # Make DF for user and weather
                 create_df_files(current_user.id, ['temp', 'cloudcover'])
 
 
@@ -485,11 +486,13 @@ def add_apple():
             sess.commit()
             flash(f"Removed {'{:,}'.format(rows_deleted)} Apple Health records from What Sticks data storage", 'warning')
 
-            ###############
-            # REMOVE user[user_id]_df____.pkl
-            ################
+            ################################################
+            # !! TODO: REMOVE user[user_id]_df____.pkl !!! #
+            ################################################
 
-            
+            # TODO: Take into account new oura ring names
+            ### Best solution is to rename apple files to user{id}_df_apple_health_{data_item}.pkl
+
             # Delete user df_files
             pickle_files_list = os.listdir(config.DF_FILES_DIR)
             for pickle_file in pickle_files_list:
@@ -760,6 +763,7 @@ def apple_closer_look(data_item_id):
 @login_required
 def add_oura():
     logger_users.info(f"--- Add Oura route ---")
+    
     existing_records = sess.query(Oura_sleep_descriptions).filter_by(user_id=current_user.id).all()
     oura_sleep_records = "{:,}".format(len(existing_records))
 
@@ -886,14 +890,21 @@ def add_oura():
             delete_count = sess.query(Oura_sleep_descriptions).filter_by(user_id = current_user.id).delete()
             sess.query(Oura_token).filter_by(user_id=current_user.id).delete()
             sess.commit()
-            logger_users.info('* successful delel;ete ')
+            
+            # Delete user df.pkl files
+            pickle_files_list = os.listdir(config.DF_FILES_DIR)
+            for pickle_file in pickle_files_list:
+                if pickle_file.find(f'user{current_user.id}_df_oura_') > -1:
+                    os.remove(os.path.join(config.DF_FILES_DIR, pickle_file))
+
+            logger_users.info('* Delete Oura Successfull ')
             flash(f"Removed {delete_count} records", "warning")
         
         
         ###########################################################
         # IF any change to OURA data: Make DF for user sleep #
         ###########################################################
-        create_df_files(current_user.id, ['sleep'])
+        create_df_files(current_user.id, ['oura_sleep_tonight', 'oura_sleep_last_night'])
         
         return redirect(url_for('users.add_oura'))
 
@@ -993,13 +1004,13 @@ def add_more_weather():
             flash(f"No additional weather needed to complement the data you have already submitted", "info")
         return redirect(url_for('users.add_more_weather'))
     oldest_date = datetime.strptime(oldest_date_str,"%Y-%m-%d").strftime("%b %d, %Y")
-    # oldest_date_str = datetime.strptime(oldest_date_str,"%Y-%m-%d").strftime("%m/%d/%Y")
+    oldest_date_str = datetime.strptime(oldest_date_str,"%Y-%m-%d").strftime("%m/%d/%Y")
 
-    one_month_ago = datetime.now()-timedelta(days=30)
-    one_month_ago_str = one_month_ago.strftime("%Y-%m-%d")
+    # one_month_ago = datetime.now()-timedelta(days=30)
+    # one_month_ago_str = one_month_ago.strftime("%Y-%m-%d")
 
 
-    return render_template('add_more_weather.html', oldest_date = oldest_date, oldest_date_str=one_month_ago_str,
+    return render_template('add_more_weather.html', oldest_date = oldest_date, oldest_date_str=oldest_date_str,
         hist_limit_date=hist_limit_date)
 
 

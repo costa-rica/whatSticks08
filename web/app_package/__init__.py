@@ -37,7 +37,7 @@ def timetz(*args):
     return datetime.now(tz).timetuple()
 # tz = timezone('Europe/Paris')
 
-tz = timezone('Asia/Shanghai') 
+tz = timezone('Europe/Paris') 
 logging.Formatter.converter = timetz
 
 

@@ -121,14 +121,10 @@ def make_chart_util(series_lists_dict, buttons_dict):
     date_end = max(dates_list) + timedelta(days=1)
 
     fig1=figure(toolbar_location=None,tools='xwheel_zoom,xpan',active_scroll='xwheel_zoom',
-
             x_range=(date_start,date_end),
             y_range=(-5,12),sizing_mode='stretch_width', height=400)
 
-
-    item_units_dict = {"temp":"Temperature (F)"}
-
-    color_list = ['#c77711', '#6cacc3', "olive", "gray", 'red']
+    color_list = ['#f1c40f', '#f39c12', "#e67e22", "#d35400", '#ecf0f1','#bdc3c7', '#95a5a6']
 
     source_dict = {}
     glyph_dict = {}
@@ -136,9 +132,40 @@ def make_chart_util(series_lists_dict, buttons_dict):
 
     # Loop tover list o0f items
     for item in list_of_items:
+        flag = True
         print(f'-- working on {item} ---')
         item_list = series_lists_dict.get(item)
+        
         item_ln_list = series_lists_dict.get(item + '-ln')
+        # if item == 'active_energy_burned':
+        #     with open('active_energy_burned.json', 'w') as file_path:
+        #         json.dump(item_list, file_path)
+
+        item_list_formatted = []
+        #TODO: Remove nan obs -> possible solution: item_ln_list_formatted =[]# remove nan
+        # Format item_list
+        # --> if number is less than 10 "{:.2f}".format(element)
+        # --> if number is greater than 10 "{:,}".format(element)
+        # --> if number is none nan return nan
+        for i in item_list:
+            if i != i:
+                item_list_formatted.append(i)
+
+            if float(i) <10:
+                item_list_formatted.append("{:.1f}".format(i))
+
+            elif float(i) >= 10:
+                item_list_formatted.append("{:,}".format(int(i)))
+                    # item_list_formatted.append('Numbrer')
+
+            # else:
+            #     print('* Found and else *')
+            #     print(type(i))
+            #     print(i)
+                
+
+        item_list = item_list_formatted
+
         if buttons_dict.get(item) !=1:
             fig1.circle(dates_list,item_ln_list, 
                 legend_label=item, 
@@ -153,49 +180,6 @@ def make_chart_util(series_lists_dict, buttons_dict):
         counter += 1
 
 
-
-
-    # #Temperature
-    # if series_lists_dict.get('temp'):
-    #     temp_list = series_lists_dict.get('temp')
-    #     temp_ln_list = series_lists_dict.get('temp-ln')
-    #     if buttons_dict.get('temp') !=1:
-    #         fig1.circle(dates_list,temp_ln_list, 
-    #             legend_label="Temperature (F)", 
-    #             fill_color='#c77711', 
-    #             line_color=None,
-    #             size=30)
-
-    #         source1 = ColumnDataSource(dict(x=dates_list, y=temp_ln_list, text=temp_list)) # data
-    #         glyph1 = Text(text="text",text_font_size={'value': plot_font_size},x_offset=-10, y_offset=10) # Image
-    #         fig1.add_glyph(source1, glyph1)
-
-    # #cloud cover
-    # if series_lists_dict.get('cloudcover'):
-    #     cloud_list = series_lists_dict.get('cloudcover')
-    #     cloud_ln_list = series_lists_dict.get('cloudcover-ln')
-    #     if buttons_dict.get('cloudcover') !=1:
-    #         fig1.circle(dates_list,cloud_ln_list, 
-    #             legend_label="Cloudcover", 
-    #             fill_color='#6cacc3', 
-    #             line_color="#3288bd",
-    #             size=30, line_width=3)
-
-    #         source1_cloud = ColumnDataSource(dict(x=dates_list, y=cloud_ln_list, text=cloud_list)) # data
-    #         glyph1_cloud = Text(text="text",text_font_size={'value': plot_font_size},x_offset=-10, y_offset=10) # Image
-    #         fig1.add_glyph(source1_cloud, glyph1_cloud)
-
-    # #sleep rectangle label
-    # if series_lists_dict.get('sleep'):
-    #     sleep_list = series_lists_dict.get('sleep')
-    #     sleep_ln_list = series_lists_dict.get('sleep-ln')
-    #     if buttons_dict.get('sleep') !=1:
-    #         fig1.square(dates_list, sleep_ln_list, legend_label = 'Oura Sleep Score', size=30, color="olive", alpha=0.5)
-            
-    #         source4 = ColumnDataSource(dict(x=dates_list, y=sleep_ln_list,
-    #             text=sleep_list))
-    #         glyph4 = Text(text="text",text_font_size={'value': plot_font_size},x_offset=-10, y_offset=10)
-    #         fig1.add_glyph(source4, glyph4)
 
     # #steps rectangle label
     # if series_lists_dict.get('steps'):

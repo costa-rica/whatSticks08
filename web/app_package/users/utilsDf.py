@@ -27,8 +27,8 @@ formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
 formatter_terminal = logging.Formatter('%(asctime)s:%(filename)s:%(name)s:%(message)s')
 
 #initialize a logger
-logger_dash = logging.getLogger(__name__)
-logger_dash.setLevel(logging.DEBUG)
+logger_users = logging.getLogger(__name__)
+logger_users.setLevel(logging.DEBUG)
 # logger_terminal = logging.getLogger('terminal logger')
 # logger_terminal.setLevel(logging.DEBUG)
 
@@ -41,8 +41,8 @@ stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter_terminal)
 
 # logger_sched.handlers.clear() #<--- This was useful somewhere for duplicate logs
-logger_dash.addHandler(file_handler)
-logger_dash.addHandler(stream_handler)
+logger_users.addHandler(file_handler)
+logger_users.addHandler(stream_handler)
 
 #This function is the same as in dashboard/utilsChart
 def create_raw_df(USER_ID, table, table_name):
@@ -62,7 +62,6 @@ def create_raw_df(USER_ID, table, table_name):
             df = df.rename(columns=({col: col[len(table_name):]}))
     
     return df
-
 
 
 def apple_hist_util(USER_ID, data_item_list, data_item_name_show, method, data_item_apple_type_name):
@@ -85,6 +84,7 @@ def apple_hist_util(USER_ID, data_item_list, data_item_name_show, method, data_i
     print(df.head())
     return df
 
+
 def apple_hist_steps(USER_ID):
     df = create_raw_df(USER_ID, Apple_health_export, 'apple_health_export_')
     if isinstance(df,bool):
@@ -101,6 +101,7 @@ def apple_hist_steps(USER_ID):
     df.reset_index(inplace = True)
     
     return df
+
 
 def browse_apple_data(USER_ID):
     table_name = 'apple_health_export_'
@@ -151,19 +152,27 @@ def format_item_name(data_item_name):
         return data_item_name
 
 
-
-def oura_hist_util(USER_ID):
+def oura_hist_util(USER_ID, data_item):
 
     df = create_raw_df(USER_ID, Oura_sleep_descriptions, 'oura_sleep_descriptions_')
     if isinstance(df,bool):
         return df
 
-    print('--  makeing oura_hist_util --')
+    logger_users.info(f'--  making {data_item} --')
     df = df[['summary_date', 'score']].copy()
-#     Remove duplicates keeping the last entryget latest date
+    # Remove duplicates keeping the last entryget latest date
     df = df.drop_duplicates(subset='summary_date', keep='last')
-    df.rename(columns=({'summary_date':'date', 'score':'sleep'}), inplace= True)
-    df['sleep-ln'] = np.log(df.sleep)
+
+    if data_item == 'oura_sleep_tonight':
+        df.rename(columns=({'summary_date':'date', 'score':'oura_sleep_tonight'}), inplace= True)
+        df['oura_sleep_tonight-ln'] = np.log(df.oura_sleep_tonight)
+
+    elif data_item == 'oura_sleep_last_night':
+        df.rename(columns=({'summary_date':'date', 'score':'oura_sleep_last_night'}), inplace= True)
+        df['date']=pd.to_datetime(df['date'],format='%Y-%m-%d')
+        df['date'] = df['date'].apply(lambda d: d-timedelta(1))
+        df['date'] = df['date'].astype(str)
+        df['oura_sleep_last_night-ln'] = np.log(df.oura_sleep_last_night)
 
     return df
 
@@ -203,13 +212,13 @@ def user_loc_day_util(USER_ID):
     return df_temp, df_cloud
 
 
-# def df_utils(USER_ID, step_dash_btns_dir, same_page):
 def create_df_files(USER_ID, data_item_list , data_item_name_show='',
     method='', data_item_apple_type_name=''):
-    print('-- create_df_files --')
+    logger_users.info('-- In users/create_df_files --')
+
     # Items names in data_item_list must match column name
-    print(USER_ID, data_item_list , data_item_name_show, method)
-    print('data_item_apple_type_name::: ', data_item_apple_type_name)
+    # print(USER_ID, data_item_list , data_item_name_show, method)
+    # print('data_item_apple_type_name::: ', data_item_apple_type_name)
 
     # create file dictionary {data_item_name: path_to_df (but no df yet)}
     file_dict = {}
@@ -231,26 +240,30 @@ def create_df_files(USER_ID, data_item_list , data_item_name_show='',
             # print('data_item: ', data_item)
             if data_item == 'steps':
                 df_dict[data_item] = apple_hist_steps(USER_ID)
-                if not isinstance(df_dict['steps'], bool): df_dict['steps'].to_pickle(file_path)
+                # if not isinstance(df_dict['steps'], bool): df_dict['steps'].to_pickle(file_path)
+                if not isinstance(df_dict[data_item], bool): df_dict[data_item].to_pickle(file_path)
                 #create brows_data_df
                 browse_apple_data(USER_ID)
-            elif data_item == 'sleep':
-                print('-- data_item== sleep fired --')
-                df_dict[data_item] = oura_hist_util(USER_ID)
-                if not isinstance(df_dict['sleep'], bool): df_dict['sleep'].to_pickle(file_path)
+            # elif data_item == 'oura_sleep_tonight':
+            elif data_item[:5] == 'oura_':
+                logger_users.info(f'-- data_item: {data_item} fired --')
+                df_dict[data_item] = oura_hist_util(USER_ID, data_item)
+                if not isinstance(df_dict[data_item], bool):df_dict[data_item].to_pickle(file_path)
             elif data_item =='temp':
                 df_dict['temp'], _ = user_loc_day_util(USER_ID)
-                if not isinstance(df_dict['temp'] , bool): df_dict['temp'] .to_pickle(file_path)
+                # if not isinstance(df_dict['temp'] , bool): df_dict['temp'] .to_pickle(file_path)
+                if not isinstance(df_dict[data_item] , bool): df_dict[data_item] .to_pickle(file_path)
             elif data_item == 'cloudcover':
                 _, df_dict['cloudcover'] = user_loc_day_util(USER_ID)
-                if not isinstance(df_dict['cloudcover'] , bool): df_dict['cloudcover'] .to_pickle(file_path)
+                # if not isinstance(df_dict['cloudcover'] , bool): df_dict['cloudcover'] .to_pickle(file_path)
+                if not isinstance(df_dict[data_item] , bool): df_dict[data_item] .to_pickle(file_path)
             else:
                 print('-- else apple_hist_util --')
                 df_dict[data_item_list[0]] = apple_hist_util(USER_ID, data_item_list, data_item_name_show, method, data_item_apple_type_name)
                 if not isinstance(df_dict[data_item_list[0]], bool): df_dict[data_item_list[0]].to_pickle(file_path)
         else:
             df_dict[data_item] = pd.read_pickle(file_path)
-            logger_dash.info(f'- catchall for future data_item(s) -')
+            logger_users.info(f'- catchall for future data_item(s) -')
 
     return df_dict
 
