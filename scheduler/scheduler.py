@@ -13,12 +13,14 @@ if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERN
     config = ConfigDev()
     logs_dir = os.getcwd()
     config.json_utils_dir = os.path.join(os.getcwd(),'json_utils_dir')
+    config_string = 'ConfigDev'
     print('* Development')
 else:
     config = ConfigProd()
     config.app_dir = r"/home/nick/applications/scheduler/"
     logs_dir = config.app_dir
     config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
+    config_string = 'ConfigProd'
     print('* ---> Configured for Production')
 
 
@@ -47,6 +49,7 @@ logger_init.addHandler(stream_handler)
 
 def scheduler_funct():
     logger_init.info(f'--- Started Scheduler *')
+    logger_init.info(f'--- running as {config_string}')
     if not os.path.exists(config.json_utils_dir):
         os.makedirs(config.json_utils_dir)
         logger_init.info(f'--- successfully created {config.json_utils_dir} *')

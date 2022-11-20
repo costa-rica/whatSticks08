@@ -316,7 +316,7 @@ def receive_oura_data():
 
             else:
                 logger_sched.info(f'- Refreshing pickle dfs for user_id: {user_id} -')
-                create_df_files(user_id, ['sleep'])
+                create_df_files(user_id, ['oura_sleep_tonight', 'oura_sleep_last_night'])
         
         logger_sched.info(f"added {counter_all} rows to Oura_sleep_descriptions")
         logger_sched.info(f"****** Successfully finished routine!!! *****")

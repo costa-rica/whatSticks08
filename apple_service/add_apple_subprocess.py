@@ -7,7 +7,7 @@ from utilsXmlUtility import xml_file_fixer, add_apple_to_db, \
 import xmltodict
 import logging
 from logging.handlers import RotatingFileHandler
-from utilsDf import create_df_files
+from utilsDf import create_df_files, create_df_files_apple
 
 
 if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
@@ -98,7 +98,9 @@ def add_apple(xml_file_name, user_id):
         return message
 
 
-    create_df_files(user_id, ['steps'])
+    # create_df_files(user_id, ['steps'])
+    # create_df_files_apple(USER_ID,data_item_list, data_item_name_show, method, data_item_apple_type_name)
+    create_df_files_apple(user_id,['apple_health_step_count'], 'Step Count', 'sum', 'HKQuantityTypeIdentifierStepCount')
 
     message = "Successfully added xml to database!"
     ws_email_api_response = email_user(user_id, message, df_uploaded_record_count)

@@ -65,44 +65,44 @@ def create_raw_df(USER_ID, table, table_name):
     return df
 
 
-def apple_hist_steps(USER_ID):
+# def apple_hist_steps(USER_ID):
+#     df = create_raw_df(USER_ID, Apple_health_export, 'apple_health_export_')
+#     if isinstance(df,bool):
+#         return df
+
+#     df=df[df['type']=='HKQuantityTypeIdentifierStepCount']
+#     df['date']=df['creationDate'].str[:10]
+#     df=df[['date', 'value']].copy()
+#     df['value']=df['value'].astype(int)
+    
+#     df = df.rename(columns=({'value': 'steps'}))
+#     df = df.groupby('date').sum()
+#     df['steps-ln'] = np.log(df.steps)
+#     df.reset_index(inplace = True)
+    
+#     return df
+
+
+def apple_hist_util(USER_ID, data_item_list, data_item_name_show, method, data_item_apple_type_name):
+    print('--  IN apple_hist_util ---')
     df = create_raw_df(USER_ID, Apple_health_export, 'apple_health_export_')
     if isinstance(df,bool):
         return df
-
-    df=df[df['type']=='HKQuantityTypeIdentifierStepCount']
+    df=df[df['type']==data_item_apple_type_name]
     df['date']=df['creationDate'].str[:10]
     df=df[['date', 'value']].copy()
-    df['value']=df['value'].astype(int)
-    
-    df = df.rename(columns=({'value': 'steps'}))
-    df = df.groupby('date').sum()
-    df['steps-ln'] = np.log(df.steps)
+    df['value']=df['value'].astype(float)
+
+    df = df.rename(columns=({'value': data_item_list[0]}))
+    if method == 'sum':
+        df = df.groupby('date').sum()
+    elif method == 'average':
+        df = df.groupby('date').mean()
+    df[data_item_list[0] + '-ln'] = np.log(df[data_item_list[0]])
     df.reset_index(inplace = True)
-    
+    print(df.head())
     return df
 
-# def browse_apple_data(USER_ID):
-#     table_name = 'apple_health_export_'
-#     file_name = f'user{USER_ID}_df_browse_apple.pkl'
-#     file_path = os.path.join(config.DF_FILES_DIR, file_name)
-
-#     if os.path.exists(file_path):
-#         os.remove(file_path)
-
-#     df = create_raw_df(USER_ID, Apple_health_export, table_name)
-#     if not isinstance(df, bool):
-#         # df = create_raw_df(USER_ID, Apple_health_export, table_name)
-#         print('--- ')
-#         print(df.head())
-#         series_type = df[['type']].copy()
-#         series_type = series_type.groupby(['type'])['type'].count()
-
-#         df_type = series_type.to_frame()
-#         df_type.rename(columns = {list(df_type)[0]:'record_count'}, inplace=True)
-#         df_type.reset_index(inplace=True)
-
-#         df_type.to_pickle(file_path)
 
 def browse_apple_data(USER_ID):
     table_name = 'apple_health_export_'
@@ -134,6 +134,58 @@ def browse_apple_data(USER_ID):
     return False
 
 
+# def browse_apple_data(USER_ID):
+#     table_name = 'apple_health_export_'
+#     file_name = f'user{USER_ID}_df_browse_apple.pkl'
+#     file_path = os.path.join(config.DF_FILES_DIR, file_name)
+
+#     if os.path.exists(file_path):
+#         os.remove(file_path)
+
+#     df = create_raw_df(USER_ID, Apple_health_export, table_name)
+#     if not isinstance(df, bool):
+#         # df = create_raw_df(USER_ID, Apple_health_export, table_name)
+#         print('--- ')
+#         print(df.head())
+#         series_type = df[['type']].copy()
+#         series_type = series_type.groupby(['type'])['type'].count()
+
+#         df_type = series_type.to_frame()
+#         df_type.rename(columns = {list(df_type)[0]:'record_count'}, inplace=True)
+#         df_type.reset_index(inplace=True)
+
+#         df_type.to_pickle(file_path)
+
+# def browse_apple_data(USER_ID):
+#     table_name = 'apple_health_export_'
+#     file_name = f'user{USER_ID}_df_browse_apple.pkl'
+#     file_path = os.path.join(config.DF_FILES_DIR, file_name)
+
+#     if os.path.exists(file_path):
+#         os.remove(file_path)
+
+#     df = create_raw_df(USER_ID, Apple_health_export, table_name)
+#     if not isinstance(df, bool):
+#         series_type = df[['type']].copy()
+#         series_type = series_type.groupby(['type'])['type'].count()
+
+#         df_type = series_type.to_frame()
+#         df_type.rename(columns = {list(df_type)[0]:'record_count'}, inplace=True)
+#         count_of_apple_records = "{:,}".format(df_type.record_count.sum())
+
+#         # Try add new columns 
+#         df_type['index'] = range(1,len(df_type)+1)
+#         df_type.reset_index(inplace=True)
+#         df_type.set_index('index', inplace=True)
+#         df_type['type_formatted'] = df_type['type'].map(lambda cell_value: format_item_name(cell_value) )
+
+#         df_type['df_file_created']=''
+#         df_type.to_pickle(file_path)
+        
+#         return count_of_apple_records
+#     return False
+
+
 def format_item_name(data_item_name):
     #Accetps funky apple health name and returns something with spaces and capital letters
     # list_of_strings = ['HKCategoryTypeIdentifier','HKDataType','HKQuantityTypeIdentifier']
@@ -161,7 +213,7 @@ def oura_hist_util(USER_ID):
     if isinstance(df,bool):
         return df
 
-    print('*******  makeing oura_hist_util ****** ')
+
     df = df[['summary_date', 'score']].copy()
 #     Remove duplicates keeping the last entryget latest date
     df = df.drop_duplicates(subset='summary_date', keep='last')
@@ -256,5 +308,45 @@ def create_df_files(USER_ID, data_item_list):
             df_dict[data_item] = pd.read_pickle(file_path)
             logger_apple.info(f'--- Something fired that i don really know what it does [file: utilsDf function: create_df_files] ---')
 
+
+    return df_dict
+
+
+def create_df_files_apple(USER_ID,data_item_list , data_item_name_show, method, data_item_apple_type_name):
+    logger_apple.info('-- In users/create_df_files_apple --')
+
+    # check if browse apple exits
+    if any('apple_health' in i for i in data_item_list):
+        logger_apple.info('- data_item from apple health discovered -')
+        if not os.path.exists(os.path.join(config.DF_FILES_DIR, f'user{USER_ID}_df_browse_apple.pkl')):
+            browse_apple_data(USER_ID)
+
+    file_dict = {}
+    # make file name and path for data_item
+    for data_item in data_item_list:
+        temp_file_name = f'user{USER_ID}_df_{data_item}.pkl'
+        file_dict[data_item] = os.path.join(config.DF_FILES_DIR, temp_file_name)
+
+    print('- file_dict -')
+    print(file_dict)
+
+    # Remove any existing df for user
+    for _, f in file_dict.items():
+        if os.path.exists(f):
+            os.remove(f)
+
+    df_dict = {}
+    # Make DF for each in database/df_files/
+    for data_item, file_path in file_dict.items():
+        print(f'data_item: {data_item}')
+        if not os.path.exists(file_path):
+            if data_item[:12] == 'apple_health':
+                print('- Making  Apple health data item df_.pkl file -')
+                print(' ***** ')
+
+                df_dict[data_item_list[0]] = apple_hist_util(USER_ID, data_item_list, data_item_name_show, method, data_item_apple_type_name)
+                if not isinstance(df_dict[data_item_list[0]], bool): df_dict[data_item_list[0]].to_pickle(file_path)
+                # if not isinstance(df_dict['steps'], bool): df_dict['steps'].to_pickle(file_path)
+                # if not isinstance(df_dict[data_item], bool): df_dict[data_item].to_pickle(file_path)
 
     return df_dict

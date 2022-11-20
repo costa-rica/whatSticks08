@@ -451,7 +451,7 @@ def add_apple():
                 compress_to_save_util(os.path.basename(new_file_path))
 
             else:
-                logger_users.info(f"--- Apple export is large. Send to API. Email user when complete ---")
+                logger_users.info(f"--- Apple export is large. Send to API (/store_apple_health). Email user when complete ---")
                 headers = { 'Content-Type': 'application/json'}
                 payload = {}
                 payload['password'] = config.WSH_API_PASSWORD
