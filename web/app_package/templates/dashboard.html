@@ -56,13 +56,13 @@
 
     <form method="POST">
         <div class="table_and_chart">
-            {% if dash_dependent_var == 'steps' %}
-            <div class="common_primary_div custom_apple">
-                See what else is in my Apple Health Data
-                <div class="submit_element_right">
-                <a class="btn btn-light btn_custom01" href="{{ url_for('users.add_more_apple') }}">Go to Table</a>
+            {% if 'apple_health_' in dash_dependent_var %}
+                <div class="common_primary_div custom_apple">
+                    See what else is in my Apple Health Data
+                    <div class="submit_element_right">
+                    <a class="btn btn-light btn_custom01" href="{{ url_for('users.add_more_apple') }}">Go to Table</a>
+                    </div>
                 </div>
-            </div>
             {% endif %}
         
             <div class="table_and_chart_submit_element_right">

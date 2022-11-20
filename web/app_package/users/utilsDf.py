@@ -44,6 +44,15 @@ stream_handler.setFormatter(formatter_terminal)
 logger_users.addHandler(file_handler)
 logger_users.addHandler(stream_handler)
 
+
+
+def remove_df_pkl(USER_ID, data_item):
+    temp_file_name = f'user{USER_ID}_df_{data_item}.pkl'
+    file_to_remove= os.path.join(config.DF_FILES_DIR, temp_file_name)
+    if os.path.exists(file_to_remove):
+        os.remove(file_to_remove)
+
+
 #This function is the same as in dashboard/utilsChart
 def create_raw_df(USER_ID, table, table_name):
 
@@ -85,22 +94,22 @@ def apple_hist_util(USER_ID, data_item_list, data_item_name_show, method, data_i
     return df
 
 
-def apple_hist_steps(USER_ID):
-    df = create_raw_df(USER_ID, Apple_health_export, 'apple_health_export_')
-    if isinstance(df,bool):
-        return df
+# def apple_hist_steps(USER_ID):
+#     df = create_raw_df(USER_ID, Apple_health_export, 'apple_health_export_')
+#     if isinstance(df,bool):
+#         return df
 
-    df=df[df['type']=='HKQuantityTypeIdentifierStepCount']
-    df['date']=df['creationDate'].str[:10]
-    df=df[['date', 'value']].copy()
-    df['value']=df['value'].astype(int)
+#     df=df[df['type']=='HKQuantityTypeIdentifierStepCount']
+#     df['date']=df['creationDate'].str[:10]
+#     df=df[['date', 'value']].copy()
+#     df['value']=df['value'].astype(int)
     
-    df = df.rename(columns=({'value': 'steps'}))
-    df = df.groupby('date').sum()
-    df['steps-ln'] = np.log(df.steps)
-    df.reset_index(inplace = True)
+#     df = df.rename(columns=({'value': 'apple_health_step_count'}))
+#     df = df.groupby('date').sum()
+#     df['apple_health_step_count-ln'] = np.log(df.apple_health_step_count)
+#     df.reset_index(inplace = True)
     
-    return df
+#     return df
 
 
 def browse_apple_data(USER_ID):
@@ -211,14 +220,18 @@ def user_loc_day_util(USER_ID):
 
     return df_temp, df_cloud
 
-
-def create_df_files(USER_ID, data_item_list , data_item_name_show='',
-    method='', data_item_apple_type_name=''):
+################################################################
+# TODO: probabaly need to make a create_df_files_apple_health #
+################################################################
+def create_df_files(USER_ID, data_item_list):
     logger_users.info('-- In users/create_df_files --')
 
-    # Items names in data_item_list must match column name
-    # print(USER_ID, data_item_list , data_item_name_show, method)
-    # print('data_item_apple_type_name::: ', data_item_apple_type_name)
+    #if data_item_list contains 'apple_health_' check to that browse apple exits
+    if any('apple_health' in i for i in data_item_list):
+        logger_users.info('**** data_item from apple health discovered: WRONG PLACE FOR APPLE DATA ****')
+    #     if not os.path.exists(os.path.join(config.DF_FILES_DIR, f'user{USER_ID}_df_browse_apple.pkl')):
+    #         browse_apple_data(USER_ID)
+
 
     # create file dictionary {data_item_name: path_to_df (but no df yet)}
     file_dict = {}
@@ -238,14 +251,23 @@ def create_df_files(USER_ID, data_item_list , data_item_name_show='',
         print(f'data_item: {data_item}')
         if not os.path.exists(file_path):
             # print('data_item: ', data_item)
-            if data_item == 'steps':
-                df_dict[data_item] = apple_hist_steps(USER_ID)
-                # if not isinstance(df_dict['steps'], bool): df_dict['steps'].to_pickle(file_path)
-                if not isinstance(df_dict[data_item], bool): df_dict[data_item].to_pickle(file_path)
-                #create brows_data_df
-                browse_apple_data(USER_ID)
+            # if data_item == 'apple_health_step_count':
+            #     df_dict[data_item] = apple_hist_steps(USER_ID)
+            #     # if not isinstance(df_dict['steps'], bool): df_dict['steps'].to_pickle(file_path)
+            #     if not isinstance(df_dict[data_item], bool): df_dict[data_item].to_pickle(file_path)
+            #     #create brows_data_df
+            #     browse_apple_data(USER_ID)
+            # if data_item[:12] == 'apple_health':
+            #     print('- Making  Apple health data item df_.pkl file -')
+            #     print(' ***** ')
+
+            #     df_dict[data_item_list[0]] = apple_hist_util(USER_ID, data_item_list, data_item_name_show, method, data_item_apple_type_name)
+            #     if not isinstance(df_dict[data_item_list[0]], bool): df_dict[data_item_list[0]].to_pickle(file_path)
+            #     # if not isinstance(df_dict['steps'], bool): df_dict['steps'].to_pickle(file_path)
+            #     # if not isinstance(df_dict[data_item], bool): df_dict[data_item].to_pickle(file_path)
+
             # elif data_item == 'oura_sleep_tonight':
-            elif data_item[:5] == 'oura_':
+            if data_item[:5] == 'oura_':
                 logger_users.info(f'-- data_item: {data_item} fired --')
                 df_dict[data_item] = oura_hist_util(USER_ID, data_item)
                 if not isinstance(df_dict[data_item], bool):df_dict[data_item].to_pickle(file_path)
@@ -257,20 +279,52 @@ def create_df_files(USER_ID, data_item_list , data_item_name_show='',
                 _, df_dict['cloudcover'] = user_loc_day_util(USER_ID)
                 # if not isinstance(df_dict['cloudcover'] , bool): df_dict['cloudcover'] .to_pickle(file_path)
                 if not isinstance(df_dict[data_item] , bool): df_dict[data_item] .to_pickle(file_path)
-            else:
-                print('-- else apple_hist_util --')
-                df_dict[data_item_list[0]] = apple_hist_util(USER_ID, data_item_list, data_item_name_show, method, data_item_apple_type_name)
-                if not isinstance(df_dict[data_item_list[0]], bool): df_dict[data_item_list[0]].to_pickle(file_path)
-        else:
-            df_dict[data_item] = pd.read_pickle(file_path)
-            logger_users.info(f'- catchall for future data_item(s) -')
+            # else:
+            #     print('-- else apple_hist_util --')
+            #     df_dict[data_item_list[0]] = apple_hist_util(USER_ID, data_item_list, data_item_name_show, method, data_item_apple_type_name)
+            #     if not isinstance(df_dict[data_item_list[0]], bool): df_dict[data_item_list[0]].to_pickle(file_path)
+        # else:
+        #     df_dict[data_item] = pd.read_pickle(file_path)
+        #     logger_users.info(f'- catchall for future data_item(s) -')
 
     return df_dict
 
 
-def remove_df_pkl(USER_ID, data_item):
-    temp_file_name = f'user{USER_ID}_df_{data_item}.pkl'
-    file_to_remove= os.path.join(config.DF_FILES_DIR, temp_file_name)
-    if os.path.exists(file_to_remove):
-        os.remove(file_to_remove)
-        
+def create_df_files_apple(USER_ID,data_item_list, data_item_name_show, method, data_item_apple_type_name):
+    logger_users.info('-- In users/create_df_files_apple --')
+
+    # check if browse apple exits
+    if any('apple_health' in i for i in data_item_list):
+        logger_users.info('- data_item from apple health discovered -')
+        if not os.path.exists(os.path.join(config.DF_FILES_DIR, f'user{USER_ID}_df_browse_apple.pkl')):
+            browse_apple_data(USER_ID)
+
+    file_dict = {}
+    # make file name and path for data_item
+    for data_item in data_item_list:
+        temp_file_name = f'user{USER_ID}_df_{data_item}.pkl'
+        file_dict[data_item] = os.path.join(config.DF_FILES_DIR, temp_file_name)
+
+    print('- file_dict -')
+    print(file_dict)
+
+    # Remove any existing df for user
+    for _, f in file_dict.items():
+        if os.path.exists(f):
+            os.remove(f)
+
+    df_dict = {}
+    # Make DF for each in database/df_files/
+    for data_item, file_path in file_dict.items():
+        print(f'data_item: {data_item}')
+        if not os.path.exists(file_path):
+            if data_item[:12] == 'apple_health':
+                print('- Making  Apple health data item df_.pkl file -')
+                print(' ***** ')
+
+                df_dict[data_item_list[0]] = apple_hist_util(USER_ID, data_item_list, data_item_name_show, method, data_item_apple_type_name)
+                if not isinstance(df_dict[data_item_list[0]], bool): df_dict[data_item_list[0]].to_pickle(file_path)
+                # if not isinstance(df_dict['steps'], bool): df_dict['steps'].to_pickle(file_path)
+                # if not isinstance(df_dict[data_item], bool): df_dict[data_item].to_pickle(file_path)
+
+    return df_dict

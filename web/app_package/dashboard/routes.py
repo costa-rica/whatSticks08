@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 from app_package.dashboard.utils import buttons_dict_util, buttons_dict_update_util, \
     make_chart_util, df_utils, create_raw_df
-from app_package.users.utilsDf import create_df_files
+from app_package.users.utilsDf import create_df_files, browse_apple_data, create_df_files_apple
 import json
 import os
 import time
@@ -59,10 +59,12 @@ dash = Blueprint('dash', __name__)
 def dashboard(dash_dependent_var):
 
     logger_dash.info(f'- Entered dashboard: {dash_dependent_var.upper()} -')
-    page_name = f"{dash_dependent_var[0].upper() + dash_dependent_var[1:]} Dashboard"
+    
 
     if dash_dependent_var == 'sleep':
         dash_dependent_var = 'oura_sleep_tonight'
+    elif dash_dependent_var == 'steps':
+        dash_dependent_var = 'apple_health_step_count'
     USER_ID = current_user.id if current_user.id !=2 else 1
 
     # search df_files dir for all user[id]_.pkl
@@ -72,11 +74,18 @@ def dashboard(dash_dependent_var):
     start_length = len(file_name_start)
     list_of_data = [i for i in list_of_data if i[:start_length] == file_name_start]
 
+    print('-- list_of_data --')
+    print(list_of_data)
+
+
     data_item_list = [i[start_length:i.find('.')] for i in list_of_data]
     try:
         data_item_list.remove('browse_apple')
     except:
         print('no browse_apple')
+
+    print('-- data_item_list EDITED --')
+    print(data_item_list)
 
     #make static/dashbuttons
     dash_btns_dir = os.path.join(current_app.static_folder,'dash_btns')
@@ -89,18 +98,29 @@ def dashboard(dash_dependent_var):
     # Buttons for dashboard table to toggle on/off correlations
     buttons_dict = {}
     user_btn_json_name = f'user{USER_ID}_buttons_dict.json'
-    if request.method == 'POST':
-        formDict = request.form.to_dict()
-        logger_dash.info('formDict: ', formDict)
-        if formDict.get('refresh_data'):
-            logger_dash.info('- Refresh data button pressed -')
-            #remove steps because unnecessary and potentially takes a long time
-            data_item_sub_list = ['oura_sleep_tonight', 'oura_sleep_last_night', 'temp', 'cloudcover']
-            create_df_files(USER_ID, data_item_sub_list)
-        else:
-            buttons_dict = buttons_dict_util(formDict, dash_dependent_var_dash_btns_dir, buttons_dict, user_btn_json_name)
-        return redirect(url_for('dash.dashboard', dash_dependent_var=dash_dependent_var))
 
+    ################################### Moving to bottom of route #################################
+    # if request.method == 'POST':
+    #     formDict = request.form.to_dict()
+    #     logger_dash.info('formDict: ', formDict)
+    #     if formDict.get('refresh_data'):
+    #         logger_dash.info('- Refresh data button pressed -')
+    #         #remove steps because unnecessary and potentially takes a long time
+    #         data_item_sub_list = ['oura_sleep_tonight', 'oura_sleep_last_night', 'temp', 'cloudcover']
+    #         create_df_files(USER_ID, data_item_sub_list)
+
+    #         #####################################################################################
+    #         #TODO: Need to seperate 'apple_health_' to include other parameters that are needed 
+    #         #######################################################################################
+    #         # try:
+    #         create_df_files_apple(USER_ID,['apple_health_step_count'], 'Step Count', 'sum', 'HKQuantityTypeIdentifierStepCount')
+    #         # except:
+    #         #     logger_dash.info('-- user has no apple health data for HKQuantityTypeIdentifierStepCount --')
+    #     else:
+    #         buttons_dict = buttons_dict_util(formDict, dash_dependent_var_dash_btns_dir, buttons_dict, user_btn_json_name)
+    #     return redirect(url_for('dash.dashboard', dash_dependent_var=dash_dependent_var))
+    ################################################
+    
     # Read dict of user's chart data prefrences
     if os.path.exists(os.path.join(dash_dependent_var_dash_btns_dir,user_btn_json_name)):
         buttons_dict = buttons_dict_update_util(dash_dependent_var_dash_btns_dir, user_btn_json_name)
@@ -115,17 +135,17 @@ def dashboard(dash_dependent_var):
     list_of_user_data = [df_name  for df_name, df in df_dict.items() if not isinstance(df, bool)]
 
     if dash_dependent_var not in df_dict:
-        message = f"There is no data {dash_dependent_var} attached to your user. Go to accounts and add location and oura information."
-        return render_template('dashboard_empty.html', page_name=page_name, message = message) 
+        message = f"There is no data {dash_dependent_var} attached to your user. Go to accounts to add data."
+        return render_template('dashboard_empty.html', page_name='Empty Dashboard', message = message) 
     # if user has no data return empty dashboard page
     if len(list_of_user_data) == 0:
-        message = "There is no data attached to your user. Go to accounts and add location and oura information."
-        return render_template('dashboard_empty.html', page_name=page_name, message = message)
+        message = "There is no data attached to your user. Go to accounts to add data."
+        return render_template('dashboard_empty.html', page_name='Empty Dashboard', message = message)
     
     # If user has no data for dash_dependent_var return empty dashboard page
     if isinstance(df_dict.get(dash_dependent_var), bool):
         message = f"You have not added any {dash_dependent_var} data to your profile. Go to your accounts page to add {dash_dependent_var} data."
-        return render_template('dashboard_empty.html', page_name=page_name, message=message)
+        return render_template('dashboard_empty.html', page_name='Empty Dashboard', message=message)
 
     # Create dataframe of combined data by looping over df_dict and merging df's
     tuple_count = 0
@@ -162,21 +182,25 @@ def dashboard(dash_dependent_var):
     # Create names dict to show formatted names in Buttons
     formatted_names_dict = {'temp':'Temperature', 'cloudcover':'Cloud Cover',
         'oura_sleep_tonight': 'Oura Sleep', 'oura_sleep_last_night': 'Oura Sleep Night Before', 
-        'steps': 'Apple Step Count'}
+        'apple_health_step_count': 'Apple Step Count'}
     user_apple_browse_file = f"user{USER_ID}_df_browse_apple.pkl"
     user_apple_browse_path = os.path.join(config.DF_FILES_DIR, user_apple_browse_file)
     if os.path.exists(user_apple_browse_path):
         print(user_apple_browse_path)
         df_browse = pd.read_pickle(os.path.abspath(user_apple_browse_path))
-        apple_browse_names_dict = {i.replace(" ", "_").lower():i for i in df_browse.type_formatted}
+        apple_browse_names_dict = {'apple_health_' + i.replace(" ", "_").lower():i for i in df_browse.type_formatted}
         formatted_names_dict = formatted_names_dict | apple_browse_names_dict
 
+    dashboard_name_formatted = ''
+    if dash_dependent_var in formatted_names_dict.keys():
+        dashboard_name_formatted = formatted_names_dict[dash_dependent_var]
 
+    page_name = f"{dashboard_name_formatted} Dashboard"
     # --- calcualute CORRELATIONS ---
 
     #Filter out rows where the dep vars are null
-    # print('- df_all -')
-    # print(df_all)
+    print('- df_all -')
+    print(df_all)
     df_interest = df_all[df_all[dash_dependent_var].notnull()]
     print('- df_interest columns -')
     print(df_interest.columns)
@@ -221,7 +245,29 @@ def dashboard(dash_dependent_var):
     print('--- corr_dict --')
     print(corr_dict)
 
+
+    if request.method == 'POST':
+        formDict = request.form.to_dict()
+        logger_dash.info('formDict: ', formDict)
+        if formDict.get('refresh_data'):
+            logger_dash.info('- Refresh data button pressed -')
+            #remove steps because unnecessary and potentially takes a long time
+            data_item_sub_list = ['oura_sleep_tonight', 'oura_sleep_last_night', 'temp', 'cloudcover']
+            create_df_files(USER_ID, data_item_sub_list)
+
+            #####################################################################################
+            #TODO: Need to seperate 'apple_health_' to include other parameters that are needed 
+            #######################################################################################
+            # try:
+            create_df_files_apple(USER_ID,['apple_health_step_count'], 'Step Count', 'sum', 'HKQuantityTypeIdentifierStepCount')
+            # except:
+            #     logger_dash.info('-- user has no apple health data for HKQuantityTypeIdentifierStepCount --')
+        else:
+            buttons_dict = buttons_dict_util(formDict, dash_dependent_var_dash_btns_dir, buttons_dict, user_btn_json_name)
+        return redirect(url_for('dash.dashboard', dash_dependent_var=dash_dependent_var, dashboard_name_formatted=dashboard_name_formatted))
+
+
     return render_template('dashboard.html', page_name=page_name,
         script_b = script_b, div_b = div_b, cdn_js_b = cdn_js_b, corr_dict=corr_dict, 
-        buttons_dict=buttons_dict, dash_dependent_var = dash_dependent_var)
+        buttons_dict=buttons_dict, dash_dependent_var = dash_dependent_var, dashboard_name_formatted=dashboard_name_formatted)
 

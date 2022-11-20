@@ -100,6 +100,8 @@ def get_df_for_dash(USER_ID, data_item):
     file_name = f'user{USER_ID}_df_{data_item}.pkl'
     file_path = os.path.join(config.DF_FILES_DIR, file_name)
     if not os.path.exists(file_path):
+        print(' ********** ')
+        print(file_path)
         return False
 
     df = pd.read_pickle(file_path)
@@ -216,8 +218,10 @@ def make_chart_util(series_lists_dict, buttons_dict):
 
 def df_utils(USER_ID, data_item_list):
     # Make DF for each data_item
+    print('- In df_utils -')
     file_dict ={}
     for data_item in data_item_list:
+        print(f'data_item: {data_item}')
         file_name = f'user{USER_ID}_df_{data_item}.pkl'
         file_path = os.path.join(config.DF_FILES_DIR, file_name)
         file_dict[data_item] = file_path

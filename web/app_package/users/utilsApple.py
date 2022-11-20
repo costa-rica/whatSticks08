@@ -89,13 +89,12 @@ def decompress_and_save_apple_health(apple_health_dir, apple_health_data):
     return new_file_path_dest
 
 
-
 def add_apple_to_db(xml_dict):
     #Add new users apple data to database
 
-    ##########
+    #######################################
     # XML already converted to dictionary #
-    ###############################
+    #######################################
 
     records_list = xml_dict['HealthData']['Record']
     df = pd.DataFrame(records_list)
@@ -113,9 +112,9 @@ def add_apple_to_db(xml_dict):
     base_query = sess.query(Apple_health_export).filter_by(user_id = 1)
     df_existing = pd.read_sql(str(base_query)[:-1] + str(current_user.id), sess.bind)
 
-    print(f'current user has {len(df_existing)} rows')
+    logger_users.info(f'current user has {len(df_existing)} rows')
+    
     #rename columns
-
     table_name = 'apple_health_export_'
     cols = list(df_existing.columns)
     for col in cols:
@@ -126,11 +125,10 @@ def add_apple_to_db(xml_dict):
     df.set_index(['user_id','type', 'sourceName','creationDate'], inplace=True)
     df = df[~df.index.isin(df_existing.index)]
     df.reset_index(inplace=True)
-    print('Removed Exiisting rows from new dataset')
-    print(len(df))
-
-    print('Adding new data')
-    #add to database
+    logger_users.info('Removed Exiisting rows from new dataset')
+ 
+    #Adding apple health to DATABASE
+    logger_users.info('Adding new data to db via df.to_sql')
     df.to_sql('apple_health_export', con=engine, if_exists='append', index=False)
 
     return len(df)
@@ -147,7 +145,7 @@ def clear_df_files(USER_ID):
 
     # open user_browse_apple health
     apple_browse_user_filename = f"user{USER_ID}_df_browse_apple.pkl"
-    if os.path.exists(config.DF_FILES_DIR, apple_browse_user_filename):
+    if os.path.exists(os.path.join(config.DF_FILES_DIR, apple_browse_user_filename)):
 
         df_browse = pd.read_pickle(os.path.join(config.DF_FILES_DIR, apple_browse_user_filename))
 

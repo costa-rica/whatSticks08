@@ -20,7 +20,7 @@ from app_package.users.utilsApple import make_dir_util, decompress_and_save_appl
     add_apple_to_db, report_process_time, clear_df_files
 from app_package.users.utilsXmlUtility import xml_file_fixer, compress_to_save_util
 from app_package.users.utilsDf import create_df_files, remove_df_pkl, create_raw_df, \
-    browse_apple_data
+    browse_apple_data, create_df_files_apple
 #More Weather
 from app_package.users.utilsMoreWeather import user_oldest_day_util, add_user_loc_days, \
     search_weather_dict_list_util
@@ -391,12 +391,10 @@ def add_apple():
         filesDict = request.files
         apple_health_data = filesDict.get('apple_health_data')
 
-
         if filesDict.get('apple_health_data'):
             logger_users.info(filesDict.get('apple_health_data').filename)
 
         formDict = request.form.to_dict()
-
 
         #4) Apple health data
         if apple_health_data:
@@ -486,20 +484,18 @@ def add_apple():
             sess.commit()
             flash(f"Removed {'{:,}'.format(rows_deleted)} Apple Health records from What Sticks data storage", 'warning')
 
-            ################################################
-            # !! TODO: REMOVE user[user_id]_df____.pkl !!! #
-            ################################################
 
-            # TODO: Take into account new oura ring names
             ### Best solution is to rename apple files to user{id}_df_apple_health_{data_item}.pkl
 
-            # Delete user df_files
+            # Delete user apple_health df_files
             pickle_files_list = os.listdir(config.DF_FILES_DIR)
             for pickle_file in pickle_files_list:
-                if pickle_file.find(f'user{USER_ID}_df_') > -1:
-                    if pickle_file.find('df_sleep.pkl') == -1 and pickle_file.find('df_temp.pkl')== -1 and \
-                        pickle_file.find('df_cloudcover.pkl') == -1:
-                        os.remove(os.path.join(config.DF_FILES_DIR, pickle_file))
+                if pickle_file.find(f'user{USER_ID}_df_apple_health') > -1:
+                    # if pickle_file.find('df_sleep.pkl') == -1 and pickle_file.find('df_temp.pkl')== -1 and \
+                    #     pickle_file.find('df_cloudcover.pkl') == -1:
+                    os.remove(os.path.join(config.DF_FILES_DIR, pickle_file))
+                elif pickle_file.find(f'user{USER_ID}_df_browse_apple.pkl') > -1:
+                    os.remove(os.path.join(config.DF_FILES_DIR,pickle_file))
             logger_users.info('-- removed user df_files --')
 
 
@@ -510,11 +506,14 @@ def add_apple():
         ###########################################################
         # IF any change to APPLE data: Make DF for user and APPLE #
         ###########################################################
-        create_df_files(current_user.id, ['steps'])
+        # create_df_files(current_user.id, ['steps'])
+        # create_df_files(current_user.id, ['apple_health_step_count'])
+
+        # create_df_files_apple(USER_ID,data_item_list, data_item_name_show, method, data_item_apple_type_name)
+        create_df_files_apple(USER_ID,['apple_health_step_count'], 'Step Count', 'sum', 'HKQuantityTypeIdentifierStepCount')
 
         return redirect(url_for('users.add_apple'))
     return render_template('add_apple.html', apple_records=apple_records, isinstance=isinstance, str=str)
-
 
 
 @users.route('/add_more_apple', methods=['GET', 'POST'])
@@ -554,7 +553,7 @@ def add_more_apple():
         data_item_name_show = df.at[data_item_id,'type_formatted'] 
         
         # Apple data name lowercases no spaces for df headings, pkl file names, dict key names
-        data_item_list = [df.at[data_item_id,'type_formatted'].replace(" ", "_").lower()]
+        data_item_list = ['apple_health_' + df.at[data_item_id,'type_formatted'].replace(" ", "_").lower()]
         
         # Apple data name from XML file
         data_item_apple_type_name = df.at[data_item_id,'type'] 
@@ -572,7 +571,7 @@ def add_more_apple():
             # agg_method = 'sum'
             
 
-            df_dict = create_df_files(USER_ID, data_item_list , data_item_name_show=data_item_name_show,
+            df_dict = create_df_files_apple(USER_ID, data_item_list , data_item_name_show=data_item_name_show,
                 method=agg_method, data_item_apple_type_name = data_item_apple_type_name)
 
             ##############################################
