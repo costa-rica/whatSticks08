@@ -256,3 +256,25 @@ def dashboard(dash_dependent_var):
         script_b = script_b, div_b = div_b, cdn_js_b = cdn_js_b, corr_dict=corr_dict, 
         buttons_dict=buttons_dict, dash_dependent_var = dash_dependent_var, dashboard_name_formatted=dashboard_name_formatted)
 
+@dash.route('/refresh_data', methods=['GET', 'POST'])
+@login_required
+def refresh_data():
+    print('--- in refresh_data ---')
+    USER_ID = request.args.get('USER_ID')
+    dash_dependent_var = request.args.get('dash_dependent_var')
+    dashboard_name_formatted = request.args.get('dashboard_name_formatted')
+    print('- dash_dependent_var -')
+    print(dash_dependent_var)
+    logger_dash.info('- Refresh data button pressed -')
+    #remove steps because unnecessary and potentially takes a long time
+    data_item_sub_list = ['oura_sleep_tonight', 'oura_sleep_last_night', 'temp', 'cloudcover']
+    create_df_files(USER_ID, data_item_sub_list)
+
+    #####################################################################################
+    #TODO: Need to seperate 'apple_health_' to include other parameters that are needed 
+    #######################################################################################
+    # try:
+    create_df_files_apple(USER_ID,['apple_health_step_count'], 'Step Count', 'sum', 'HKQuantityTypeIdentifierStepCount')
+    print(' --- departing refresh_dash ---')
+    # return redirect(url_for('dash.dashboard', dash_dependent_var=dash_dependent_var, dashboard_name_formatted=dashboard_name_formatted))
+    return redirect(url_for('dash.dashboard', dash_dependent_var=dash_dependent_var))
