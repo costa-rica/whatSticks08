@@ -52,6 +52,25 @@ logger_users.addHandler(stream_handler)
 
 
 
+def user_data_item_list_util(USER_ID):
+    list_of_data = os.listdir(config.DF_FILES_DIR)
+
+    file_name_start = f'user{USER_ID}_df_'
+    start_length = len(file_name_start)
+    list_of_data = [i for i in list_of_data if i[:start_length] == file_name_start]
+
+    logger_users.info('-- list_of_data --')
+    logger_users.info(list_of_data)
+
+
+    data_item_list = [i[start_length:i.find('.')] for i in list_of_data]
+    try:
+        data_item_list.remove('browse_apple')
+    except:
+        print('no browse_apple')
+    return data_item_list
+
+
 
 def make_dir_util(dir):
     try:

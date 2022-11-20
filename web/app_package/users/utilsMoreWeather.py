@@ -1,6 +1,6 @@
 from app_package.users.utils import gen_weather_url, add_new_location, add_weather_history
 from app_package.dashboard.utils import df_utils
-from app_package.users.utils import location_exists
+from app_package.users.utils import location_exists, user_data_item_list_util
 import requests;import json
 from ws_models01 import sess, Oura_sleep_descriptions, Users, Oura_token, Weather_history, Locations, User_location_day, \
     Apple_health_export
@@ -72,7 +72,9 @@ def get_df_for_dash(USER_ID, data_item, file_path):
 #     return oldest_date_str
 
 def user_oldest_day_util(USER_ID, file_path):
-    data_item_list = ['steps', 'sleep', 'temp', 'cloudcover']
+    # data_item_list = ['steps', 'sleep', 'temp', 'cloudcover']
+    data_item_list = user_data_item_list_util(USER_ID)
+
     df_dict = {key:get_df_for_dash(USER_ID, key, file_path) for key in data_item_list}
     logger_users.info(f'- searched for oldest_day in : {df_dict.keys()}')
     oldest_date_list = []

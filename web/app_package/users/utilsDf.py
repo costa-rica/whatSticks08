@@ -220,9 +220,7 @@ def user_loc_day_util(USER_ID):
 
     return df_temp, df_cloud
 
-################################################################
-# TODO: probabaly need to make a create_df_files_apple_health #
-################################################################
+
 def create_df_files(USER_ID, data_item_list):
     logger_users.info('-- In users/create_df_files --')
 

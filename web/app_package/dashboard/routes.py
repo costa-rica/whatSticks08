@@ -12,6 +12,7 @@ import pandas as pd
 from app_package.dashboard.utils import buttons_dict_util, buttons_dict_update_util, \
     make_chart_util, df_utils, create_raw_df
 from app_package.users.utilsDf import create_df_files, browse_apple_data, create_df_files_apple
+from app_package.users.utils import user_data_item_list_util
 import json
 import os
 import time
@@ -67,25 +68,9 @@ def dashboard(dash_dependent_var):
         dash_dependent_var = 'apple_health_step_count'
     USER_ID = current_user.id if current_user.id !=2 else 1
 
-    # search df_files dir for all user[id]_.pkl
-    list_of_data = os.listdir(config.DF_FILES_DIR)
 
-    file_name_start = f'user{USER_ID}_df_'
-    start_length = len(file_name_start)
-    list_of_data = [i for i in list_of_data if i[:start_length] == file_name_start]
+    data_item_list = user_data_item_list_util(USER_ID)
 
-    print('-- list_of_data --')
-    print(list_of_data)
-
-
-    data_item_list = [i[start_length:i.find('.')] for i in list_of_data]
-    try:
-        data_item_list.remove('browse_apple')
-    except:
-        print('no browse_apple')
-
-    print('-- data_item_list EDITED --')
-    print(data_item_list)
 
     #make static/dashbuttons
     dash_btns_dir = os.path.join(current_app.static_folder,'dash_btns')
