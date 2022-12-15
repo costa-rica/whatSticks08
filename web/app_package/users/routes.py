@@ -37,16 +37,31 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 import json
-from ws_config01 import ConfigDev, ConfigProd
+from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 import xmltodict
 import pandas as pd
 
-if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
-    config = ConfigDev()
-    testing_oura = True
-else:
-    config = ConfigProd()
-    testing_oura = False
+
+machine = os.uname()[1]
+
+match machine:
+    case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
+        config = ConfigLocal()
+        testing_oura = True
+    case 'devbig01':
+        config = ConfigDev()
+        testing_oura = False
+    case  'speedy100':
+        config = ConfigProd()
+        testing_oura = False
+
+
+# if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
+#     config = ConfigDev()
+#     testing_oura = True
+# else:
+#     config = ConfigProd()
+#     testing_oura = False
 
 
 logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))

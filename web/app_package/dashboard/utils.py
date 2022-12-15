@@ -13,13 +13,27 @@ from flask_login import current_user
 import json
 import logging
 from logging.handlers import RotatingFileHandler
-from ws_config01 import ConfigDev, ConfigProd
+from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 from app_package.users.utilsDf import create_raw_df
 
-if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
-    config = ConfigDev()
-else:
-    config = ConfigProd()
+
+
+machine = os.uname()[1]
+match machine:
+    case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
+        config = ConfigLocal()
+        # testing_oura = True
+    case 'devbig01':
+        config = ConfigDev()
+        # testing_oura = False
+    case  'speedy100':
+        config = ConfigProd()
+        # testing_oura = False
+
+# if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
+#     config = ConfigDev()
+# else:
+#     config = ConfigProd()
 
 
 logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))

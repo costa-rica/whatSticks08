@@ -8,7 +8,7 @@ from ws_models01 import sess, Users, Locations, Weather_history, \
 import time
 from flask_mail import Message
 from app_package import mail
-from ws_config01 import ConfigDev, ConfigProd
+from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 import os
 from werkzeug.utils import secure_filename
 import zipfile
@@ -18,12 +18,17 @@ from logging.handlers import RotatingFileHandler
 import re
 import pandas as pd
 
-# config = ConfigDev()
-if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
-    config = ConfigDev()
-else:
-    config = ConfigProd()
-
+machine = os.uname()[1]
+match machine:
+    case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
+        config = ConfigLocal()
+        # testing_oura = True
+    case 'devbig01':
+        config = ConfigDev()
+        # testing_oura = False
+    case  'speedy100':
+        config = ConfigProd()
+        # testing_oura = False
 
 
 logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))

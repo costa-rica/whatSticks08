@@ -3,25 +3,48 @@ import json
 import requests
 from datetime import datetime, timedelta
 import os
-from ws_config01 import ConfigDev, ConfigProd
+from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 import logging
 from logging.handlers import RotatingFileHandler
 import pandas as pd
 
 
-if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
-    config = ConfigDev()
-    logs_dir = os.getcwd()
-    config.json_utils_dir = os.path.join(os.getcwd(),'json_utils_dir')
-    config_string = 'ConfigDev'
-    print('* Development')
-else:
-    config = ConfigProd()
-    config.app_dir = r"/home/nick/applications/scheduler/"
-    logs_dir = config.app_dir
-    config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
-    config_string = 'ConfigProd'
-    print('* ---> Configured for Production')
+machine = os.uname()[1]
+match machine:
+    case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
+        config = ConfigLocal()
+        logs_dir = os.getcwd()
+        config.json_utils_dir = os.path.join(os.getcwd(),'json_utils_dir')
+        config_string = 'ConfigDev'
+        print('* Development')
+        print('* Development - Local')
+    case 'devbig01':
+        config = ConfigDev()
+        logs_dir = os.getcwd()
+        config.json_utils_dir = os.path.join(os.getcwd(),'json_utils_dir')
+        config_string = 'ConfigDev'
+        print('* Development')
+    case 'speedy100':
+        config = ConfigProd()
+        config.app_dir = r"/home/nick/applications/scheduler/"
+        logs_dir = config.app_dir
+        config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
+        config_string = 'ConfigProd'
+        print('* ---> Configured for Production')
+
+# if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
+#     config = ConfigDev()
+#     logs_dir = os.getcwd()
+#     config.json_utils_dir = os.path.join(os.getcwd(),'json_utils_dir')
+#     config_string = 'ConfigDev'
+#     print('* Development')
+# else:
+#     config = ConfigProd()
+#     config.app_dir = r"/home/nick/applications/scheduler/"
+#     logs_dir = config.app_dir
+#     config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
+#     config_string = 'ConfigProd'
+#     print('* ---> Configured for Production')
 
 
 

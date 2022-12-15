@@ -1,6 +1,6 @@
 from sys import argv
 import time
-from ws_config01 import ConfigDev, ConfigProd
+from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 import os
 from utilsXmlUtility import xml_file_fixer, add_apple_to_db, \
     compress_to_save_util, email_user, clear_df_files
@@ -9,18 +9,38 @@ import logging
 from logging.handlers import RotatingFileHandler
 from utilsDf import create_df_files, create_df_files_apple
 
-
-if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
-    config = ConfigDev()
-    logs_dir = os.getcwd()
-    # config.json_utils_dir = os.path.join(os.getcwd(),'json_utils_dir')
-    print('* Development')
-else:
-    config = ConfigProd()
-    config.app_dir = r"/home/nick/applications/apple_service/"
-    logs_dir = config.app_dir
-    # config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
-    print('* ---> Configured for Production')
+machine = os.uname()[1]
+match machine:
+    case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
+        config = ConfigLocal()
+        testing = True
+        logs_dir = os.getcwd()
+        print('* Development - Local')
+    case 'devbig01':
+        config = ConfigDev()
+        testing = False
+        config.app_dir = r"/home/nick/applications/apple_service/"
+        logs_dir = config.app_dir
+        # config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
+        print('* Development')
+    case 'speedy100':
+        config = ConfigProd()
+        testing = False
+        config.app_dir = r"/home/nick/applications/apple_service/"
+        logs_dir = config.app_dir
+        # config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
+        print('* ---> Configured for Production')
+# if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
+#     config = ConfigDev()
+#     logs_dir = os.getcwd()
+#     # config.json_utils_dir = os.path.join(os.getcwd(),'json_utils_dir')
+#     print('* Development')
+# else:
+#     config = ConfigProd()
+#     config.app_dir = r"/home/nick/applications/apple_service/"
+#     logs_dir = config.app_dir
+#     # config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
+#     print('* ---> Configured for Production')
 
 #Setting up Logger
 formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')

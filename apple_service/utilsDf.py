@@ -10,16 +10,38 @@ import json
 import numpy as np
 import logging
 from logging.handlers import RotatingFileHandler
-from ws_config01 import ConfigDev, ConfigProd
+from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 import re
 
-if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
-    config = ConfigDev()
-    logs_dir = os.getcwd()
-else:
-    config = ConfigProd()
-    config.app_dir = r"/home/nick/applications/apple_service/"
-    logs_dir = config.app_dir
+
+machine = os.uname()[1]
+match machine:
+    case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
+        config = ConfigLocal()
+        testing = True
+        logs_dir = os.getcwd()
+        print('* Development - Local')
+    case 'devbig01':
+        config = ConfigDev()
+        testing = False
+        config.app_dir = r"/home/nick/applications/apple_service/"
+        logs_dir = config.app_dir
+        # config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
+        print('* Development')
+    case 'speedy100':
+        config = ConfigProd()
+        testing = False
+        config.app_dir = r"/home/nick/applications/apple_service/"
+        logs_dir = config.app_dir
+        # config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
+        print('* ---> Configured for Production')
+# if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
+#     config = ConfigDev()
+#     logs_dir = os.getcwd()
+# else:
+#     config = ConfigProd()
+#     config.app_dir = r"/home/nick/applications/apple_service/"
+#     logs_dir = config.app_dir
 
 
 #Setting up Logger

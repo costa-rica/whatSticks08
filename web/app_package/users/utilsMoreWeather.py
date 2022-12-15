@@ -11,16 +11,22 @@ import time
 import pandas as pd
 
 
-from ws_config01 import ConfigDev, ConfigProd
+from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 import os
 import logging
 from logging.handlers import RotatingFileHandler
 
-# config = ConfigDev()
-if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
-    config = ConfigDev()
-else:
-    config = ConfigProd()
+machine = os.uname()[1]
+match machine:
+    case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
+        config = ConfigLocal()
+        # testing = True
+    case 'devbig01':
+        config = ConfigDev()
+        # testing = False
+    case  'speedy100':
+        config = ConfigProd()
+        # testing = False
 
 
 logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))

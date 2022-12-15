@@ -10,14 +10,26 @@ import json
 import numpy as np
 import logging
 from logging.handlers import RotatingFileHandler
-from ws_config01 import ConfigDev, ConfigProd
+from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 
-if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
-    config = ConfigDev()
-    # testing = True
-else:
-    config = ConfigProd()
-    # testing = False
+
+machine = os.uname()[1]
+match machine:
+    case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
+        config = ConfigLocal()
+        testing = True
+    case 'devbig01':
+        config = ConfigDev()
+        testing = False
+    case  'speedy100':
+        config = ConfigProd()
+        testing = False
+# if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
+#     config = ConfigDev()
+#     # testing = True
+# else:
+#     config = ConfigProd()
+#     # testing = False
 
 logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
 
