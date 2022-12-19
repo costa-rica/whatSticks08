@@ -11,17 +11,27 @@ import logging
 from logging.handlers import RotatingFileHandler
 import shutil
 
-machine = os.uname()[1]
-match machine:
-    case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
-        config = ConfigLocal()
-        testing = True
-    case 'devbig01':
-        config = ConfigDev()
-        testing = False
-    case  'speedy100':
-        config = ConfigProd()
-        testing = False
+
+if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+    config = ConfigLocal()
+    testing = True
+elif 'dev' in os.uname()[1]:
+    config = ConfigDev()
+    testing = False
+elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
+    config = ConfigProd()
+    testing = False
+# machine = os.uname()[1]
+# match machine:
+#     case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
+#         config = ConfigLocal()
+#         testing = True
+#     case 'devbig01':
+#         config = ConfigDev()
+#         testing = False
+#     case  'speedy100':
+#         config = ConfigProd()
+#         testing = False
 
 
 logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))

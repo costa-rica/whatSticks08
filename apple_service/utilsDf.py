@@ -14,27 +14,44 @@ from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 import re
 
 
-machine = os.uname()[1]
-match machine:
-    case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
-        config = ConfigLocal()
-        testing = True
-        logs_dir = os.getcwd()
-        print('* Development - Local')
-    case 'devbig01':
-        config = ConfigDev()
-        testing = False
-        config.app_dir = r"/home/nick/applications/apple_service/"
-        logs_dir = config.app_dir
-        # config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
-        print('* Development')
-    case 'speedy100':
-        config = ConfigProd()
-        testing = False
-        config.app_dir = r"/home/nick/applications/apple_service/"
-        logs_dir = config.app_dir
-        # config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
-        print('* ---> Configured for Production')
+if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+    config = ConfigLocal()
+    testing = True
+    logs_dir = os.getcwd()
+    print('* Development - Local')
+elif 'dev' in os.uname()[1]:
+    config = ConfigDev()
+    testing = False
+    config.app_dir = "/home/nick/applications/apple_service/"
+    logs_dir = config.app_dir
+    print('* Development')
+elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
+    config = ConfigProd()
+    testing = False
+    config.app_dir = "/home/nick/applications/apple_service/"
+    logs_dir = config.app_dir
+    print('* ---> Configured for Production')
+# machine = os.uname()[1]
+# match machine:
+#     case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
+#         config = ConfigLocal()
+#         testing = True
+#         logs_dir = os.getcwd()
+#         print('* Development - Local')
+    # case 'devbig01':
+    #     config = ConfigDev()
+    #     testing = False
+    #     config.app_dir = r"/home/nick/applications/apple_service/"
+    #     logs_dir = config.app_dir
+    #     # config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
+    #     print('* Development')
+    # case 'speedy100':
+    #     config = ConfigProd()
+    #     testing = False
+    #     config.app_dir = r"/home/nick/applications/apple_service/"
+    #     logs_dir = config.app_dir
+    #     # config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
+    #     print('* ---> Configured for Production')
 # if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
 #     config = ConfigDev()
 #     logs_dir = os.getcwd()

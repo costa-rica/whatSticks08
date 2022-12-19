@@ -21,17 +21,23 @@ from logging.handlers import RotatingFileHandler
 from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 
 
-machine = os.uname()[1]
-match machine:
-    case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
-        config = ConfigLocal()
-        # testing_oura = True
-    case 'devbig01':
-        config = ConfigDev()
-        # testing_oura = False
-    case  'speedy100':
-        config = ConfigProd()
-        # testing_oura = False
+if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+    config = ConfigLocal()
+elif 'dev' in os.uname()[1]:
+    config = ConfigDev()
+elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
+    config = ConfigProd()
+# machine = os.uname()[1]
+# match machine:
+#     case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
+#         config = ConfigLocal()
+#         # testing_oura = True
+#     case 'devbig01':
+#         config = ConfigDev()
+#         # testing_oura = False
+#     case  'speedy100':
+#         config = ConfigProd()
+#         # testing_oura = False
 
 
 logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
