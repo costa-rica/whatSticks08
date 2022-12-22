@@ -14,11 +14,11 @@ Availible now to analyze your:
 ### Main Part of User Experience
 There is a user dashboard that displays a table of correlations from your linked data. Here is an image of the steps dashboard
 
-<img src="https://github.com/costa-rica/whatSticks08/blob/github-main/web/app_package/static/images/readme/stepsDashScreenShot.png?raw=true" alt="ws dash screenshot" width="300"/>
+<img src="https://github.com/costa-rica/whatSticks08/blob/github-main/web/app_package/static/images/readme/stepsDashScreenShot.png?raw=true" alt="ws dash screenshot" width="500"/>
 
 #
 ## Project/repo flow chart
-<img src="https://github.com/costa-rica/whatSticks08/blob/github-main/web/app_package/static/images/readme/projectFlowChart.png?raw=true" alt="ws project flowchart" width="300"/>
+<img src="https://github.com/costa-rica/whatSticks08/blob/github-main/web/app_package/static/images/readme/projectFlowChart.png?raw=true" alt="ws project flowchart" width="500"/>
 
 
 
@@ -27,7 +27,7 @@ There is a user dashboard that displays a table of correlations from your linked
 This requires 2 main things:
 1. download/install ws_module (config and models) into your env
 2. download this repo
-3. python run from inside web
+3. python run from inside web/
 
 ## Step 1
 Download config and models packages from [whatSticks08modules](https://github.com/costa-rica/whatSticks08modules) repo.
@@ -51,3 +51,20 @@ from inside whatSticks08/web
 python run.py
 ```
 
+#
+## Contributing
+DM or email at what-sticks.com@gmail.com. 
+I will send latest config.json file with api keys.
+
+Very much welcome help but I would like to get to know you a little before I send keys. 
+
+I am looking for help in these areas:
+1. develop iOS application
+2. frontend: make web app look pretty
+3. backend help connecting to the different api's with OAuth 2.0
+4. database
+5. data science to improve metrics, data visulalizations, write articles on findings
+
+
+## Thanks for reading!
+:blush:
