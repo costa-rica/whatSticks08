@@ -11,36 +11,26 @@ from app_package.scheduler.utilsDf import create_df_files
 
 
 
-if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
-    config = ConfigLocal()
-    testing = True
-elif 'dev' in os.uname()[1]:
-    config = ConfigDev()
-    testing = False
-elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
-    config = ConfigProd()
-    testing = False
-
-# machine = os.uname()[1]
-# match machine:
-#     case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
-#         config = ConfigLocal()
-#         testing = True
-#     case 'devbig01':
-#         config = ConfigDev()
-#         testing = False
-#     case 'speedy100':
-#         config = ConfigProd()
-#         testing = False
-# if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
+# if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+#     config = ConfigLocal()
+#     # testing = True
+# elif 'dev' in os.uname()[1]:
 #     config = ConfigDev()
-#     testing = True
-# else:
+#     # testing = False
+# elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
 #     config = ConfigProd()
-#     testing = False
+#     # testing = False
 
 
-logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+# logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+if os.environ.get('CONFIG_TYPE')=='local':
+    config_context = ConfigLocal()
+elif os.environ.get('CONFIG_TYPE')=='dev':
+    config_context = ConfigDev()
+elif os.environ.get('CONFIG_TYPE')=='prod':
+    config_context = ConfigProd()
+
+
 
 #Setting up Logger
 formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
@@ -53,7 +43,7 @@ logger_sched.setLevel(logging.DEBUG)
 # logger_terminal.setLevel(logging.DEBUG)
 
 #where do we store logging information
-file_handler = RotatingFileHandler(os.path.join(logs_dir,'schd_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler = RotatingFileHandler(os.path.join(config_context.API_LOGS_DIR,'schd_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
 file_handler.setFormatter(formatter)
 
 #where the stream_handler will print
@@ -80,7 +70,7 @@ def get_locations():
 
     request_data = request.get_json()
     
-    if request_data.get('password') == config.WSH_API_PASSWORD:
+    if request_data.get('password') == current_app.config.get('WSH_API_PASSWORD'):
         logger_sched.info(f"--- wsh08 password accepted")
 
         locations = sess.query(Locations).all()
@@ -120,7 +110,7 @@ def receive_weather_data():
     # print('*** receive_weather_data endpoint called *****')
     logger_sched.info(f"--- wsh06 API recieve_weather_data endpoint")
     request_data = request.get_json()
-    if request_data.get('password') == config.WSH_API_PASSWORD:
+    if request_data.get('password') == current_app.config.get('WSH_API_PASSWORD'):
 
         weather_response_dict = request_data.get('weather_response_dict')
 
@@ -247,7 +237,7 @@ def oura_tokens():
     logger_sched.info(f'-- Accessed oura_token endpoint ---')
     #1) verify password
     request_data = request.get_json()
-    if request_data.get('password') == config.WSH_API_PASSWORD:
+    if request_data.get('password') == current_app.config.get('WSH_API_PASSWORD'):
         #2) get all users in db
         users = sess.query(Users).filter((~Users.notes.contains("oura_token:bad_token")) | (Users.notes==None)).all()
         #3) search OUra_token table to get all user ora tokens
@@ -278,7 +268,7 @@ def receive_oura_data():
     # print('*** receive_oura_data endpoint called *****')
     logger_sched.info(f'-- receive_oura_data endpoint called ---')
     request_data = request.get_json()
-    if request_data.get('password') == config.WSH_API_PASSWORD:
+    if request_data.get('password') == current_app.config.get('WSH_API_PASSWORD'):
 
         oura_response_dict = request_data.get('oura_response_dict')
         # print('oura_requesta')

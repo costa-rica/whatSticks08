@@ -1,23 +1,21 @@
 from flask import Flask
-from ws_config01 import ConfigDev, ConfigProd
+from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 import logging
 from logging.handlers import RotatingFileHandler
 import os
 from flask_mail import Mail
 
-print(os.environ.get('TERM_PROGRAM'))
-if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
+
+if os.environ.get('CONFIG_TYPE')=='local':
+    config = ConfigLocal()
+elif os.environ.get('CONFIG_TYPE')=='dev':
     config = ConfigDev()
-    testing = True
-
-else:
+elif os.environ.get('CONFIG_TYPE')=='prod':
     config = ConfigProd()
-    testing = False
 
-logs_dir = os.path.join(os.getcwd(), 'logs')
-
-if not os.path.exists(logs_dir):
-    os.makedirs(logs_dir)
+#First placed its called make directory here
+if not os.path.exists(os.path.join(config.API_LOGS_DIR)):
+    os.makedirs(os.path.join(config.API_LOGS_DIR))
 
 #Setting up Logger
 formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
@@ -26,7 +24,7 @@ formatter_terminal = logging.Formatter('%(asctime)s:%(filename)s:%(name)s:%(mess
 logger_init = logging.getLogger('__init__')
 logger_init.setLevel(logging.DEBUG)
 
-file_handler = RotatingFileHandler(os.path.join(logs_dir,'__init__.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler = RotatingFileHandler(os.path.join(config.API_LOGS_DIR,'__init__.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
 file_handler.setFormatter(formatter)
 
 stream_handler = logging.StreamHandler()

@@ -1,11 +1,9 @@
-
+from flask import current_app
 from datetime import datetime, timedelta
 import os
-# from flask import current_app
 from ws_models01 import sess, Oura_sleep_descriptions, Weather_history, User_location_day, \
     Apple_health_export
 import pandas as pd
-# from flask_login import current_user
 import json
 import numpy as np
 import logging
@@ -13,34 +11,23 @@ from logging.handlers import RotatingFileHandler
 from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 
 
-if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
-    config = ConfigLocal()
-    testing = True
-elif 'dev' in os.uname()[1]:
-    config = ConfigDev()
-    testing = False
-elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
-    config = ConfigProd()
-    testing = False
-# machine = os.uname()[1]
-# match machine:
-#     case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
-#         config = ConfigLocal()
-#         testing = True
-#     case 'devbig01':
-#         config = ConfigDev()
-#         testing = False
-#     case  'speedy100':
-#         config = ConfigProd()
-#         testing = False
-# if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
-#     config = ConfigDev()
+# if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+#     config = ConfigLocal()
 #     # testing = True
-# else:
+# elif 'dev' in os.uname()[1]:
+#     config = ConfigDev()
+#     # testing = False
+# elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
 #     config = ConfigProd()
 #     # testing = False
+if os.environ.get('CONFIG_TYPE')=='local':
+    config_context = ConfigLocal()
+elif os.environ.get('CONFIG_TYPE')=='dev':
+    config_context = ConfigDev()
+elif os.environ.get('CONFIG_TYPE')=='prod':
+    config_context = ConfigProd()
 
-logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+
 
 #Setting up Logger
 formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
@@ -53,7 +40,7 @@ logger_sched.setLevel(logging.DEBUG)
 # logger_terminal.setLevel(logging.DEBUG)
 
 #where do we store logging information
-file_handler = RotatingFileHandler(os.path.join(logs_dir,'schd_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler = RotatingFileHandler(os.path.join(config_context.API_LOGS_DIR,'schd_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
 file_handler.setFormatter(formatter)
 
 #where the stream_handler will print
@@ -127,7 +114,7 @@ def apple_hist_steps(USER_ID):
 # def browse_apple_data(USER_ID):
 #     table_name = 'apple_health_export_'
 #     file_name = f'user{USER_ID}_df_browse_apple.pkl'
-#     file_path = os.path.join(config.DF_FILES_DIR, file_name)
+#     file_path = os.path.join(current_app.config.get('DF_FILES_DIR, file_name)
 
 #     if os.path.exists(file_path):
 #         os.remove(file_path)
@@ -149,7 +136,7 @@ def apple_hist_steps(USER_ID):
 def browse_apple_data(USER_ID):
     table_name = 'apple_health_export_'
     file_name = f'user{USER_ID}_df_browse_apple.pkl'
-    file_path = os.path.join(config.DF_FILES_DIR, file_name)
+    file_path = os.path.join(current_app.config.get('DF_FILES_DIR'), file_name)
 
     if os.path.exists(file_path):
         os.remove(file_path)
@@ -249,7 +236,7 @@ def create_df_files(USER_ID, data_item_list , data_item_name_show='',
     for data_item in data_item_list:
         # temp_file_name = f'user{USER_ID}_df_{data_item}.json'
         temp_file_name = f'user{USER_ID}_df_{data_item}.pkl'
-        file_dict[data_item] = os.path.join(config.DF_FILES_DIR, temp_file_name)
+        file_dict[data_item] = os.path.join(current_app.config.get('DF_FILES_DIR'), temp_file_name)
 
     # Remove any existing df for user
     for _, f in file_dict.items():
