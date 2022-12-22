@@ -54,7 +54,7 @@ python run.py
 
 
 ## Contributing
-DM or email at what-sticks.com@gmail.com. 
+DM or email at whatsticks.com@gmail.com. 
 I will send latest config.json file with api keys.
 
 Very much welcome help but I would like to get to know you a little before I send keys. 
