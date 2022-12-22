@@ -9,63 +9,19 @@ from logging.handlers import RotatingFileHandler
 import pandas as pd
 
 
-if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+
+if os.environ.get('CONFIG_TYPE')=='local':
     config = ConfigLocal()
-    logs_dir = os.getcwd()
-    config.json_utils_dir = os.path.join(os.getcwd(),'json_utils_dir')
-    config_string = 'ConfigDev'
-    print('* Development')
+    # config_string = 'ConfigDev'
     print('* Development - Local')
-elif 'dev' in os.uname()[1]:
+elif os.environ.get('CONFIG_TYPE')=='dev':
     config = ConfigDev()
-    logs_dir = os.getcwd()
-    config.json_utils_dir = os.path.join(os.getcwd(),'json_utils_dir')
-    config_string = 'ConfigDev'
+    # config_string = 'ConfigDev'
     print('* Development')
-elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
+elif os.environ.get('CONFIG_TYPE')=='prod':
     config = ConfigProd()
-    config.app_dir = r"/home/nick/applications/scheduler/"
-    logs_dir = config.app_dir
-    config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
-    config_string = 'ConfigProd'
+    # config_string = 'ConfigProd'
     print('* ---> Configured for Production')
-# machine = os.uname()[1]
-# match machine:
-#     case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
-#         config = ConfigLocal()
-#         logs_dir = os.getcwd()
-#         config.json_utils_dir = os.path.join(os.getcwd(),'json_utils_dir')
-#         config_string = 'ConfigDev'
-#         print('* Development')
-#         print('* Development - Local')
-#     case 'devbig01':
-#         config = ConfigDev()
-#         logs_dir = os.getcwd()
-#         config.json_utils_dir = os.path.join(os.getcwd(),'json_utils_dir')
-#         config_string = 'ConfigDev'
-#         print('* Development')
-#     case 'speedy100':
-#         config = ConfigProd()
-#         config.app_dir = r"/home/nick/applications/scheduler/"
-#         logs_dir = config.app_dir
-#         config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
-#         config_string = 'ConfigProd'
-#         print('* ---> Configured for Production')
-
-# if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
-#     config = ConfigDev()
-#     logs_dir = os.getcwd()
-#     config.json_utils_dir = os.path.join(os.getcwd(),'json_utils_dir')
-#     config_string = 'ConfigDev'
-#     print('* Development')
-# else:
-#     config = ConfigProd()
-#     config.app_dir = r"/home/nick/applications/scheduler/"
-#     logs_dir = config.app_dir
-#     config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
-#     config_string = 'ConfigProd'
-#     print('* ---> Configured for Production')
-
 
 
 #Setting up Logger
@@ -79,7 +35,7 @@ logger_init.setLevel(logging.DEBUG)
 # logger_terminal.setLevel(logging.DEBUG)
 
 #where do we store logging information
-file_handler = RotatingFileHandler(os.path.join(logs_dir,'schduler.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler = RotatingFileHandler(os.path.join(config.SCHED_LOGS_DIR,'schduler.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
 file_handler.setFormatter(formatter)
 
 #where the stream_handler will print
@@ -92,19 +48,19 @@ logger_init.addHandler(stream_handler)
 
 def scheduler_funct():
     logger_init.info(f'--- Started Scheduler *')
-    logger_init.info(f'--- running as {config_string}')
-    if not os.path.exists(config.json_utils_dir):
-        os.makedirs(config.json_utils_dir)
-        logger_init.info(f'--- successfully created {config.json_utils_dir} *')
+    logger_init.info(f'--- running as {config.SCHED_CONFIG_STRING}')
+    if not os.path.exists(os.path.join(config.SCHED_LOGS_DIR,'json_utils_dir')):
+        os.makedirs(os.path.join(config.SCHED_LOGS_DIR,'json_utils_dir'))
+        logger_init.info(f"--- successfully created {os.path.join(config.SCHED_LOGS_DIR,'json_utils_dir')} *")
 
     # yesterday = datetime.today() - timedelta(days=1)
     # date_formatted = yesterday.strftime('%Y-%m-%d')
     # logger_init.info(f'- Calling for weather date: {date_formatted}  -')
     scheduler = BackgroundScheduler()
 
-    job_call_get_locations = scheduler.add_job(get_locations, 'cron', day='*', hour='23', minute='01', second='05')#Production
+    #job_call_get_locations = scheduler.add_job(get_locations, 'cron', day='*', hour='23', minute='01', second='05')#Production
     #job_call_get_locations = scheduler.add_job(get_locations, 'cron', hour='*', minute='07', second='05')#Testing
-    # job_call_harmless = scheduler.add_job(harmless, 'cron',  hour='*', minute='57', second='15')#Testing
+    job_call_harmless = scheduler.add_job(harmless, 'cron',  hour='*', minute='57', second='15')#Testing
 
     scheduler.start()
 
@@ -186,11 +142,11 @@ def get_locations():
             # now we get the response... let's save it somewhere
             
 
-            with open(os.path.join(config.json_utils_dir, '_locations1_get_locations.json'), 'w') as outfile:
+            with open(os.path.join(os.path.join(config.SCHED_LOGS_DIR,'json_utils_dir'), '_locations1_get_locations.json'), 'w') as outfile:
                 json.dump(wsh_loc_dict, outfile)
         
             # print(f'Locations succesfully saved in {os.path.join(os.getcwd(), "_locations1_get_locations.json")}')
-            logger_init.info(f'Locations succesfully saved in {os.path.join(config.json_utils_dir, "_locations1_get_locations.json")}')
+            logger_init.info(f'Locations succesfully saved in {os.path.join(os.path.join(config.SCHED_LOGS_DIR,"json_utils_dir"), "_locations1_get_locations.json")}')
         except:
             # print('There was a problem with the response')
             logger_init.info('There was a problem with the response')
@@ -205,7 +161,7 @@ def get_locations():
 def call_weather_api(date_formatted):
     # print('--- In call_weather_api() of scheduler.py----')
     logger_init.info('--- In call_weather_api() of scheduler.py----')
-    with open(os.path.join(config.json_utils_dir, '_locations1_get_locations.json')) as json_file:
+    with open(os.path.join(os.path.join(config.SCHED_LOGS_DIR,'json_utils_dir'), '_locations1_get_locations.json')) as json_file:
         locations_dict = json.loads(json.load(json_file))
         #locatinos_dict = {loc_id: [lat, lon]}
 
@@ -242,11 +198,11 @@ def call_weather_api(date_formatted):
     
     #This just to record my calls
     df=pd.DataFrame(zip(date_of_call_list, call_list,call_response),columns=(["date_of_call","weather_call_url", "response"]))
-    df.to_csv(os.path.join(config.json_utils_dir,'weather_call_urls.csv'), mode='a')
+    df.to_csv(os.path.join(os.path.join(config.SCHED_LOGS_DIR,'json_utils_dir'),'weather_call_urls.csv'), mode='a')
 
     #3) put response in  a json
     weather_dict_json = json.dumps(weather_dict)
-    with open(os.path.join(config.json_utils_dir, '_locations2_call_weather_api.json'), 'w') as outfile:
+    with open(os.path.join(os.path.join(config.SCHED_LOGS_DIR,'json_utils_dir'), '_locations2_call_weather_api.json'), 'w') as outfile:
         json.dump(weather_dict_json, outfile)
     # print('---> json file with oura data successfully written.')
     logger_init.info('---> json file with oura data successfully written.')
@@ -259,7 +215,7 @@ def send_weather_data_to_wsh():
     logger_init.info('--- In send_weather_data_to_wsh() of scheduler.py----')
     
     try:
-        with open(os.path.join(config.json_utils_dir, '_locations2_call_weather_api.json')) as json_file:
+        with open(os.path.join(os.path.join(config.SCHED_LOGS_DIR,'json_utils_dir'), '_locations2_call_weather_api.json')) as json_file:
             weather_response_dict = json.loads(json.load(json_file))
     except:
         weather_response_dict=''
@@ -296,7 +252,7 @@ def get_oura_tokens():
     # now we get the response... let's save it somewhere
     oura_tokens = json.dumps(oura_tokens_dict)
 
-    with open(os.path.join(config.json_utils_dir, '_oura1_get_oura_tokens.json'), 'w') as outfile:
+    with open(os.path.join(os.path.join(config.SCHED_LOGS_DIR,'json_utils_dir'), '_oura1_get_oura_tokens.json'), 'w') as outfile:
         json.dump(oura_tokens, outfile)
     
     #once finished call oura api
@@ -307,7 +263,7 @@ def get_oura_tokens():
 def call_oura_api():
     logger_init.info(f'--> Calling Oura API')
     # get oura tokens from os.path.join(os.getcwd(), 'get_oura_tokens.json')
-    with open(os.path.join(config.json_utils_dir, '_oura1_get_oura_tokens.json')) as json_file:
+    with open(os.path.join(os.path.join(config.SCHED_LOGS_DIR,'json_utils_dir'), '_oura1_get_oura_tokens.json')) as json_file:
         oura_tokens_dict = json.loads(json.load(json_file))
     
     oura_response_dict = {}
@@ -344,10 +300,10 @@ def call_oura_api():
     #This just to record my calls
     df=pd.DataFrame(zip(date_of_call,oura_user_id_list,oura_call_list, oura_call_response),
         columns=(["date_of_call","user_id","oura_call_url", "response"]))
-    df.to_csv(os.path.join(config.json_utils_dir,'oura_call_urls.csv'), mode='a')
+    df.to_csv(os.path.join(os.path.join(config.SCHED_LOGS_DIR,'json_utils_dir'),'oura_call_urls.csv'), mode='a')
 
     oura_sleep_json = json.dumps(oura_response_dict)
-    with open(os.path.join(config.json_utils_dir, '_oura2_call_oura_api.json'), 'w') as outfile:
+    with open(os.path.join(os.path.join(config.SCHED_LOGS_DIR,'json_utils_dir'), '_oura2_call_oura_api.json'), 'w') as outfile:
         json.dump(oura_sleep_json, outfile)
     # print('---> json file with oura data successfully written.')
     logger_init.info(f'---> json file with oura data successfully written.')
@@ -360,7 +316,7 @@ def call_oura_api():
 def send_oura_data_to_wsh():
     logger_init.info(f'---> Sending oura data to wsh06 api')
     # get oura response data from os.path.join(os.getcwd(), 'get_oura_tokens.json')
-    with open(os.path.join(config.json_utils_dir, '_oura2_call_oura_api.json')) as json_file:
+    with open(os.path.join(os.path.join(config.SCHED_LOGS_DIR,'json_utils_dir'), '_oura2_call_oura_api.json')) as json_file:
         oura_response_dict = json.loads(json.load(json_file))
     
     # base_url = 'http://localhost:5000'#TODO: put this address in config
