@@ -4,6 +4,7 @@
 Visit current working web at:
 https://what-sticks.com
 #
+## Description
 What Sticks (WS) is an application that helps navigate your wellness with data already being collected by your other applications and devices.
 
 Availible now to analyze your:
@@ -22,14 +23,14 @@ There is a user dashboard that displays a table of correlations from your linked
 
 
 
-#
+
 ## Installation
 This requires 2 main things:
 1. download/install ws_module (config and models) into your env
 2. download this repo
 3. python run from inside web/
 
-## Step 1
+### Step 1
 Download config and models packages from [whatSticks08modules](https://github.com/costa-rica/whatSticks08modules) repo.
 
 ```bash
@@ -39,19 +40,19 @@ from inside your environment navigate to the downloaded whatSticks08modules/ws_m
 ```bash
 pip install -e .
 ```
-## Step 2
+### Step 2
 Just download from terminal
 ```bash
 git clone https://github.com/costa-rica/whatSticks08
 ```
 
-## Step 3
+### Step 3
 from inside whatSticks08/web
 ```bash
 python run.py
 ```
 
-#
+
 ## Contributing
 DM or email at what-sticks.com@gmail.com. 
 I will send latest config.json file with api keys.
