@@ -25,10 +25,11 @@ There is a user dashboard that displays a table of correlations from your linked
 
 
 ## Installation
-This requires 2 main things:
+This requires:
 1. download/install ws_module (config and models) into your env
-2. download this repo
-3. python run from inside web/
+2. config json file with api keys (I can provide if you contact me)
+3. download this repo
+4. python run from inside web/
 
 ### Step 1
 Download config and models packages from [whatSticks08modules](https://github.com/costa-rica/whatSticks08modules) repo.
@@ -36,17 +37,24 @@ Download config and models packages from [whatSticks08modules](https://github.co
 ```bash
 git clone https://github.com/costa-rica/whatSticks08modules
 ```
+
+### Step 2
+Map config_ws08.json file to the config file in whatSticks08modules
+
+### Step 3
+
+
 from inside your environment navigate to the downloaded whatSticks08modules/ws_modules01:
 ```bash
 pip install -e .
 ```
-### Step 2
+### Step 4
 Just download from terminal
 ```bash
 git clone https://github.com/costa-rica/whatSticks08
 ```
 
-### Step 3
+### Step 5
 from inside whatSticks08/web
 ```bash
 python run.py
