@@ -1,5 +1,5 @@
 from flask import Flask
-from ws_config01 import ConfigDev, ConfigProd
+from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 from ws_models01 import login_manager
 from flask_mail import Mail
 import os
@@ -9,21 +9,21 @@ from logging.handlers import RotatingFileHandler
 from pytz import timezone
 from datetime import datetime
 
-# Config Begin
-config_dict = {}
+# # Config Begin
+# config_dict = {}
 
-if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
-    config_object = ConfigDev()
-    print('* ---> Configured for Development')
-    config_dict['production'] = False
+# if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
+#     config_object = ConfigDev()
+#     print('* ---> Configured for Development')
+#     config_dict['production'] = False
 
-else:
-    config_object = ConfigProd()
-    print('* ---> Configured for Production')
-    config_dict['production'] = True
+# else:
+#     config_object = ConfigProd()
+#     print('* ---> Configured for Production')
+#     config_dict['production'] = True
 
-with open('config_dict.json', 'w') as outfile:
-    json.dump(config_dict, outfile)
+# with open('config_dict.json', 'w') as outfile:
+#     json.dump(config_dict, outfile)
 
 
 # Logging Begin
@@ -75,6 +75,31 @@ logging.getLogger('werkzeug').addHandler(file_handler)
 
 logger_init.info(f'--- Starting ws08web ---')
 # logger_tz.info(f'--- Starting ws08web ---')
+
+
+# Config Begin
+config_dict = {}
+
+if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+    config_object = ConfigLocal()
+    # testing_oura = True
+    config_dict['production'] = False
+    logger_init.info('* ---> Configured for Production')
+elif 'dev' in os.uname()[1]:
+    config_object = ConfigDev()
+    # testing_oura = False
+    config_dict['production'] = False
+    logger_init.info('* ---> Configured for Development')
+elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
+    config_object = ConfigProd()
+    # testing_oura = False
+    logger_init.info('* ---> Configured for Production')
+    config_dict['production'] = True
+
+
+with open('config_dict.json', 'w') as outfile:
+    json.dump(config_dict, outfile)
+
 
 
 # App init

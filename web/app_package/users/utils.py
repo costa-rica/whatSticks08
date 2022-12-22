@@ -119,9 +119,9 @@ def send_confirm_email(email):
 
 def call_location_api(user):
 #2-1b-1) call weather API
-    api_token = current_app.config['WEATHER_API_KEY']
+    api_token = current_app.config['LOCATION_API_KEY']
     # base_url = 'http://api.weatherapi.com/v1'#TODO: put this address in config
-    base_url = current_app.config['WEATHER_API_URL_BASE']
+    base_url = current_app.config['LOCATION_API_URL_BASE']
     history = '/history.json'#TODO: put this address in config
     payload = {}
     payload['q'] = f"{user.lat}, {user.lon}"
