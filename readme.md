@@ -26,7 +26,7 @@ There is a user dashboard that displays a table of correlations from your linked
 
 ## Installation
 This requires:
-1. download/install ws_module (config and models) into your env
+1. download/install ws_module (config and models) into your venv
 2. config json file with api keys (I can provide if you contact me)
 3. download this repo
 4. python run from inside web/
@@ -39,15 +39,36 @@ git clone https://github.com/costa-rica/whatSticks08modules
 ```
 
 ### Step 2
-Map config_ws08.json file to the config file in whatSticks08modules
+**Some hardcoding here see note*
+
+Map config_ws08.json file to the config file in whatSticks08modules. Go to .env file inside whatSticks08modules/ws_modules01/ws_config01/ directory. Here you will edit:
+
+```
+CONFIG_PATH="/Users/nick/Documents/_config_files"
+CONFIG_FILE_NAME="config_ws08_20221222.json"
+CONFIG_TYPE='local'
+```
+
+I will send you config_ws08.
+
+<br>
+<br>
+
+### NOTE 2022-12-23: 
+I am in process of making this easier to update.
+I am in process of minimizing the hardcoding steps for anyone to run. This is where some hardcoding takes place in the .env and config_ws08.json files.
+
+As of this note I am building this in a new development from scratch once this note is deleted. I hope to delete this note soon and have a smooth build process.
+
+<br>
+<br>
 
 ### Step 3
-
-
 from inside your environment navigate to the downloaded whatSticks08modules/ws_modules01:
 ```bash
 pip install -e .
 ```
+
 ### Step 4
 Just download from terminal
 ```bash
@@ -59,8 +80,17 @@ from inside whatSticks08/web
 ```bash
 python run.py
 ```
+#
+## Once app is running
 
+- First user to sign up is admin. There is an admin dashboard of all registered users so the admin can delete a user. No other users can see this dashboard. Admin can also write to blog.
 
+- Second user use "Guest" with password "test"
+
+- Login as Guest will then work showing the admin's dashboards but guest users won't be able to make any changes - only view.
+
+- All other sign ups will have normal accounts that can add/remove their own data.
+#
 ## Contributing
 DM or email at whatsticks.com@gmail.com. 
 I will send latest config.json file with api keys.
