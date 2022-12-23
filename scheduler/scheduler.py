@@ -10,18 +10,24 @@ import pandas as pd
 
 
 
+# if os.environ.get('CONFIG_TYPE')=='local':
+#     config = ConfigLocal()
+#     # config_string = 'ConfigDev'
+#     print('* Development - Local')
+# elif os.environ.get('CONFIG_TYPE')=='dev':
+#     config = ConfigDev()
+#     # config_string = 'ConfigDev'
+#     print('* Development')
+# elif os.environ.get('CONFIG_TYPE')=='prod':
+#     config = ConfigProd()
+#     # config_string = 'ConfigProd'
+#     print('* ---> Configured for Production')
 if os.environ.get('CONFIG_TYPE')=='local':
     config = ConfigLocal()
-    # config_string = 'ConfigDev'
-    print('* Development - Local')
 elif os.environ.get('CONFIG_TYPE')=='dev':
     config = ConfigDev()
-    # config_string = 'ConfigDev'
-    print('* Development')
 elif os.environ.get('CONFIG_TYPE')=='prod':
     config = ConfigProd()
-    # config_string = 'ConfigProd'
-    print('* ---> Configured for Production')
 
 
 #Setting up Logger
@@ -60,7 +66,7 @@ def scheduler_funct():
 
     #job_call_get_locations = scheduler.add_job(get_locations, 'cron', day='*', hour='23', minute='01', second='05')#Production
     #job_call_get_locations = scheduler.add_job(get_locations, 'cron', hour='*', minute='07', second='05')#Testing
-    job_call_harmless = scheduler.add_job(harmless, 'cron',  hour='*', minute='57', second='15')#Testing
+    job_call_harmless = scheduler.add_job(harmless, 'cron',  hour='*', minute='19', second='25')#Testing
 
     scheduler.start()
 

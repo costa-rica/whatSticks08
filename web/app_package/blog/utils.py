@@ -55,7 +55,7 @@ def wordToJson(word_doc_file_name, word_doc_path, blog_name, date_published, des
     doc_result_html = docx2python(os.path.join(word_doc_path,word_doc_file_name),html=True)
     
     #all images saved
-    images_folder_database = current_app.config.word_doc_database_images_dir
+    images_folder_database = os.path.join(current_app.config.get('WORD_DOC_DIR'),'blog_images')
     images_folder_static = os.path.join(current_app.static_folder, 'images','blog_images')
     #Save pictures to docx2python(orig wordfile, save images to)
     print('orig wordfile: ', os.path.join(word_doc_path,word_doc_file_name))

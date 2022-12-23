@@ -42,38 +42,27 @@ import xmltodict
 import pandas as pd
 
 
-if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
-    config = ConfigLocal()
-    testing_oura = True
-elif 'dev' in os.uname()[1]:
-    config = ConfigDev()
-    testing_oura = False
-elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
-    config = ConfigProd()
-    testing_oura = False
-# machine = os.uname()[1]
-
-# match machine:
-#     case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
-#         config = ConfigLocal()
-#         testing_oura = True
-#     case 'devbig01':
-#         config = ConfigDev()
-#         testing_oura = False
-#     case  'speedy100':
-#         config = ConfigProd()
-#         testing_oura = False
-
-
-# if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
-#     config = ConfigDev()
+# if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+#     config = ConfigLocal()
 #     testing_oura = True
-# else:
+# elif 'dev' in os.uname()[1]:
+#     config = ConfigDev()
+#     testing_oura = False
+# elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
 #     config = ConfigProd()
 #     testing_oura = False
 
 
-logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+
+# logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+
+if os.environ.get('CONFIG_TYPE')=='local':
+    config_context = ConfigLocal()
+elif os.environ.get('CONFIG_TYPE')=='dev':
+    config_context = ConfigDev()
+elif os.environ.get('CONFIG_TYPE')=='prod':
+    config_context = ConfigProd()
+
 
 #Setting up Logger
 formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
@@ -86,7 +75,8 @@ logger_users.setLevel(logging.DEBUG)
 # logger_terminal.setLevel(logging.DEBUG)
 
 #where do we store logging information
-file_handler = RotatingFileHandler(os.path.join(logs_dir,'users_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+# file_handler = RotatingFileHandler(os.path.join(logs_dir,'users_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler = RotatingFileHandler(os.path.join(config_context.WEB_LOGS_DIR,'users_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
 file_handler.setFormatter(formatter)
 
 #where the stream_handler will print
@@ -109,8 +99,8 @@ def home():
         return redirect(url_for('dash.dashboard', dash_dependent_var='steps'))
 
 
-    make_dir_util(config.DF_FILES_DIR)
-    make_dir_util(config.DB_DOWNLOADS)
+    make_dir_util(current_app.config.get('DF_FILES_DIR'))
+    make_dir_util(current_app.config.get('DB_DOWNLOADS'))
 
 
     latest_post = sess.query(Posts).all()
@@ -279,8 +269,8 @@ def account():
                     else:
                         user_notes_dict ={}
                     if not user_notes_dict.get('weather_hist_date'):
-                        print('-- config.DAYS_HIST_LIMIT_STD --')
-                        weather_limit_date = datetime.now() - timedelta(config.DAYS_HIST_LIMIT_STD)
+                        print('-- current_app.config.get(DAYS_HIST_LIMIT_STD) --')
+                        weather_limit_date = datetime.now() - timedelta(current_app.config.get('DAYS_HIST_LIMIT_STD'))
                         weather_limit_date_str = weather_limit_date.strftime("%Y-%m-%d")
                         user_notes_dict['weather_hist_date'] = weather_limit_date_str
                         notes_string = ''
@@ -392,7 +382,7 @@ def add_apple():
     USER_ID = current_user.id if current_user.id !=2 else 1
     # existing_records = sess.query(Apple_health_export).filter_by(user_id=current_user.id).all()
     file_name = f'user{USER_ID}_df_browse_apple.pkl'
-    file_path = os.path.join(config.DF_FILES_DIR, file_name)
+    file_path = os.path.join(current_app.config.get('DF_FILES_DIR'), file_name)
     if os.path.exists(file_path):
         df = pd.read_pickle(file_path)
         existing_records = df.record_count.sum()
@@ -402,8 +392,9 @@ def add_apple():
     # apple_records = "{:,}".format(10000)
 
     # make APPLE_HEALTH_DIR
-    apple_health_dir = config.APPLE_HEALTH_DIR
-    make_dir_util(apple_health_dir)
+    # apple_health_dir = current_app.config.get('APPLE_HEALTH_DIR
+    # make_dir_util(apple_health_dir)
+    make_dir_util(current_app.config.get('APPLE_HEALTH_DIR'))
 
     logger_users.info(f"--- POSTING Apple Health Data (user: {current_user.id}) ---")
     start_post_time = time.time()
@@ -431,7 +422,7 @@ def add_apple():
             logger_users.info(f"Compressed filesize: {filesize} Mb")
 
 
-            new_file_path = decompress_and_save_apple_health(apple_health_dir, apple_health_data)
+            new_file_path = decompress_and_save_apple_health(current_app.config.get('APPLE_HEALTH_DIR'), apple_health_data)
             xml_file_name = os.path.basename(new_file_path)
             # new_rec_count = 9
 
@@ -464,7 +455,7 @@ def add_apple():
                     # if loads successfully check for exisiting 
                     # user_[id]_df_apple_health_.pkl and delete
                     ################################################
-                    if os.path.exists(config.DF_FILES_DIR):
+                    if os.path.exists(current_app.config.get('DF_FILES_DIR')):
                         clear_df_files(USER_ID)
 
                 except:
@@ -478,10 +469,10 @@ def add_apple():
                 logger_users.info(f"--- Apple export is large. Send to API (/store_apple_health). Email user when complete ---")
                 headers = { 'Content-Type': 'application/json'}
                 payload = {}
-                payload['password'] = config.WSH_API_PASSWORD
+                payload['password'] = current_app.config.get('WSH_API_PASSWORD')
                 payload['user_id'] = current_user.id
                 payload['xml_file_name'] = xml_file_name
-                r_store_apple = requests.request('GET', config.WSH_API_URL_BASE + '/store_apple_health', headers=headers, 
+                r_store_apple = requests.request('GET', current_app.config.get('WSH_API_URL_BASE') + '/store_apple_health', headers=headers, 
                                  data=str(json.dumps(payload)))
                 logger_users.info(f'-- Sent api file processing request. Response status code: {r_store_apple.status_code}')
                 
@@ -512,14 +503,14 @@ def add_apple():
             ### Best solution is to rename apple files to user{id}_df_apple_health_{data_item}.pkl
 
             # Delete user apple_health df_files
-            pickle_files_list = os.listdir(config.DF_FILES_DIR)
+            pickle_files_list = os.listdir(current_app.config.get('DF_FILES_DIR'))
             for pickle_file in pickle_files_list:
                 if pickle_file.find(f'user{USER_ID}_df_apple_health') > -1:
                     # if pickle_file.find('df_sleep.pkl') == -1 and pickle_file.find('df_temp.pkl')== -1 and \
                     #     pickle_file.find('df_cloudcover.pkl') == -1:
-                    os.remove(os.path.join(config.DF_FILES_DIR, pickle_file))
+                    os.remove(os.path.join(current_app.config.get('DF_FILES_DIR'), pickle_file))
                 elif pickle_file.find(f'user{USER_ID}_df_browse_apple.pkl') > -1:
-                    os.remove(os.path.join(config.DF_FILES_DIR,pickle_file))
+                    os.remove(os.path.join(current_app.config.get('DF_FILES_DIR'),pickle_file))
             logger_users.info('-- removed user df_files --')
 
 
@@ -546,7 +537,7 @@ def add_more_apple():
     # table_name = 'apple_health_export_'
     USER_ID = current_user.id if current_user.id !=2 else 1
     file_name = f'user{USER_ID}_df_browse_apple.pkl'
-    file_path = os.path.join(config.DF_FILES_DIR, file_name)
+    file_path = os.path.join(current_app.config.get('DF_FILES_DIR'), file_name)
     
     # check browse_apple.pkl file exists and if not create it
     if not os.path.exists(file_path):
@@ -642,12 +633,12 @@ def add_more_apple():
             apple_health_export_df_file_name = f'check_user{USER_ID}_df_apple_health_{data_item_apple_type_name}.pkl'
 
             # CHECK if request df file exists before searching/createing
-            if not os.path.exists(os.path.join(config.DF_FILES_DIR, apple_health_export_df_file_name)):
+            if not os.path.exists(os.path.join(current_app.config.get('DF_FILES_DIR'), apple_health_export_df_file_name)):
                 # create df
                 df = create_raw_df(USER_ID, Apple_health_export, 'apple_health_export_')
                 df = df[df['type']==data_item_apple_type_name]
                 # to_pickle
-                df.to_pickle(os.path.join(config.DF_FILES_DIR, apple_health_export_df_file_name))
+                df.to_pickle(os.path.join(current_app.config.get('DF_FILES_DIR'), apple_health_export_df_file_name))
 
             return redirect(url_for('users.apple_closer_look', data_item_id= data_item_id))
         return redirect(url_for('users.add_more_apple'))
@@ -668,7 +659,7 @@ def apple_closer_look(data_item_id):
     print(' -- ENTERED apple_closer_look --')
     USER_ID = current_user.id if current_user.id !=2 else 1
     browse_file_name = f'user{USER_ID}_df_browse_apple.pkl'
-    browse_file_path = os.path.join(config.DF_FILES_DIR, browse_file_name)
+    browse_file_path = os.path.join(current_app.config.get('DF_FILES_DIR'), browse_file_name)
     df = pd.read_pickle(browse_file_path)
 
     # print('--- request.args ---')
@@ -684,7 +675,7 @@ def apple_closer_look(data_item_id):
 
     # Get apple data filterd on user_id and data_item
     apple_health_export_df_file_name = f'check_user{USER_ID}_df_apple_health_{data_item_apple_type_name}.pkl'
-    apple_health_export_df_file_path = os.path.join(config.DF_FILES_DIR, apple_health_export_df_file_name)
+    apple_health_export_df_file_path = os.path.join(current_app.config.get('DF_FILES_DIR'), apple_health_export_df_file_name)
 
     # print(apple_health_export_df_file_path)
     # print('* Do we get this far? *')
@@ -915,10 +906,10 @@ def add_oura():
             sess.commit()
             
             # Delete user df.pkl files
-            pickle_files_list = os.listdir(config.DF_FILES_DIR)
+            pickle_files_list = os.listdir(current_app.config.get('DF_FILES_DIR'))
             for pickle_file in pickle_files_list:
                 if pickle_file.find(f'user{current_user.id}_df_oura_') > -1:
-                    os.remove(os.path.join(config.DF_FILES_DIR, pickle_file))
+                    os.remove(os.path.join(current_app.config.get('DF_FILES_DIR'), pickle_file))
 
             logger_users.info('* Delete Oura Successfull ')
             flash(f"Removed {delete_count} records", "warning")
@@ -943,7 +934,7 @@ def add_more_weather():
         flash("Must add location before adding more weather data", "warning")
         return redirect(url_for('users.account'))
     USER_ID = current_user.id if current_user.id !=2 else 1
-    file_path = config.DF_FILES_DIR
+    file_path = current_app.config.get('DF_FILES_DIR')
     oldest_date_str = user_oldest_day_util(USER_ID, file_path)
     print('USErs oldest_date_str: ', oldest_date_str)
 
@@ -988,7 +979,7 @@ def add_more_weather():
         for gap in search_weather_dates_dict_list:
             loc = sess.query(Locations).get(loc_id)
             location_coords = f"{loc.lat}, {loc.lon}"
-            weather_call_url =f"{config.VISUAL_CROSSING_BASE_URL}{location_coords}/{str(gap.get('start'))}/{str(gap.get('end'))}?key={config.VISUAL_CROSSING_TOKEN}&include=current"
+            weather_call_url =f"{current_app.config.get('VISUAL_CROSSING_BASE_URL')}{location_coords}/{str(gap.get('start'))}/{str(gap.get('end'))}?key={current_app.config.get('VISUAL_CROSSING_TOKEN')}&include=current"
             logger_users.info(gap)
             logger_users.info(weather_call_url)
             r_history = requests.get(weather_call_url)
@@ -1098,10 +1089,10 @@ def admin():
             logger_users.info('-- removed user from db tables --')
 
             # Delete user df_files
-            pickle_files_list = os.listdir(config.DF_FILES_DIR)
+            pickle_files_list = os.listdir(current_app.config.get('DF_FILES_DIR'))
             for pickle_file in pickle_files_list:
                 if pickle_file.find(f'user{delete_user_id}_df_') > -1:
-                    os.remove(os.path.join(config.DF_FILES_DIR, pickle_file))
+                    os.remove(os.path.join(current_app.config.get('DF_FILES_DIR'), pickle_file))
             logger_users.info('-- removed user df_files --')
 
 
@@ -1118,7 +1109,7 @@ def admin():
 def admin_db():
 
     list_of_tables = list(Base.metadata.tables.keys())
-    make_dir_util(config.DB_DOWNLOADS)
+    make_dir_util(current_app.config.get('DB_DOWNLOADS'))
 
     if request.method == 'POST':
         formDict = request.form.to_dict()
@@ -1135,8 +1126,8 @@ def admin_db():
             base_query = sess.query(sql_table)
             df = pd.read_sql(str(base_query), sess.bind)
             file_name = f"db_{table_name_str}.csv"
-            df.to_csv(os.path.join(config.DB_DOWNLOADS, file_name))
-            return send_from_directory(os.path.abspath(config.DB_DOWNLOADS), file_name, as_attachment=True)
+            df.to_csv(os.path.join(current_app.config.get('DB_DOWNLOADS'), file_name))
+            return send_from_directory(os.path.abspath(current_app.config.get('DB_DOWNLOADS')), file_name, as_attachment=True)
             # return redirect(url_for('users.download_db_workbook', file_name=file_name))
         elif formDict.get('csv_table_upload'):
             print('-- receiving csv file --')
@@ -1155,8 +1146,8 @@ def admin_db():
 #     # workbook_name = os.listdir(current_app.config['FILES_DATABASE'])[0]
 #     # print('file:::', os.path.join(current_app.root_path, 'static','files_database'),workbook_name)
 #     # file_path = r'D:\OneDrive\Documents\professional\20210610kmDashboard2.0\fileShareApp\static\files_database\\'
-#     print(config.DB_DOWNLOADS)
-#     print(os.path.abspath(config.DB_DOWNLOADS))
+#     print(current_app.config.get('DB_DOWNLOADS)
+#     print(os.path.abspath(current_app.config.get('DB_DOWNLOADS))
 #     path = r"/Users/nick/Documents/_databases/ws08/db_downloads"
 #     return send_from_directory(path, file_name, as_attachment=True)
 

@@ -9,28 +9,43 @@ from logging.handlers import RotatingFileHandler
 from pytz import timezone
 from datetime import datetime
 
-# # Config Begin
-# config_dict = {}
 
-# if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
-#     config_object = ConfigDev()
-#     print('* ---> Configured for Development')
-#     config_dict['production'] = False
+# # Logging Begin
+# logs_dir = os.path.join(os.getcwd(), 'logs')
 
-# else:
-#     config_object = ConfigProd()
-#     print('* ---> Configured for Production')
-#     config_dict['production'] = True
-
-# with open('config_dict.json', 'w') as outfile:
-#     json.dump(config_dict, outfile)
+# Config Begin
+config_dict = {}
 
 
-# Logging Begin
-logs_dir = os.path.join(os.getcwd(), 'logs')
+# User set's .env file in the whatSticks08modules/ws_modules01/ws_config01/.env
+if os.environ.get('CONFIG_TYPE')=='local':
+    config_object = ConfigLocal()
+    # testing_oura = True
+    config_dict['production'] = False
+    # logger_init.info('* ---> Configured for Production')
+elif os.environ.get('CONFIG_TYPE')=='dev':
+    config_object = ConfigDev()
+    # testing_oura = False
+    config_dict['production'] = False
+    # logger_init.info('* ---> Configured for Development')
+elif os.environ.get('CONFIG_TYPE')=='prod':
+    config_object = ConfigProd()
+    # testing_oura = False
+    # logger_init.info('* ---> Configured for Production')
+    config_dict['production'] = True
 
-if not os.path.exists(logs_dir):
-    os.makedirs(logs_dir)
+
+with open('config_dict.json', 'w') as outfile:
+    json.dump(config_dict, outfile)
+
+
+# print('--- config_object.WEB_LOGS_DIR ----')
+# print(config_object.WEB_LOGS_DIR )
+# print(os.getcwd())
+# print(os.path.exists(os.path.join(config_object.WEB_LOGS_DIR)))
+
+if not os.path.exists(os.path.join(config_object.WEB_LOGS_DIR)):
+    os.makedirs(os.path.join(config_object.WEB_LOGS_DIR))
 
 # timezone 
 def timetz(*args):
@@ -49,7 +64,7 @@ formatter_terminal = logging.Formatter('%(asctime)s:%(filename)s:%(name)s:%(mess
 logger_init = logging.getLogger('__init__')
 logger_init.setLevel(logging.DEBUG)
 
-file_handler = RotatingFileHandler(os.path.join(logs_dir,'__init__.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler = RotatingFileHandler(os.path.join(config_object.WEB_LOGS_DIR,'__init__.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
 file_handler.setFormatter(formatter)
 
 # logger_tz = logging.getLogger(('__init__-tz'))# new for tz
@@ -76,29 +91,31 @@ logging.getLogger('werkzeug').addHandler(file_handler)
 logger_init.info(f'--- Starting ws08web ---')
 # logger_tz.info(f'--- Starting ws08web ---')
 
-
-# Config Begin
-config_dict = {}
-
-if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
-    config_object = ConfigLocal()
-    # testing_oura = True
-    config_dict['production'] = False
-    logger_init.info('* ---> Configured for Production')
-elif 'dev' in os.uname()[1]:
-    config_object = ConfigDev()
-    # testing_oura = False
-    config_dict['production'] = False
-    logger_init.info('* ---> Configured for Development')
-elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
-    config_object = ConfigProd()
-    # testing_oura = False
-    logger_init.info('* ---> Configured for Production')
-    config_dict['production'] = True
+logger_init.info(f"* ---> Configured for {config_object.SCHED_CONFIG_STRING}")
+# # Config Begin
+# config_dict = {}
 
 
-with open('config_dict.json', 'w') as outfile:
-    json.dump(config_dict, outfile)
+# # User set's .env file in the whatSticks08modules/ws_modules01/ws_config01/.env
+# if os.environ.get('CONFIG_TYPE')=='local':
+#     config_object = ConfigLocal()
+#     # testing_oura = True
+#     config_dict['production'] = False
+#     logger_init.info('* ---> Configured for Production')
+# elif os.environ.get('CONFIG_TYPE')=='dev':
+#     config_object = ConfigDev()
+#     # testing_oura = False
+#     config_dict['production'] = False
+#     logger_init.info('* ---> Configured for Development')
+# elif os.environ.get('CONFIG_TYPE')=='prod':
+#     config_object = ConfigProd()
+#     # testing_oura = False
+#     logger_init.info('* ---> Configured for Production')
+#     config_dict['production'] = True
+
+
+# with open('config_dict.json', 'w') as outfile:
+#     json.dump(config_dict, outfile)
 
 
 

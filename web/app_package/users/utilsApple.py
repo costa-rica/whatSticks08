@@ -16,28 +16,22 @@ import re
 
 
 
-if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
-    config = ConfigLocal()
-    testing = True
-elif 'dev' in os.uname()[1]:
-    config = ConfigDev()
-    testing = False
-elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
-    config = ConfigProd()
-    testing = False
-# machine = os.uname()[1]
-# match machine:
-#     case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
-#         config = ConfigLocal()
-#         testing = True
-#     case 'devbig01':
-#         config = ConfigDev()
-#         testing = False
-#     case  'speedy100':
-#         config = ConfigProd()
-#         testing = False
+# if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+#     config = ConfigLocal()
+# elif 'dev' in os.uname()[1]:
+#     config = ConfigDev()
+# elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
+#     config = ConfigProd()
 
-logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+
+# logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+if os.environ.get('CONFIG_TYPE')=='local':
+    config_context = ConfigLocal()
+elif os.environ.get('CONFIG_TYPE')=='dev':
+    config_context = ConfigDev()
+elif os.environ.get('CONFIG_TYPE')=='prod':
+    config_context = ConfigProd()
+
 
 #Setting up Logger
 formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
@@ -50,7 +44,7 @@ logger_users.setLevel(logging.DEBUG)
 # logger_terminal.setLevel(logging.DEBUG)
 
 #where do we store logging information
-file_handler = RotatingFileHandler(os.path.join(logs_dir,'users_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler = RotatingFileHandler(os.path.join(config_context.WEB_LOGS_DIR,'users_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
 file_handler.setFormatter(formatter)
 
 #where the stream_handler will print
@@ -152,18 +146,18 @@ def add_apple_to_db(xml_dict):
 
 def clear_df_files(USER_ID):
     
-    list_of_df_files = os.listdir(config.DF_FILES_DIR)
+    list_of_df_files = os.listdir(current_app.config.get('DF_FILES_DIR'))
     search_for_string = f"user{USER_ID}_df_apple_health"
     for file in list_of_df_files:
         if file.find(search_for_string) > -1:
-            os.remove(os.path.join(config.DF_FILES_DIR, file))
+            os.remove(os.path.join(current_app.config.get('DF_FILES_DIR'), file))
 
 
     # open user_browse_apple health
     apple_browse_user_filename = f"user{USER_ID}_df_browse_apple.pkl"
-    if os.path.exists(os.path.join(config.DF_FILES_DIR, apple_browse_user_filename)):
+    if os.path.exists(os.path.join(current_app.config.get('DF_FILES_DIR'), apple_browse_user_filename)):
 
-        df_browse = pd.read_pickle(os.path.join(config.DF_FILES_DIR, apple_browse_user_filename))
+        df_browse = pd.read_pickle(os.path.join(current_app.config.get('DF_FILES_DIR'), apple_browse_user_filename))
 
         #find items that have been created
         type_formatted_series = df_browse[df_browse['df_file_existing']=='true'].type_formatted
@@ -171,8 +165,8 @@ def clear_df_files(USER_ID):
         #delete those
         for apple_type in type_formatted_series:
             file_name = f'user{USER_ID}_df_{apple_type.replace(" ", "_").lower()}.pkl'
-            os.remove(os.path.join(config.DF_FILES_DIR, file_name))
+            os.remove(os.path.join(current_app.config.get('DF_FILES_DIR'), file_name))
 
         #then delete user_df_browse_apple
-        os.remove(os.path.join(config.DF_FILES_DIR, apple_browse_user_filename))
+        os.remove(os.path.join(current_app.config.get('DF_FILES_DIR'), apple_browse_user_filename))
 

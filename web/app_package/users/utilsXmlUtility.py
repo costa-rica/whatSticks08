@@ -1,4 +1,4 @@
-# import xmltodict 
+from flask import current_app
 import zipfile
 import re
 import os
@@ -12,29 +12,22 @@ from logging.handlers import RotatingFileHandler
 import shutil
 
 
-if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
-    config = ConfigLocal()
-    testing = True
-elif 'dev' in os.uname()[1]:
-    config = ConfigDev()
-    testing = False
-elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
-    config = ConfigProd()
-    testing = False
-# machine = os.uname()[1]
-# match machine:
-#     case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
-#         config = ConfigLocal()
-#         testing = True
-#     case 'devbig01':
-#         config = ConfigDev()
-#         testing = False
-#     case  'speedy100':
-#         config = ConfigProd()
-#         testing = False
+# if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+#     config = ConfigLocal()
+# elif 'dev' in os.uname()[1]:
+#     config = ConfigDev()
+# elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
+#     config = ConfigProd()
 
+# logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
 
-logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+if os.environ.get('CONFIG_TYPE')=='local':
+    config_context = ConfigLocal()
+elif os.environ.get('CONFIG_TYPE')=='dev':
+    config_context = ConfigDev()
+elif os.environ.get('CONFIG_TYPE')=='prod':
+    config_context = ConfigProd()
+
 
 #Setting up Logger
 formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
@@ -47,7 +40,7 @@ logger_users.setLevel(logging.DEBUG)
 # logger_terminal.setLevel(logging.DEBUG)
 
 #where do we store logging information
-file_handler = RotatingFileHandler(os.path.join(logs_dir,'users_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler = RotatingFileHandler(os.path.join(config_context.WEB_LOGS_DIR,'users_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
 file_handler.setFormatter(formatter)
 
 #where the stream_handler will print
@@ -293,7 +286,7 @@ def xml_file_fixer(xml_path):
 
 def compress_to_save_util(decompressed_xml_file_name):
     logger_users.info('- Compressing and storing users Apple Health data')
-    apple_health_dir = config.APPLE_HEALTH_DIR
+    apple_health_dir = current_app.config.get('APPLE_HEALTH_DIR')
     print(apple_health_dir)
     app_health_ex_dir = os.path.join(apple_health_dir,'stuff_to_compress', 'apple_health_export')
     stuff_to_compress = os.path.join(apple_health_dir,'stuff_to_compress')

@@ -10,57 +10,17 @@ from logging.handlers import RotatingFileHandler
 from utilsDf import create_df_files, create_df_files_apple
 
 
-
-if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+if os.environ.get('CONFIG_TYPE')=='local':
     config = ConfigLocal()
-    testing = True
-    logs_dir = os.getcwd()
-    print('* Development - Local')
-elif 'dev' in os.uname()[1]:
+    print('* apple_subprocess: Development - Local')
+elif os.environ.get('CONFIG_TYPE')=='dev':
     config = ConfigDev()
-    testing = False
-    config.app_dir = "/home/nick/applications/apple_service/"
-    logs_dir = config.app_dir
-    print('* Development')
-elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
+    print('* apple_subprocess: Development')
+elif os.environ.get('CONFIG_TYPE')=='prod':
     config = ConfigProd()
-    testing = False
-    config.app_dir = "/home/nick/applications/apple_service/"
-    logs_dir = config.app_dir
-    print('* ---> Configured for Production')
+    print('* apple_subprocess: Production')
 
-# machine = os.uname()[1]
-# match machine:
-#     case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
-#         config = ConfigLocal()
-#         testing = True
-#         logs_dir = os.getcwd()
-#         print('* Development - Local')
-#     case 'devbig01':
-#         config = ConfigDev()
-#         testing = False
-#         config.app_dir = r"/home/nick/applications/apple_service/"
-#         logs_dir = config.app_dir
-#         # config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
-#         print('* Development')
-#     case 'speedy100':
-#         config = ConfigProd()
-#         testing = False
-#         config.app_dir = r"/home/nick/applications/apple_service/"
-#         logs_dir = config.app_dir
-#         # config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
-#         print('* ---> Configured for Production')
-# if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
-#     config = ConfigDev()
-#     logs_dir = os.getcwd()
-#     # config.json_utils_dir = os.path.join(os.getcwd(),'json_utils_dir')
-#     print('* Development')
-# else:
-#     config = ConfigProd()
-#     config.app_dir = r"/home/nick/applications/apple_service/"
-#     logs_dir = config.app_dir
-#     # config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
-#     print('* ---> Configured for Production')
+
 
 #Setting up Logger
 formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
@@ -73,7 +33,7 @@ logger_apple.setLevel(logging.DEBUG)
 # logger_terminal.setLevel(logging.DEBUG)
 
 #where do we store logging information
-file_handler = RotatingFileHandler(os.path.join(logs_dir,'apple_service.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler = RotatingFileHandler(os.path.join(config.APPLE_SUBPROCESS_DIR,'apple_service.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
 file_handler.setFormatter(formatter)
 
 #where the stream_handler will print
@@ -97,8 +57,9 @@ def test_function(args):
 
 # test_function(argv[1])
 
-# def send_email():
-#     print('call email api with user_id and message')
+def test_function02():
+    print('-- printed in test_function02')
+    logger_apple.info(f'--- Started Apple Service: test_function02')
 
 
 def add_apple(xml_file_name, user_id):

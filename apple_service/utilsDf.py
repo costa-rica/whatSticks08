@@ -13,24 +13,32 @@ from logging.handlers import RotatingFileHandler
 from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 import re
 
-
-if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+if os.environ.get('CONFIG_TYPE')=='local':
     config = ConfigLocal()
-    testing = True
-    logs_dir = os.getcwd()
     print('* Development - Local')
-elif 'dev' in os.uname()[1]:
+elif os.environ.get('CONFIG_TYPE')=='dev':
     config = ConfigDev()
-    testing = False
-    config.app_dir = "/home/nick/applications/apple_service/"
-    logs_dir = config.app_dir
     print('* Development')
-elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
+elif os.environ.get('CONFIG_TYPE')=='prod':
     config = ConfigProd()
-    testing = False
-    config.app_dir = "/home/nick/applications/apple_service/"
-    logs_dir = config.app_dir
     print('* ---> Configured for Production')
+# if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+#     config = ConfigLocal()
+#     testing = True
+#     logs_dir = os.getcwd()
+#     print('* Development - Local')
+# elif 'dev' in os.uname()[1]:
+#     config = ConfigDev()
+#     testing = False
+#     config.app_dir = "/home/nick/applications/apple_service/"
+#     logs_dir = config.app_dir
+#     print('* Development')
+# elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
+#     config = ConfigProd()
+#     testing = False
+#     config.app_dir = "/home/nick/applications/apple_service/"
+#     logs_dir = config.app_dir
+#     print('* ---> Configured for Production')
 # machine = os.uname()[1]
 # match machine:
 #     case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
@@ -72,7 +80,7 @@ logger_apple.setLevel(logging.DEBUG)
 # logger_terminal.setLevel(logging.DEBUG)
 
 #where do we store logging information
-file_handler = RotatingFileHandler(os.path.join(logs_dir,'apple_service.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler = RotatingFileHandler(os.path.join(config.APPLE_SUBPROCESS_DIR,'apple_service.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
 file_handler.setFormatter(formatter)
 
 #where the stream_handler will print

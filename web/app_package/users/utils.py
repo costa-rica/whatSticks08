@@ -19,29 +19,28 @@ import re
 import pandas as pd
 
 
-if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
-    config = ConfigLocal()
-    # testing_oura = True
-elif 'dev' in os.uname()[1]:
-    config = ConfigDev()
-    # testing_oura = False
-elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
-    config = ConfigProd()
-    # testing_oura = False
-# machine = os.uname()[1]
-# match machine:
-#     case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
-#         config = ConfigLocal()
-#         # testing_oura = True
-#     case 'devbig01':
-#         config = ConfigDev()
-#         # testing_oura = False
-#     case  'speedy100':
-#         config = ConfigProd()
-#         # testing_oura = False
+# if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+#     config = ConfigLocal()
+#     # testing_oura = True
+# elif 'dev' in os.uname()[1]:
+#     config = ConfigDev()
+#     # testing_oura = False
+# elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
+#     config = ConfigProd()
+#     # testing_oura = False
 
 
-logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+# logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+
+
+
+if os.environ.get('CONFIG_TYPE')=='local':
+    config_context = ConfigLocal()
+elif os.environ.get('CONFIG_TYPE')=='dev':
+    config_context = ConfigDev()
+elif os.environ.get('CONFIG_TYPE')=='prod':
+    config_context = ConfigProd()
+
 
 #Setting up Logger
 formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
@@ -54,7 +53,7 @@ logger_users.setLevel(logging.DEBUG)
 # logger_terminal.setLevel(logging.DEBUG)
 
 #where do we store logging information
-file_handler = RotatingFileHandler(os.path.join(logs_dir,'users_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler = RotatingFileHandler(os.path.join(config_context.WEB_LOGS_DIR,'users_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
 file_handler.setFormatter(formatter)
 
 #where the stream_handler will print
@@ -68,7 +67,7 @@ logger_users.addHandler(stream_handler)
 
 
 def user_data_item_list_util(USER_ID):
-    list_of_data = os.listdir(config.DF_FILES_DIR)
+    list_of_data = os.listdir(current_app.config.get('DF_FILES_DIR'))
 
     file_name_start = f'user{USER_ID}_df_'
     start_length = len(file_name_start)
@@ -96,9 +95,9 @@ def make_dir_util(dir):
 
 def send_reset_email(user):
     token = user.get_reset_token()
-    logger_users.info('config.EMAIL: ', config.MAIL_USERNAME)
+    logger_users.info(f"current_app.config.get(MAIL_USERNAME): {current_app.config.get('MAIL_USERNAME')}")
     msg = Message('Password Reset Request',
-                  sender=config.MAIL_USERNAME,
+                  sender=current_app.config.get('MAIL_USERNAME'),
                   recipients=[user.email])
     msg.body = f'''To reset your password, visit the following link:
 {url_for('users.reset_token', token=token, _external=True)}
@@ -111,7 +110,7 @@ If you did not make this request, ignore email and there will be no change
 
 def send_confirm_email(email):
     msg = Message('Welcome to What Sticks!',
-        sender=config.MAIL_USERNAME,
+        sender=current_app.config.get('MAIL_USERNAME'),
         recipients=[email])
     msg.body = 'You have succesfully been registered to What-Sticks.'
     mail.send(msg)
@@ -343,7 +342,7 @@ def get_apple_health_count(USER_ID):
     # table_name = 'apple_health_export_'
     # USER_ID = current_user.id if current_user.id !=2 else 1
     file_name = f'user{USER_ID}_df_browse_apple.pkl'
-    file_path = os.path.join(config.DF_FILES_DIR, file_name)
+    file_path = os.path.join(current_app.config.get('DF_FILES_DIR'), file_name)
     if os.path.exists(file_path):
         df = pd.read_pickle(file_path)
         count = "{:,}".format(df.record_count.sum())
@@ -356,7 +355,7 @@ def get_user_df_count(USER_ID, data_item):
     # table_name = 'apple_health_export_'
     # USER_ID = current_user.id if current_user.id !=2 else 1
     file_name = f'user{USER_ID}_df_{data_item}.pkl'
-    file_path = os.path.join(config.DF_FILES_DIR, file_name)
+    file_path = os.path.join(current_app.config.get('DF_FILES_DIR'), file_name)
     print('file_path:::')
     print(file_path)
     if os.path.exists(file_path):

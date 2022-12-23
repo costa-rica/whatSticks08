@@ -17,12 +17,12 @@ from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 from app_package.users.utilsDf import create_raw_df
 
 
-if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
-    config = ConfigLocal()
-elif 'dev' in os.uname()[1]:
-    config = ConfigDev()
-elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
-    config = ConfigProd()
+# if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+#     config = ConfigLocal()
+# elif 'dev' in os.uname()[1]:
+#     config = ConfigDev()
+# elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
+#     config = ConfigProd()
 # machine = os.uname()[1]
 # match machine:
 #     case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
@@ -41,7 +41,13 @@ elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
 #     config = ConfigProd()
 
 
-logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+# logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+if os.environ.get('CONFIG_TYPE')=='local':
+    config_context = ConfigLocal()
+elif os.environ.get('CONFIG_TYPE')=='dev':
+    config_context = ConfigDev()
+elif os.environ.get('CONFIG_TYPE')=='prod':
+    config_context = ConfigProd()
 
 #Setting up Logger
 formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
@@ -54,7 +60,7 @@ logger_dash.setLevel(logging.DEBUG)
 # logger_terminal.setLevel(logging.DEBUG)
 
 #where do we store logging information
-file_handler = RotatingFileHandler(os.path.join(logs_dir,'dashboard_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler = RotatingFileHandler(os.path.join(config_context.WEB_LOGS_DIR,'dashboard_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
 file_handler.setFormatter(formatter)
 
 #where the stream_handler will print
@@ -117,7 +123,7 @@ def buttons_dict_update_util(dashboard_routes_dir, user_btn_json_name):
 
 def get_df_for_dash(USER_ID, data_item):
     file_name = f'user{USER_ID}_df_{data_item}.pkl'
-    file_path = os.path.join(config.DF_FILES_DIR, file_name)
+    file_path = os.path.join(current_app.config.get('DF_FILES_DIR'), file_name)
     if not os.path.exists(file_path):
         print(' ********** ')
         print(file_path)
@@ -242,7 +248,7 @@ def df_utils(USER_ID, data_item_list):
     for data_item in data_item_list:
         print(f'data_item: {data_item}')
         file_name = f'user{USER_ID}_df_{data_item}.pkl'
-        file_path = os.path.join(config.DF_FILES_DIR, file_name)
+        file_path = os.path.join(current_app.config.get('DF_FILES_DIR'), file_name)
         file_dict[data_item] = file_path
     
     df_dict = {}

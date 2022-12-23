@@ -1,4 +1,5 @@
 
+from flask import current_app
 from datetime import datetime, timedelta
 import os
 # from flask import current_app
@@ -14,25 +15,22 @@ from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 import re
 
 
-if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
-    config = ConfigLocal()
-elif 'dev' in os.uname()[1]:
-    config = ConfigDev()
-elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
-    config = ConfigProd()
-# machine = os.uname()[1]
-# match machine:
-#     case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
-#         config = ConfigLocal()
-#         # testing = True
-#     case 'devbig01':
-#         config = ConfigDev()
-#         # testing = False
-#     case  'speedy100':
-#         config = ConfigProd()
-#         # testing = False
+# if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+#     config = ConfigLocal()
+# elif 'dev' in os.uname()[1]:
+#     config = ConfigDev()
+# elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
+#     config = ConfigProd()
 
-logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+
+# logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+if os.environ.get('CONFIG_TYPE')=='local':
+    config_context = ConfigLocal()
+elif os.environ.get('CONFIG_TYPE')=='dev':
+    config_context = ConfigDev()
+elif os.environ.get('CONFIG_TYPE')=='prod':
+    config_context = ConfigProd()
+
 
 #Setting up Logger
 formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
@@ -45,7 +43,7 @@ logger_users.setLevel(logging.DEBUG)
 # logger_terminal.setLevel(logging.DEBUG)
 
 #where do we store logging information
-file_handler = RotatingFileHandler(os.path.join(logs_dir,'users_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler = RotatingFileHandler(os.path.join(config_context.WEB_LOGS_DIR,'users_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
 file_handler.setFormatter(formatter)
 
 #where the stream_handler will print
@@ -60,7 +58,7 @@ logger_users.addHandler(stream_handler)
 
 def remove_df_pkl(USER_ID, data_item):
     temp_file_name = f'user{USER_ID}_df_{data_item}.pkl'
-    file_to_remove= os.path.join(config.DF_FILES_DIR, temp_file_name)
+    file_to_remove= os.path.join(current_app.config.get('DF_FILES_DIR'), temp_file_name)
     if os.path.exists(file_to_remove):
         os.remove(file_to_remove)
 
@@ -127,7 +125,7 @@ def apple_hist_util(USER_ID, data_item_list, data_item_name_show, method, data_i
 def browse_apple_data(USER_ID):
     table_name = 'apple_health_export_'
     file_name = f'user{USER_ID}_df_browse_apple.pkl'
-    file_path = os.path.join(config.DF_FILES_DIR, file_name)
+    file_path = os.path.join(current_app.config.get('DF_FILES_DIR'), file_name)
 
     if os.path.exists(file_path):
         os.remove(file_path)
@@ -159,7 +157,7 @@ def format_item_name(data_item_name):
     # list_of_strings = ['HKCategoryTypeIdentifier','HKDataType','HKQuantityTypeIdentifier']
 
     # Get list of generic apple health cateogry names for removal in formatted names
-    with open(os.path.join(config.APPLE_HEALTH_DIR, 'appleHealthCatNames.txt')) as f:
+    with open(os.path.join(current_app.config.get('APPLE_HEALTH_DIR'), 'appleHealthCatNames.txt')) as f:
         lines = f.readlines()
     list_of_strings = [i.strip() for i in lines]
 
@@ -239,7 +237,7 @@ def create_df_files(USER_ID, data_item_list):
     #if data_item_list contains 'apple_health_' check to that browse apple exits
     if any('apple_health' in i for i in data_item_list):
         logger_users.info('**** data_item from apple health discovered: WRONG PLACE FOR APPLE DATA ****')
-    #     if not os.path.exists(os.path.join(config.DF_FILES_DIR, f'user{USER_ID}_df_browse_apple.pkl')):
+    #     if not os.path.exists(os.path.join(current_app.config.get('DF_FILES_DIR, f'user{USER_ID}_df_browse_apple.pkl')):
     #         browse_apple_data(USER_ID)
 
 
@@ -248,7 +246,7 @@ def create_df_files(USER_ID, data_item_list):
     for data_item in data_item_list:
         # temp_file_name = f'user{USER_ID}_df_{data_item}.json'
         temp_file_name = f'user{USER_ID}_df_{data_item}.pkl'
-        file_dict[data_item] = os.path.join(config.DF_FILES_DIR, temp_file_name)
+        file_dict[data_item] = os.path.join(current_app.config.get('DF_FILES_DIR'), temp_file_name)
 
     # Remove any existing df for user
     for _, f in file_dict.items():
@@ -306,14 +304,14 @@ def create_df_files_apple(USER_ID,data_item_list, data_item_name_show, method, d
     # check if browse apple exits
     if any('apple_health' in i for i in data_item_list):
         logger_users.info('- data_item from apple health discovered -')
-        if not os.path.exists(os.path.join(config.DF_FILES_DIR, f'user{USER_ID}_df_browse_apple.pkl')):
+        if not os.path.exists(os.path.join(current_app.config.get('DF_FILES_DIR'), f'user{USER_ID}_df_browse_apple.pkl')):
             browse_apple_data(USER_ID)
 
     file_dict = {}
     # make file name and path for data_item
     for data_item in data_item_list:
         temp_file_name = f'user{USER_ID}_df_{data_item}.pkl'
-        file_dict[data_item] = os.path.join(config.DF_FILES_DIR, temp_file_name)
+        file_dict[data_item] = os.path.join(current_app.config.get('DF_FILES_DIR'), temp_file_name)
 
     print('- file_dict -')
     print(file_dict)

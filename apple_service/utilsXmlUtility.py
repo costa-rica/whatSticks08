@@ -14,16 +14,24 @@ import requests
 import json
 
 
-
-if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+if os.environ.get('CONFIG_TYPE')=='local':
     config = ConfigLocal()
     print('* Development - Local')
-elif 'dev' in os.uname()[1]:
+elif os.environ.get('CONFIG_TYPE')=='dev':
     config = ConfigDev()
     print('* Development')
-elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
+elif os.environ.get('CONFIG_TYPE')=='prod':
     config = ConfigProd()
     print('* ---> Configured for Production')
+# if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+#     config = ConfigLocal()
+#     print('* Development - Local')
+# elif 'dev' in os.uname()[1]:
+#     config = ConfigDev()
+#     print('* Development')
+# elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
+#     config = ConfigProd()
+#     print('* ---> Configured for Production')
 # machine = os.uname()[1]
 # match machine:
 #     case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':

@@ -21,12 +21,12 @@ from logging.handlers import RotatingFileHandler
 from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 
 
-if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
-    config = ConfigLocal()
-elif 'dev' in os.uname()[1]:
-    config = ConfigDev()
-elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
-    config = ConfigProd()
+# if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
+#     config = ConfigLocal()
+# elif 'dev' in os.uname()[1]:
+#     config = ConfigDev()
+# elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
+#     config = ConfigProd()
 # machine = os.uname()[1]
 # match machine:
 #     case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
@@ -40,7 +40,15 @@ elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
 #         # testing_oura = False
 
 
-logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+# logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
+
+if os.environ.get('CONFIG_TYPE')=='local':
+    config_context = ConfigLocal()
+elif os.environ.get('CONFIG_TYPE')=='dev':
+    config_context = ConfigDev()
+elif os.environ.get('CONFIG_TYPE')=='prod':
+    config_context = ConfigProd()
+
 
 #Setting up Logger
 formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
@@ -53,7 +61,7 @@ logger_dash.setLevel(logging.DEBUG)
 # logger_terminal.setLevel(logging.DEBUG)
 
 #where do we store logging information
-file_handler = RotatingFileHandler(os.path.join(logs_dir,'dashboard_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler = RotatingFileHandler(os.path.join(config_context.WEB_LOGS_DIR,'dashboard_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
 file_handler.setFormatter(formatter)
 
 #where the stream_handler will print
@@ -182,7 +190,7 @@ def dashboard(dash_dependent_var):
         'oura_sleep_tonight': 'Oura Sleep', 'oura_sleep_last_night': 'Oura Sleep Night Before', 
         'apple_health_step_count': 'Apple Step Count'}
     user_apple_browse_file = f"user{USER_ID}_df_browse_apple.pkl"
-    user_apple_browse_path = os.path.join(config.DF_FILES_DIR, user_apple_browse_file)
+    user_apple_browse_path = os.path.join(current_app.config.get('DF_FILES_DIR'), user_apple_browse_file)
     if os.path.exists(user_apple_browse_path):
         print(user_apple_browse_path)
         df_browse = pd.read_pickle(os.path.abspath(user_apple_browse_path))

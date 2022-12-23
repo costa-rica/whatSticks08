@@ -12,11 +12,41 @@ from app_package.blog.utils import last_first_list_util, wordToJson, \
 from ws_models01 import sess, Users, Posts, Postshtml, Postshtmltagchars
 # from app_package import db
 from sqlalchemy import func 
-import logging
-# from app_package.utils import logs_dir
-# from logging.handlers import RotatingFileHandler
 import shutil
+import logging
+from logging.handlers import RotatingFileHandler
+from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 
+
+if os.environ.get('CONFIG_TYPE')=='local':
+    config_context = ConfigLocal()
+elif os.environ.get('CONFIG_TYPE')=='dev':
+    config_context = ConfigDev()
+elif os.environ.get('CONFIG_TYPE')=='prod':
+    config_context = ConfigProd()
+
+
+#Setting up Logger
+formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
+formatter_terminal = logging.Formatter('%(asctime)s:%(filename)s:%(name)s:%(message)s')
+
+#initialize a logger
+logger_dash = logging.getLogger(__name__)
+logger_dash.setLevel(logging.DEBUG)
+# logger_terminal = logging.getLogger('terminal logger')
+# logger_terminal.setLevel(logging.DEBUG)
+
+#where do we store logging information
+file_handler = RotatingFileHandler(os.path.join(config_context.WEB_LOGS_DIR,'blog_routes.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
+file_handler.setFormatter(formatter)
+
+#where the stream_handler will print
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter_terminal)
+
+# logger_sched.handlers.clear() #<--- This was useful somewhere for duplicate logs
+logger_dash.addHandler(file_handler)
+logger_dash.addHandler(stream_handler)
 
 blog = Blueprint('blog', __name__)
     
@@ -161,7 +191,7 @@ def blog_delete(post_id):
         print(f'{blog_name} in static folder does not exits')
 
     try:# database folder
-        shutil.rmtree(os.path.join(current_app.config.word_doc_database_images_dir, blog_name))
+        shutil.rmtree(os.path.join(current_app.config.get('WORD_DOC_DIR'),'blog_images', blog_name))
     except:
         print(f'{blog_name} directory in database direcgtory does not exist')
 
