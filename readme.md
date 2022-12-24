@@ -3,7 +3,7 @@
 
 Visit current working web at:
 https://what-sticks.com
-#
+
 ## Description
 What Sticks (WS) is an application that helps navigate your wellness with data already being collected by your other applications and devices.
 
@@ -17,10 +17,16 @@ There is a user dashboard that displays a table of correlations from your linked
 
 <img src="https://github.com/costa-rica/whatSticks08/blob/github-main/web/app_package/static/images/readme/stepsDashScreenShot.png?raw=true" alt="ws dash screenshot" width="500"/>
 
-#
+
 ## Project/repo flow chart
 <img src="https://github.com/costa-rica/whatSticks08/blob/github-main/web/app_package/static/images/readme/projectFlowChart.png?raw=true" alt="ws project flowchart" width="500"/>
 
+This repo root folders contains:
+
+- <b><font size=4>web</font></b>: Flask web application described in the description section.
+- <b><font size=4>api</font></b>: used for processing large apple health files, scheduler and future mobile device application to communicate with database. 
+- <b><font size=4>apple_services</font></b>: If the files are smaller than 100mb (uncompressed) then they are processed by the web application. Otherwise the web application hands off the large apple health file to the apple_services applications via API to process for database and prepare a pickle file used by the web application to display users data.
+- <b><font size=4>scheduler</font></b>: this is a cron scheduler that sends out a call to collect weather and oura ring data for all users daily. Then updates the database. This keeps users data updated.
 
 
 
@@ -32,53 +38,30 @@ This requires:
 4. python run from inside web/
 
 ### Step 1
-Download config and models packages from [whatSticks08modules](https://github.com/costa-rica/whatSticks08modules) repo.
+Clone config and models packages from [whatSticks08modules](https://github.com/costa-rica/whatSticks08modules) repo.
 
 ```bash
 git clone https://github.com/costa-rica/whatSticks08modules
 ```
 
+:point_right: Important: Follow instructions for setting up environment in **whatSticks08modules**. 
+
+
+
 ### Step 2
-**Some hardcoding here see note*
-
-Map config_ws08.json file to the config file in whatSticks08modules. Go to .env file inside whatSticks08modules/ws_modules01/ws_config01/ directory. Here you will edit:
-
-```
-CONFIG_PATH="/Users/nick/Documents/_config_files"
-CONFIG_FILE_NAME="config_ws08_20221222.json"
-CONFIG_TYPE='local'
-```
-
-I will send you config_ws08.
-
-<br>
-<br>
-
-### NOTE 2022-12-23: 
-I am in process of making this easier to update.
-I am in process of minimizing the hardcoding steps for anyone to run. This is where some hardcoding takes place in the .env and config_ws08.json files.
-
-As of this note I am building this in a new development from scratch once this note is deleted. I hope to delete this note soon and have a smooth build process.
-
-<br>
-<br>
-
-### Step 3
-from inside your environment navigate to the downloaded whatSticks08modules/ws_modules01:
-```bash
-pip install -e .
-```
-
-### Step 4
-Just download from terminal
+Clone this repo
 ```bash
 git clone https://github.com/costa-rica/whatSticks08
 ```
 
-### Step 5
-from inside whatSticks08/web
+### Step 3
+From inside whatSticks08/web activate ws08web venv
 ```bash
-python run.py
+flask run
+```
+In a seperate terminal and from inside whatSticks08/api, activate ws08api venv
+```bash
+flask run --port=5001
 ```
 #
 ## Once app is running
