@@ -99,8 +99,8 @@ def home():
         return redirect(url_for('dash.dashboard', dash_dependent_var='steps'))
 
 
-    make_dir_util(current_app.config.get('DF_FILES_DIR'))
-    make_dir_util(current_app.config.get('DB_DOWNLOADS'))
+    # make_dir_util(current_app.config.get('DF_FILES_DIR'))
+    # make_dir_util(current_app.config.get('DB_DOWNLOADS'))
 
 
     latest_post = sess.query(Posts).all()
@@ -115,14 +115,6 @@ def home():
         print(blog)
     else:
         blog =''
-
-
-    if request.method == 'POST':
-        formDict = request.form.to_dict()
-        if formDict.get('login'):
-            return redirect(url_for('users.login'))
-        elif formDict.get('register'):
-            return redirect(url_for('users.register'))
 
     return render_template('home.html', blog=blog)
 

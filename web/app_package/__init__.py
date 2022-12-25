@@ -10,39 +10,17 @@ from pytz import timezone
 from datetime import datetime
 
 
-# # Logging Begin
-# logs_dir = os.path.join(os.getcwd(), 'logs')
-
-# Config Begin
-config_dict = {}
-
 
 # User set's .env file in the whatSticks08modules/ws_modules01/ws_config01/.env
 if os.environ.get('CONFIG_TYPE')=='local':
     config_object = ConfigLocal()
-    # testing_oura = True
-    config_dict['production'] = False
-    # logger_init.info('* ---> Configured for Production')
+
 elif os.environ.get('CONFIG_TYPE')=='dev':
     config_object = ConfigDev()
-    # testing_oura = False
-    config_dict['production'] = False
-    # logger_init.info('* ---> Configured for Development')
+
 elif os.environ.get('CONFIG_TYPE')=='prod':
     config_object = ConfigProd()
-    # testing_oura = False
-    # logger_init.info('* ---> Configured for Production')
-    config_dict['production'] = True
 
-
-with open('config_dict.json', 'w') as outfile:
-    json.dump(config_dict, outfile)
-
-
-# print('--- config_object.WEB_LOGS_DIR ----')
-# print(config_object.WEB_LOGS_DIR )
-# print(os.getcwd())
-# print(os.path.exists(os.path.join(config_object.WEB_LOGS_DIR)))
 
 if not os.path.exists(os.path.join(config_object.WEB_LOGS_DIR)):
     os.makedirs(os.path.join(config_object.WEB_LOGS_DIR))

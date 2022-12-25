@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, current_app
 import json
+import os
 
 errors = Blueprint('errors', __name__)
 
-with open('config_dict.json') as json_file:
-    config_dict = json.load(json_file)
+# with open('config_dict.json') as json_file:
+#     config_dict = json.load(json_file)
 
 
 @errors.app_errorhandler(404)
@@ -35,7 +36,7 @@ def error_500(error):
     error_message = f"Something wrong with webiste. Either try again or send email to {current_app.config['MAIL_USERNAME']}."
     return render_template('errors.html', error_number="500", error_message=error_message), 500
 
-if config_dict['production']==True:
+if os.environ.get('CONFIG_TYPE')=='prod':
     @errors.app_errorhandler(AttributeError)
     def error_attribute(AttributeError):
         error_message = f"If you're logged in already or think something else is wrong email {current_app.config['MAIL_USERNAME']}."
