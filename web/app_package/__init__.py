@@ -22,22 +22,20 @@ elif os.environ.get('CONFIG_TYPE')=='prod':
     config_object = ConfigProd()
 
 
+
 if not os.path.exists(os.path.join(config_object.WEB_LOGS_DIR)):
     os.makedirs(os.path.join(config_object.WEB_LOGS_DIR))
 
 # timezone 
 def timetz(*args):
-    return datetime.now(tz).timetuple()
-# tz = timezone('Europe/Paris')
+    return datetime.now(timezone('Europe/Paris') ).timetuple()
 
-tz = timezone('Europe/Paris') 
 logging.Formatter.converter = timetz
 
 
 #Setting up Logger
 formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
 formatter_terminal = logging.Formatter('%(asctime)s:%(filename)s:%(name)s:%(message)s')
-# formatter_terminal_tz = logging_tz.LocalFormatter('%(asctime)s:%(filename)s:%(name)s:%(message)s', datefmt=datefmt)# new for tz
 
 logger_init = logging.getLogger('__init__')
 logger_init.setLevel(logging.DEBUG)
@@ -45,20 +43,14 @@ logger_init.setLevel(logging.DEBUG)
 file_handler = RotatingFileHandler(os.path.join(config_object.WEB_LOGS_DIR,'__init__.log'), mode='a', maxBytes=5*1024*1024,backupCount=2)
 file_handler.setFormatter(formatter)
 
-# logger_tz = logging.getLogger(('__init__-tz'))# new for tz
-# logger_tz.setFormatter(formatter_terminal_tz)# new for tz
 
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter_terminal)
 
 stream_handler_tz = logging.StreamHandler()
-# stream_handler_tz.setFormatter(formatter_terminal_tz)# new for tz
 
 logger_init.addHandler(file_handler)
 logger_init.addHandler(stream_handler)
-
-# logger_tz.addHandler(stream_handler_tz)# new for tz
-
 
 
 #set werkzeug handler
@@ -67,34 +59,8 @@ logging.getLogger('werkzeug').addHandler(file_handler)
 #End set up logger
 
 logger_init.info(f'--- Starting ws08web ---')
-# logger_tz.info(f'--- Starting ws08web ---')
 
 logger_init.info(f"* ---> Configured for {config_object.SCHED_CONFIG_STRING}")
-# # Config Begin
-# config_dict = {}
-
-
-# # User set's .env file in the whatSticks08modules/ws_modules01/ws_config01/.env
-# if os.environ.get('CONFIG_TYPE')=='local':
-#     config_object = ConfigLocal()
-#     # testing_oura = True
-#     config_dict['production'] = False
-#     logger_init.info('* ---> Configured for Production')
-# elif os.environ.get('CONFIG_TYPE')=='dev':
-#     config_object = ConfigDev()
-#     # testing_oura = False
-#     config_dict['production'] = False
-#     logger_init.info('* ---> Configured for Development')
-# elif os.environ.get('CONFIG_TYPE')=='prod':
-#     config_object = ConfigProd()
-#     # testing_oura = False
-#     logger_init.info('* ---> Configured for Production')
-#     config_dict['production'] = True
-
-
-# with open('config_dict.json', 'w') as outfile:
-#     json.dump(config_dict, outfile)
-
 
 
 # App init

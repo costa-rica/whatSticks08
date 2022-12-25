@@ -238,11 +238,12 @@ def format_item_name(data_item_name):
     # list_of_strings = ['HKCategoryTypeIdentifier','HKDataType','HKQuantityTypeIdentifier']
     
     # Get list of generic apple health cateogry names for removal in formatted names
-    with open(os.path.join(config.APPLE_HEALTH_DIR, 'appleHealthCatNames.txt')) as f:
-        lines = f.readlines()
-    print('--- list of strings --')
-    print(lines)
-    list_of_strings = [i.strip() for i in lines]
+    # with open(os.path.join(config.APPLE_HEALTH_DIR, 'appleHealthCatNames.txt')) as f:
+    #     lines = f.readlines()
+    # print('--- list of strings --')
+    # print(lines)
+    # list_of_strings = [i.strip() for i in lines]
+    list_of_strings = config.get('APPLE_HEALTH_CAT_NAMES')
     
     if any(i in data_item_name for i in list_of_strings):
         for i in list_of_strings:

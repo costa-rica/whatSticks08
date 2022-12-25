@@ -15,15 +15,7 @@ from ws_config01 import ConfigDev, ConfigProd, ConfigLocal
 import re
 
 
-# if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
-#     config = ConfigLocal()
-# elif 'dev' in os.uname()[1]:
-#     config = ConfigDev()
-# elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
-#     config = ConfigProd()
 
-
-# logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
 if os.environ.get('CONFIG_TYPE')=='local':
     config_context = ConfigLocal()
 elif os.environ.get('CONFIG_TYPE')=='dev':
@@ -157,9 +149,10 @@ def format_item_name(data_item_name):
     # list_of_strings = ['HKCategoryTypeIdentifier','HKDataType','HKQuantityTypeIdentifier']
 
     # Get list of generic apple health cateogry names for removal in formatted names
-    with open(os.path.join(current_app.config.get('APPLE_HEALTH_DIR'), 'appleHealthCatNames.txt')) as f:
-        lines = f.readlines()
-    list_of_strings = [i.strip() for i in lines]
+    # with open(os.path.join(current_app.config.get('APPLE_HEALTH_DIR'), 'appleHealthCatNames.txt')) as f:
+    #     lines = f.readlines()
+    # list_of_strings = [i.strip() for i in lines]
+    list_of_strings = current_app.config.get('APPLE_HEALTH_CAT_NAMES')
 
     if any(i in data_item_name for i in list_of_strings):
         for i in list_of_strings:

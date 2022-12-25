@@ -3,7 +3,7 @@ from flask import Blueprint
 from flask import render_template, url_for, redirect, flash, request, \
     abort, session, Response, current_app, send_from_directory, make_response
 import bcrypt
-from ws_models01 import sess, Base, Users, login_manager, Oura_token, Locations, \
+from ws_models01 import sess, Base,engine, Users, login_manager, Oura_token, Locations, \
     Weather_history, User_location_day, Oura_sleep_descriptions, Posts, \
     Apple_health_export, User_notes
 from flask_login import login_required, login_user, logout_user, current_user
@@ -101,7 +101,12 @@ def home():
 
     # make_dir_util(current_app.config.get('DF_FILES_DIR'))
     # make_dir_util(current_app.config.get('DB_DOWNLOADS'))
-
+    # #Build db
+    # if os.path.exists(os.path.join(current_app.config.get('WS_ROOT_DB'),'ws08.db')):
+    #     print('db already exists')
+    # else:
+    #     Base.metadata.create_all(engine)
+    #     print('NEW db created.')
 
     latest_post = sess.query(Posts).all()
     if len(latest_post) > 0:
