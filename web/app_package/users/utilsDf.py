@@ -267,6 +267,7 @@ def create_df_files(USER_ID, data_item_list):
             #     # if not isinstance(df_dict['steps'], bool): df_dict['steps'].to_pickle(file_path)
             #     # if not isinstance(df_dict[data_item], bool): df_dict[data_item].to_pickle(file_path)
 
+            #NOTE:Apple_health not processed here. AH processed in create_df_files_apple
             # elif data_item == 'oura_sleep_tonight':
             if data_item[:5] == 'oura_':
                 logger_users.info(f'-- data_item: {data_item} fired --')

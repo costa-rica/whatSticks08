@@ -42,20 +42,6 @@ import xmltodict
 import pandas as pd
 
 
-# if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
-#     config = ConfigLocal()
-#     testing_oura = True
-# elif 'dev' in os.uname()[1]:
-#     config = ConfigDev()
-#     testing_oura = False
-# elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
-#     config = ConfigProd()
-#     testing_oura = False
-
-
-
-# logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
-
 if os.environ.get('CONFIG_TYPE')=='local':
     config_context = ConfigLocal()
 elif os.environ.get('CONFIG_TYPE')=='dev':
@@ -98,16 +84,6 @@ def home():
     if current_user.is_authenticated:
         return redirect(url_for('dash.dashboard', dash_dependent_var='steps'))
 
-
-    # make_dir_util(current_app.config.get('DF_FILES_DIR'))
-    # make_dir_util(current_app.config.get('DB_DOWNLOADS'))
-    # #Build db
-    # if os.path.exists(os.path.join(current_app.config.get('WS_ROOT_DB'),'ws08.db')):
-    #     print('db already exists')
-    # else:
-    #     Base.metadata.create_all(engine)
-    #     print('NEW db created.')
-
     latest_post = sess.query(Posts).all()
     if len(latest_post) > 0:
         latest_post = latest_post[-1]
@@ -117,7 +93,6 @@ def home():
         blog = {key: getattr(latest_post, key) for key in keys}
         blog['blog_name']='blog'+str(latest_post.id).zfill(4)
         blog['date_published'] = blog['date_published'].strftime("%b %d %Y")
-        print(blog)
     else:
         blog =''
 
@@ -131,21 +106,18 @@ def login():
     page_name = 'Login'
     if request.method == 'POST':
         formDict = request.form.to_dict()
-        print('**** formDict ****')
-        print(formDict)
+
         email = formDict.get('email')
 
         user = sess.query(Users).filter_by(email=email).first()
-        print('user for logging in:::', user)
+
         # verify password using hash
         password = formDict.get('password_text')
 
         if user:
             if password:
                 if bcrypt.checkpw(password.encode(), user.password):
-                    print("match")
                     login_user(user)
-                    # flash('Logged in succesfully', 'info')
 
                     return redirect(url_for('dash.dashboard', dash_dependent_var='steps'))
                 else:
@@ -153,17 +125,12 @@ def login():
             else:
                 flash('Must enter password', 'warning')
         elif formDict.get('btn_login_as_guest'):
-            print('GUEST EMAIL::: ', current_app.config['GUEST_EMAIL'])
             user = sess.query(Users).filter_by(id=2).first()
             login_user(user)
-            # flash('Logged in succesfully as Guest', 'info')
 
             return redirect(url_for('dash.dashboard', dash_dependent_var='steps'))
         else:
             flash('No user by that name', 'warning')
-
-        # if successsful login_something_or_other...
-
 
 
     return render_template('login.html', page_name = page_name)
@@ -386,12 +353,8 @@ def add_apple():
         apple_records = "{:,}".format(existing_records)
     else:
         apple_records = 0
-    # apple_records = "{:,}".format(10000)
 
-    # make APPLE_HEALTH_DIR
-    # apple_health_dir = current_app.config.get('APPLE_HEALTH_DIR
-    # make_dir_util(apple_health_dir)
-    make_dir_util(current_app.config.get('APPLE_HEALTH_DIR'))
+    # make_dir_util(current_app.config.get('APPLE_HEALTH_DIR'))
 
     logger_users.info(f"--- POSTING Apple Health Data (user: {current_user.id}) ---")
     start_post_time = time.time()

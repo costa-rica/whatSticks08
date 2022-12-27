@@ -15,16 +15,6 @@ from logging.handlers import RotatingFileHandler
 import re
 
 
-
-# if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
-#     config = ConfigLocal()
-# elif 'dev' in os.uname()[1]:
-#     config = ConfigDev()
-# elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
-#     config = ConfigProd()
-
-
-# logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
 if os.environ.get('CONFIG_TYPE')=='local':
     config_context = ConfigLocal()
 elif os.environ.get('CONFIG_TYPE')=='dev':
@@ -131,10 +121,53 @@ def add_apple_to_db(xml_dict):
         if col[:len(table_name)] == table_name:
             df_existing = df_existing.rename(columns=({col: col[len(table_name):]}))
 
-    df_existing.set_index(['user_id','type', 'sourceName','creationDate'], inplace=True)
-    df.set_index(['user_id','type', 'sourceName','creationDate'], inplace=True)
+
+    ##############################################################################
+    ### NOTE: This is where a problem with apple health dates occurs.
+    #### The createDate has slight differences depending on when the file is downloaded due to daylight savings
+    #### pd.to_datetime(date_string).asm8 will normalize the data so that different daylight savings times can be compared on same level
+    ##############################################################################
+    # New converting column to datatime value
+
+
+    if len(df_existing) > 0:
+        #convert df_existing to normalized date string
+        df['creationDate'] = pd.to_datetime(df['creationDate'])
+        df['creationDate'] = df['creationDate'].map(lambda x: x.asm8)
+        df['creationDate'] = df['creationDate'].astype(str)
+
+        df_existing.set_index(['user_id','type', 'sourceName','creationDate'], inplace=True)
+
+        df.set_index(['user_id','type', 'sourceName','creationDate'], inplace=True)
+
+        logger_users.info('** length of EXISTING apple health data: ', len(df_existing))
+        logger_users.info('** length of NEW apple health data: ', len(df))
+
+        # print('*** SAVED dfs to _jupyter ***')
+        # path_for_examination = "/Users/nick/Documents/_jupyter"
+        # df_existing.to_pickle(os.path.join(path_for_examination,"a_df_exisiting.pkl"))
+        # df.to_pickle(os.path.join(path_for_examination,"a_df.pkl"))
+
+
+        df = df[~df.index.isin(df_existing.index)]
+        df.reset_index(inplace=True)
+    else:
+        #convert df_existing to normalized date string
+        df['creationDate'] = pd.to_datetime(df['creationDate'])
+        df['creationDate'] = df['creationDate'].map(lambda x: x.asm8)
+        df['creationDate'] = df['creationDate'].astype(str)
+
+
+    # df_existing.set_index(['user_id','type', 'sourceName','creationDate'], inplace=True)
+    # df.set_index(['user_id','type', 'sourceName','creationDate'], inplace=True)
+    # print('----------')
+    # print('** length of EXISTING apple health data: ', len(df_existing))
+    # print('** length of NEW apple health data: ', len(df))
+
     df = df[~df.index.isin(df_existing.index)]
     df.reset_index(inplace=True)
+
+
     logger_users.info('Removed Exiisting rows from new dataset')
  
     #Adding apple health to DATABASE
@@ -160,7 +193,8 @@ def clear_df_files(USER_ID):
         df_browse = pd.read_pickle(os.path.join(current_app.config.get('DF_FILES_DIR'), apple_browse_user_filename))
 
         #find items that have been created
-        type_formatted_series = df_browse[df_browse['df_file_existing']=='true'].type_formatted
+        # type_formatted_series = df_browse[df_browse['df_file_existing']=='true'].type_formatted
+        type_formatted_series = df_browse[df_browse['df_file_created']=='true'].type_formatted
 
         #delete those
         for apple_type in type_formatted_series:

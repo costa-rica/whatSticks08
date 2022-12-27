@@ -82,21 +82,21 @@ def add_apple(xml_file_name, user_id):
             logger_apple.info(f"Emailed user, WS API repsonse: {ws_email_api_response}")
             return message
         
-    try:
-        df_uploaded_record_count = add_apple_to_db(xml_dict, user_id)
-        logger_apple.info('- Successfully added xml to database!')
+    # try:
+    df_uploaded_record_count = add_apple_to_db(xml_dict, user_id)
+    logger_apple.info('- Successfully added xml to database!')
 
-        ###############################################
-        # TODO: if loads successfully check for exisiting 
-        # user_[id]_df_apple_health_.pkl and delete
-        ################################################
-        if os.path.exists(config.DF_FILES_DIR):
-            clear_df_files(user_id)
+    ###############################################
+    # TODO: if loads successfully check for exisiting 
+    # user_[id]_df_apple_health_.pkl and delete
+    ################################################
+    if os.path.exists(config.DF_FILES_DIR):
+        clear_df_files(user_id)
 
-    except:
-        logger_apple.info('---- Failed to add data to database')
-        message = "Failed to store xml into database"
-        return message
+    # except:
+    #     logger_apple.info('---- Failed to add data to database')
+    #     message = "Failed to store xml into database"
+    #     return message
 
 
     # create_df_files(user_id, ['steps'])

@@ -12,14 +12,6 @@ from logging.handlers import RotatingFileHandler
 import shutil
 
 
-# if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
-#     config = ConfigLocal()
-# elif 'dev' in os.uname()[1]:
-#     config = ConfigDev()
-# elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
-#     config = ConfigProd()
-
-# logs_dir = os.path.abspath(os.path.join(os.getcwd(), 'logs'))
 
 if os.environ.get('CONFIG_TYPE')=='local':
     config_context = ConfigLocal()

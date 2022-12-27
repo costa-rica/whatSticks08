@@ -23,49 +23,6 @@ elif os.environ.get('CONFIG_TYPE')=='dev':
 elif os.environ.get('CONFIG_TYPE')=='prod':
     config = ConfigProd()
     print('* ---> Configured for Production')
-# if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
-#     config = ConfigLocal()
-#     print('* Development - Local')
-# elif 'dev' in os.uname()[1]:
-#     config = ConfigDev()
-#     print('* Development')
-# elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
-#     config = ConfigProd()
-#     print('* ---> Configured for Production')
-# machine = os.uname()[1]
-# match machine:
-#     case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
-#         config = ConfigLocal()
-#         # testing = True
-#         # logs_dir = os.getcwd()
-#         print('* Development - Local')
-#     case 'devbig01':
-#         config = ConfigDev()
-#         # testing = False
-#         # config.app_dir = r"/home/nick/applications/apple_service/"
-#         # logs_dir = config.app_dir
-#         # # config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
-#         print('* Development')
-#     case 'speedy100':
-#         config = ConfigProd()
-#         # testing = False
-#         # config.app_dir = r"/home/nick/applications/apple_service/"
-#         # logs_dir = config.app_dir
-#         # # config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
-#         print('* ---> Configured for Production')
-
-# if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
-#     config = ConfigDev()
-#     # logs_dir = os.getcwd()
-#     # config.app_dir = config.APPLE_SUBPROCESS_DIR
-#     # config.json_utils_dir = os.path.join(os.getcwd(),'json_utils_dir')
-#     print('* Development')
-# else:
-#     config = ConfigProd()
-#     # config.app_dir = config.APPLE_SUBPROCESS_DIR
-#     # logs_dir = config.app_dir
-#     # config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
-#     print('* ---> Configured for Production')
 
 
 #Setting up Logger
@@ -348,6 +305,7 @@ def compress_to_save_util(decompressed_xml_file_name):
 
 
 def add_apple_to_db(xml_dict, user_id):
+    logger_apple.info('-- in apple_service/utilsXmlUtility/add_apple_to_db --')
     #Add new users apple data to database
 
     ##########
@@ -379,10 +337,42 @@ def add_apple_to_db(xml_dict, user_id):
         if col[:len(table_name)] == table_name:
             df_existing = df_existing.rename(columns=({col: col[len(table_name):]}))
 
-    df_existing.set_index(['user_id','type', 'sourceName','creationDate'], inplace=True)
-    df.set_index(['user_id','type', 'sourceName','creationDate'], inplace=True)
-    df = df[~df.index.isin(df_existing.index)]
-    df.reset_index(inplace=True)
+    ##############################################################################
+    ### NOTE: This is where a problem with apple health dates occurs.
+    #### The createDate has slight differences depending on when the file is downloaded due to daylight savings
+    #### pd.to_datetime(date_string).asm8 will normalize the data so that different daylight savings times can be compared on same level
+    ##############################################################################
+    # New converting column to datatime value
+
+
+    if len(df_existing) > 0:
+        #convert df_existing to normalized date string
+        df['creationDate'] = pd.to_datetime(df['creationDate'])
+        df['creationDate'] = df['creationDate'].map(lambda x: x.asm8)
+        df['creationDate'] = df['creationDate'].astype(str)
+
+        df_existing.set_index(['user_id','type', 'sourceName','creationDate'], inplace=True)
+
+        df.set_index(['user_id','type', 'sourceName','creationDate'], inplace=True)
+
+        logger_apple('** length of EXISTING apple health data: ', len(df_existing))
+        logger_apple('** length of NEW apple health data: ', len(df))
+
+
+        # path_for_examination = "/Users/nick/Documents/_jupyter"
+        # df_existing.to_pickle(os.path.join(path_for_examination,"a_df_exisiting.pkl"))
+        # df.to_pickle(os.path.join(path_for_examination,"a_df.pkl"))
+
+
+        df = df[~df.index.isin(df_existing.index)]
+        df.reset_index(inplace=True)
+    else:
+        #convert df_existing to normalized date string
+        df['creationDate'] = pd.to_datetime(df['creationDate'])
+        df['creationDate'] = df['creationDate'].map(lambda x: x.asm8)
+        df['creationDate'] = df['creationDate'].astype(str)
+
+
     logger_apple.info('Removed Exiisting rows from new dataset')
     logger_apple.info(f"{len(df)} new records added")
 
@@ -394,32 +384,47 @@ def add_apple_to_db(xml_dict, user_id):
 
 
 def clear_df_files(USER_ID):
-    
+    # This seems to just remove all apple health data
+
+
+
+    logger_apple.info('-- in apple_service/utilsXmlUtility/clear_df_files --')
     list_of_df_files = os.listdir(config.DF_FILES_DIR)
+
+
+    # This might be an old way of 
     search_for_string = f"user{USER_ID}_df_apple_health"
     for file in list_of_df_files:
         if file.find(search_for_string) > -1:
+            logger_apple.info(f'-- FOUND file to delete: user{USER_ID}_df_apple_health --')
             os.remove(os.path.join(config.DF_FILES_DIR, file))
 
-
+    logger_apple.info(f'-- passed checking for  user{USER_ID}_df_apple_health --')
     # open user_browse_apple health
     apple_browse_user_filename = f"user{USER_ID}_df_browse_apple.pkl"
     if os.path.exists(os.path.join(config.DF_FILES_DIR, apple_browse_user_filename)):
-
+        logger_apple.info(f'-- user{USER_ID}_df_browse_apple.pkl -> EXISTS! --')
         df_browse = pd.read_pickle(os.path.join(config.DF_FILES_DIR, apple_browse_user_filename))
+        
+        df_browse.to_pickle(os.path.join("/Users/nick/Documents/_jupyter","a_df_browse.pkl"))
 
         #find items that have been created
-        type_formatted_series = df_browse[df_browse['df_file_existing']=='true'].type_formatted
-
+        type_formatted_series = df_browse[df_browse['df_file_created']=='true'].type_formatted
+        # type_formatted_series = df_browse[df_browse['df_file_existing']=='true']
+        
+        logger_apple.info(f'-- clear_df_files near COMPLETion  --')
+        
         #delete those
         for apple_type in type_formatted_series:
             file_name = f'user{USER_ID}_df_{apple_type.replace(" ", "_").lower()}.pkl'
             os.remove(os.path.join(config.DF_FILES_DIR, file_name))
-
+        
+        logger_apple.info(f'-- clear_df_files getting closer to COMPLETion  --')
+        
         #then delete user_df_browse_apple
         os.remove(os.path.join(config.DF_FILES_DIR, apple_browse_user_filename))
 
-
+    logger_apple.info(f'-- clear_df_files COMPLETED SUCCESSFULLY --')
 
 
 ##########################

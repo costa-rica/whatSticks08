@@ -15,58 +15,14 @@ import re
 
 if os.environ.get('CONFIG_TYPE')=='local':
     config = ConfigLocal()
-    print('* Development - Local')
+    # print('* Development - Local')
 elif os.environ.get('CONFIG_TYPE')=='dev':
     config = ConfigDev()
-    print('* Development')
+    # print('* Development')
 elif os.environ.get('CONFIG_TYPE')=='prod':
     config = ConfigProd()
-    print('* ---> Configured for Production')
-# if os.uname()[1] == 'Nicks-Mac-mini.lan' or os.uname()[1] == 'NICKSURFACEPRO4':
-#     config = ConfigLocal()
-#     testing = True
-#     logs_dir = os.getcwd()
-#     print('* Development - Local')
-# elif 'dev' in os.uname()[1]:
-#     config = ConfigDev()
-#     testing = False
-#     config.app_dir = "/home/nick/applications/apple_service/"
-#     logs_dir = config.app_dir
-#     print('* Development')
-# elif 'prod' in os.uname()[1] or os.uname()[1] == 'speedy100':
-#     config = ConfigProd()
-#     testing = False
-#     config.app_dir = "/home/nick/applications/apple_service/"
-#     logs_dir = config.app_dir
-#     print('* ---> Configured for Production')
-# machine = os.uname()[1]
-# match machine:
-#     case 'Nicks-Mac-mini.lan' | 'NICKSURFACEPRO4':
-#         config = ConfigLocal()
-#         testing = True
-#         logs_dir = os.getcwd()
-#         print('* Development - Local')
-    # case 'devbig01':
-    #     config = ConfigDev()
-    #     testing = False
-    #     config.app_dir = r"/home/nick/applications/apple_service/"
-    #     logs_dir = config.app_dir
-    #     # config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
-    #     print('* Development')
-    # case 'speedy100':
-    #     config = ConfigProd()
-    #     testing = False
-    #     config.app_dir = r"/home/nick/applications/apple_service/"
-    #     logs_dir = config.app_dir
-    #     # config.json_utils_dir = os.path.join(config.app_dir,'json_utils_dir')
-    #     print('* ---> Configured for Production')
-# if os.environ.get('TERM_PROGRAM')=='Apple_Terminal' or os.environ.get('COMPUTERNAME')=='NICKSURFACEPRO4':
-#     config = ConfigDev()
-#     logs_dir = os.getcwd()
-# else:
-#     config = ConfigProd()
-#     config.app_dir = r"/home/nick/applications/apple_service/"
-#     logs_dir = config.app_dir
+    # print('* ---> Configured for Production')
+
 
 
 #Setting up Logger
@@ -93,7 +49,12 @@ logger_apple.addHandler(stream_handler)
 
 
 def create_raw_df(USER_ID, table, table_name):
-    # print('*** In create_raw_df **')
+    ############################################
+    # NOTE: for using this method
+    #table: table object (ex. Apple_health_data)
+    #table_name: ex. 'apple_health_export_'
+    ############################################
+
     if table_name != "weather_history_":
         base_query = sess.query(table).filter_by(user_id = 1)
         df = pd.read_sql(str(base_query)[:-1] + str(USER_ID), sess.bind)
@@ -112,22 +73,6 @@ def create_raw_df(USER_ID, table, table_name):
     return df
 
 
-# def apple_hist_steps(USER_ID):
-#     df = create_raw_df(USER_ID, Apple_health_export, 'apple_health_export_')
-#     if isinstance(df,bool):
-#         return df
-
-#     df=df[df['type']=='HKQuantityTypeIdentifierStepCount']
-#     df['date']=df['creationDate'].str[:10]
-#     df=df[['date', 'value']].copy()
-#     df['value']=df['value'].astype(int)
-    
-#     df = df.rename(columns=({'value': 'steps'}))
-#     df = df.groupby('date').sum()
-#     df['steps-ln'] = np.log(df.steps)
-#     df.reset_index(inplace = True)
-    
-#     return df
 
 
 def apple_hist_util(USER_ID, data_item_list, data_item_name_show, method, data_item_apple_type_name):
@@ -181,69 +126,13 @@ def browse_apple_data(USER_ID):
     return False
 
 
-# def browse_apple_data(USER_ID):
-#     table_name = 'apple_health_export_'
-#     file_name = f'user{USER_ID}_df_browse_apple.pkl'
-#     file_path = os.path.join(config.DF_FILES_DIR, file_name)
-
-#     if os.path.exists(file_path):
-#         os.remove(file_path)
-
-#     df = create_raw_df(USER_ID, Apple_health_export, table_name)
-#     if not isinstance(df, bool):
-#         # df = create_raw_df(USER_ID, Apple_health_export, table_name)
-#         print('--- ')
-#         print(df.head())
-#         series_type = df[['type']].copy()
-#         series_type = series_type.groupby(['type'])['type'].count()
-
-#         df_type = series_type.to_frame()
-#         df_type.rename(columns = {list(df_type)[0]:'record_count'}, inplace=True)
-#         df_type.reset_index(inplace=True)
-
-#         df_type.to_pickle(file_path)
-
-# def browse_apple_data(USER_ID):
-#     table_name = 'apple_health_export_'
-#     file_name = f'user{USER_ID}_df_browse_apple.pkl'
-#     file_path = os.path.join(config.DF_FILES_DIR, file_name)
-
-#     if os.path.exists(file_path):
-#         os.remove(file_path)
-
-#     df = create_raw_df(USER_ID, Apple_health_export, table_name)
-#     if not isinstance(df, bool):
-#         series_type = df[['type']].copy()
-#         series_type = series_type.groupby(['type'])['type'].count()
-
-#         df_type = series_type.to_frame()
-#         df_type.rename(columns = {list(df_type)[0]:'record_count'}, inplace=True)
-#         count_of_apple_records = "{:,}".format(df_type.record_count.sum())
-
-#         # Try add new columns 
-#         df_type['index'] = range(1,len(df_type)+1)
-#         df_type.reset_index(inplace=True)
-#         df_type.set_index('index', inplace=True)
-#         df_type['type_formatted'] = df_type['type'].map(lambda cell_value: format_item_name(cell_value) )
-
-#         df_type['df_file_created']=''
-#         df_type.to_pickle(file_path)
-        
-#         return count_of_apple_records
-#     return False
-
 
 def format_item_name(data_item_name):
     #Accetps funky apple health name and returns something with spaces and capital letters
     # list_of_strings = ['HKCategoryTypeIdentifier','HKDataType','HKQuantityTypeIdentifier']
     
     # Get list of generic apple health cateogry names for removal in formatted names
-    # with open(os.path.join(config.APPLE_HEALTH_DIR, 'appleHealthCatNames.txt')) as f:
-    #     lines = f.readlines()
-    # print('--- list of strings --')
-    # print(lines)
-    # list_of_strings = [i.strip() for i in lines]
-    list_of_strings = config.get('APPLE_HEALTH_CAT_NAMES')
+    list_of_strings = config.APPLE_HEALTH_CAT_NAMES
     
     if any(i in data_item_name for i in list_of_strings):
         for i in list_of_strings:
@@ -332,30 +221,20 @@ def create_df_files(USER_ID, data_item_list):
     for data_item, file_path in file_dict.items():
         # logger_apple.info(f'--- looping through file_dict [data_item: {data_item}; file_path: {file_path} ---')
         if not os.path.exists(file_path):
-            # logger_apple.info(f'- file note found; in loop to create for {data_item}')
-            if data_item == 'steps':
-                df_dict[data_item] = apple_hist_steps(USER_ID)
-                if not isinstance(df_dict['steps'], bool): df_dict['steps'].to_pickle(file_path)
-                # create browse_df
-                browse_apple_data(USER_ID)
 
-            elif data_item == 'sleep':
-                df_dict[data_item] = oura_hist_util(USER_ID)
-                # if not isinstance(df_dict['sleep'], bool): df_dict['sleep'].to_json(file_path)
-                if not isinstance(df_dict['sleep'], bool): df_dict['sleep'].to_pickle(file_path)
-            if data_item =='temp':
+            #NOTE:Apple_health not processed here. AH processed in create_df_files_apple
+            if data_item[:5] == 'oura_':
+                logger_apple.info(f'-- data_item: {data_item} fired --')
+                df_dict[data_item] = oura_hist_util(USER_ID, data_item)
+                if not isinstance(df_dict[data_item], bool):df_dict[data_item].to_pickle(file_path)
+            elif data_item =='temp':
                 df_dict['temp'], _ = user_loc_day_util(USER_ID)
-                # if not isinstance(df_dict['temp'] , bool): df_dict['temp'] .to_json(file_path)
-                if not isinstance(df_dict['temp'] , bool): df_dict['temp'] .to_pickle(file_path)
+                # if not isinstance(df_dict['temp'] , bool): df_dict['temp'] .to_pickle(file_path)
+                if not isinstance(df_dict[data_item] , bool): df_dict[data_item] .to_pickle(file_path)
             elif data_item == 'cloudcover':
                 _, df_dict['cloudcover'] = user_loc_day_util(USER_ID)
-                # if not isinstance(df_dict['cloudcover'] , bool): df_dict['cloudcover'] .to_json(file_path)
-                if not isinstance(df_dict['cloudcover'] , bool): df_dict['cloudcover'] .to_pickle(file_path)
-        else:
-            # df_dict[data_item] = pd.read_json(file_path)
-            df_dict[data_item] = pd.read_pickle(file_path)
-            logger_apple.info(f'--- Something fired that i don really know what it does [file: utilsDf function: create_df_files] ---')
-
+                # if not isinstance(df_dict['cloudcover'] , bool): df_dict['cloudcover'] .to_pickle(file_path)
+                if not isinstance(df_dict[data_item] , bool): df_dict[data_item] .to_pickle(file_path)
 
     return df_dict
 
