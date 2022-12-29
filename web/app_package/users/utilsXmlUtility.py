@@ -279,7 +279,7 @@ def xml_file_fixer(xml_path):
 def compress_to_save_util(decompressed_xml_file_name):
     logger_users.info('- Compressing and storing users Apple Health data')
     apple_health_dir = current_app.config.get('APPLE_HEALTH_DIR')
-    print(apple_health_dir)
+    # print(apple_health_dir)
     app_health_ex_dir = os.path.join(apple_health_dir,'stuff_to_compress', 'apple_health_export')
     stuff_to_compress = os.path.join(apple_health_dir,'stuff_to_compress')
     decompressed_xml = os.path.join(apple_health_dir, decompressed_xml_file_name)

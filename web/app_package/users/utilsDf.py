@@ -307,8 +307,8 @@ def create_df_files_apple(USER_ID,data_item_list, data_item_name_show, method, d
         temp_file_name = f'user{USER_ID}_df_{data_item}.pkl'
         file_dict[data_item] = os.path.join(current_app.config.get('DF_FILES_DIR'), temp_file_name)
 
-    print('- file_dict -')
-    print(file_dict)
+    logger_users.info(f'-- df .pkl files to be made: --')
+    logger_users.info(f'{file_dict}')
 
     # Remove any existing df for user
     for _, f in file_dict.items():
@@ -318,15 +318,14 @@ def create_df_files_apple(USER_ID,data_item_list, data_item_name_show, method, d
     df_dict = {}
     # Make DF for each in database/df_files/
     for data_item, file_path in file_dict.items():
-        print(f'data_item: {data_item}')
         if not os.path.exists(file_path):
             if data_item[:12] == 'apple_health':
-                print('- Making  Apple health data item df_.pkl file -')
-                print(' ***** ')
+                logger_users.info(f'-- making pkl file for {data_item} --')
 
                 df_dict[data_item_list[0]] = apple_hist_util(USER_ID, data_item_list, data_item_name_show, method, data_item_apple_type_name)
                 if not isinstance(df_dict[data_item_list[0]], bool): df_dict[data_item_list[0]].to_pickle(file_path)
-                # if not isinstance(df_dict['steps'], bool): df_dict['steps'].to_pickle(file_path)
-                # if not isinstance(df_dict[data_item], bool): df_dict[data_item].to_pickle(file_path)
+                logger_users.info(f'-- successfully made pkl file for {data_item} --')
 
+
+    logger_users.info('-- Completed making apple_health pkl dfs users/create_df_files_apple --')
     return df_dict

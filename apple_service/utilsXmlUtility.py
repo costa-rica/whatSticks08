@@ -341,52 +341,86 @@ def add_apple_to_db(xml_dict, user_id):
     ### NOTE: This is where a problem with apple health dates occurs.
     #### The createDate has slight differences depending on when the file is downloaded due to daylight savings
     #### pd.to_datetime(date_string).asm8 will normalize the data so that different daylight savings times can be compared on same level
+    #### Other issues include:
+    #### - uniqueness requires ['user_id','type','sourceName','sourceVersion','unit','creationDate','startDate','endDate','value','device']
+    #### - 'id' is set to object because there is no int, so need to remove from new data
     ##############################################################################
     # New converting column to datatime value
 
 
     if len(df_existing) > 0:
+        
+        
         #convert df_existing to normalized date string
         df['creationDate'] = pd.to_datetime(df['creationDate'])
         df['creationDate'] = df['creationDate'].map(lambda x: x.asm8)
         df['creationDate'] = df['creationDate'].astype(str)
 
-        df_existing.set_index(['user_id','type', 'sourceName','creationDate'], inplace=True)
+        df['startDate'] = pd.to_datetime(df['startDate'])
+        df['startDate'] = df['startDate'].map(lambda x: x.asm8)
+        df['startDate'] = df['startDate'].astype(str)
 
-        df.set_index(['user_id','type', 'sourceName','creationDate'], inplace=True)
+        df['endDate'] = pd.to_datetime(df['endDate'])
+        df['endDate'] = df['endDate'].map(lambda x: x.asm8)
+        df['endDate'] = df['endDate'].astype(str)
 
-        logger_apple('** length of EXISTING apple health data: ', len(df_existing))
-        logger_apple('** length of NEW apple health data: ', len(df))
+        for col in df_existing.columns:
+            if col not in list(df.columns):
+                df[col]=''
 
 
-        # path_for_examination = "/Users/nick/Documents/_jupyter"
-        # df_existing.to_pickle(os.path.join(path_for_examination,"a_df_exisiting.pkl"))
-        # df.to_pickle(os.path.join(path_for_examination,"a_df.pkl"))
+        df = df[list(df_existing.columns)]
+
+        logger_apple.info(f'-- length of EXISTING apple health data: {len(df_existing)}')
+        logger_apple.info(f'-- length of NEW apple health data: {len(df)}')
+
+        # columns_to_compare_newness_list = ['user_id','type','sourceName','sourceVersion','unit','creationDate','startDate','endDate','value','device']
+        columns_to_compare_newness_list = ['user_id','type','sourceName','sourceVersion','unit','creationDate','startDate','endDate','value']
+       
+        df_existing.set_index(columns_to_compare_newness_list, inplace=True)
+
+        df.set_index(columns_to_compare_newness_list, inplace=True)
+        
+        df_existing.head(2)
+        df.head(2)
 
 
         df = df[~df.index.isin(df_existing.index)]
         df.reset_index(inplace=True)
+        df.drop(columns=['id'], inplace=True)
+        logger_apple.info(f'-- length of NEW apple health data: {len(df)}')
+
     else:
         #convert df_existing to normalized date string
         df['creationDate'] = pd.to_datetime(df['creationDate'])
         df['creationDate'] = df['creationDate'].map(lambda x: x.asm8)
         df['creationDate'] = df['creationDate'].astype(str)
 
+        df['startDate'] = pd.to_datetime(df['startDate'])
+        df['startDate'] = df['startDate'].map(lambda x: x.asm8)
+        df['startDate'] = df['startDate'].astype(str)
 
-    logger_apple.info('Removed Exiisting rows from new dataset')
-    logger_apple.info(f"{len(df)} new records added")
+        df['endDate'] = pd.to_datetime(df['endDate'])
+        df['endDate'] = df['endDate'].map(lambda x: x.asm8)
+        df['endDate'] = df['endDate'].astype(str)
 
-    logger_apple.info('Processing: adding new data to db')
-    #add to database
+
+
+        logger_apple.info(f'-- length of NEW apple health data: {len(df)}')
+
+
+ 
+    #Adding apple health to DATABASE
+    logger_apple.info('-- Adding new data to db via df.to_sql')
+    
     df.to_sql('apple_health_export', con=engine, if_exists='append', index=False)
 
+    logger_apple.info('* Successfully added xml to database!')
     return len(df)
 
 
 def clear_df_files(USER_ID):
-    # This seems to just remove all apple health data
-
-
+    # This remove all apple health data df's from databases/df_files
 
     logger_apple.info('-- in apple_service/utilsXmlUtility/clear_df_files --')
     list_of_df_files = os.listdir(config.DF_FILES_DIR)
@@ -403,7 +437,6 @@ def clear_df_files(USER_ID):
     # open user_browse_apple health
     apple_browse_user_filename = f"user{USER_ID}_df_browse_apple.pkl"
     if os.path.exists(os.path.join(config.DF_FILES_DIR, apple_browse_user_filename)):
-        logger_apple.info(f'-- user{USER_ID}_df_browse_apple.pkl -> EXISTS! --')
         df_browse = pd.read_pickle(os.path.join(config.DF_FILES_DIR, apple_browse_user_filename))
         
         df_browse.to_pickle(os.path.join("/Users/nick/Documents/_jupyter","a_df_browse.pkl"))
@@ -412,7 +445,6 @@ def clear_df_files(USER_ID):
         type_formatted_series = df_browse[df_browse['df_file_created']=='true'].type_formatted
         # type_formatted_series = df_browse[df_browse['df_file_existing']=='true']
         
-        logger_apple.info(f'-- clear_df_files near COMPLETion  --')
         
         #delete those
         for apple_type in type_formatted_series:

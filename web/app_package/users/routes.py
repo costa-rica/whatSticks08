@@ -398,30 +398,36 @@ def add_apple():
                     with open(new_file_path, 'r') as xml_file:
                         xml_dict = xmltodict.parse(xml_file.read())
                     
+
+                    
                 except:
                     #Trying to fix file
                     logger_users.info(f'---- xmltodict failed first go around. Sending to xml_file_fixer --')
                     xml_dict = xml_file_fixer(new_file_path)
+
+                    # if fixer does not work return message to user telling them it don't work.
                     if isinstance(xml_dict, str):
                         logger_users.info(f'---- Failed to process Apple file. No header for data found')
                         flash('Failed to process Apple file. No header for data found', 'warning')
                         return redirect(url_for('users.add_apple'))
                 
-                try:
-                    df_uploaded_record_count = add_apple_to_db(xml_dict)
-                    logger_users.info('- Successfully added xml to database!')
-
-                    ###############################################
-                    # if loads successfully check for exisiting 
-                    # user_[id]_df_apple_health_.pkl and delete
-                    ################################################
-                    if os.path.exists(current_app.config.get('DF_FILES_DIR')):
-                        clear_df_files(USER_ID)
-
-                except:
-                    logger_users.info('---- Failed to add data to database')
-                    return redirect(url_for('users.add_apple'))
+                # try:
+                logger_users.info(f"- xml_dict length: {len( xml_dict['HealthData']['Record'])}")
+                df_uploaded_record_count = add_apple_to_db(xml_dict)
                 
+
+                ###############################################
+                # if loads successfully check for exisiting 
+                # user_[id]_df_apple_health_.pkl and delete
+                ################################################
+                if os.path.exists(current_app.config.get('DF_FILES_DIR')):
+                    clear_df_files(USER_ID)
+
+                # except:
+                #     logger_users.info('---- Failed to add data to database')
+                #     return redirect(url_for('users.add_apple'))
+                
+                logger_users.info(f'-- compress_to_save_util: {new_file_path}')
                 # Store successful download in compressed version of /databases/apple_health_data/...
                 compress_to_save_util(os.path.basename(new_file_path))
 
